@@ -719,4 +719,612 @@ window.HomeInsuranceApp = {
     showFieldError,
     clearFieldError,
     debounce
-}; 
+};
+
+/**
+ * Open General Details Modal
+ * This function opens the modal dialog for general details input
+ */
+function openGeneralDetailsModal() {
+    const modal = document.getElementById('generalDetailsModal');
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        
+        // Set minimum date to today for start date
+        const startDateInput = document.getElementById('startDate');
+        if (startDateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            startDateInput.min = today;
+        }
+        
+        // Initialize conditional field logic
+        initializeConditionalFields();
+        
+        // Initialize product sections
+        initializeProductSections();
+        
+        // Add form input listeners for real-time validation
+        addFormInputListeners();
+        
+        // Add event listeners for closing the modal
+        setupModalCloseHandlers();
+        
+        // Focus on the modal for accessibility
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.focus();
+        }
+    }
+}
+
+/**
+ * Initialize conditional field display logic
+ */
+function initializeConditionalFields() {
+    const productTypeSelect = document.getElementById('productType');
+    const coverageTypeSelect = document.getElementById('coverageType');
+    const propertyTypeSelect = document.getElementById('propertyType');
+    const floorCountSelect = document.getElementById('floorCount');
+    
+    // Find parent form groups
+    const coverageTypeField = coverageTypeSelect ? coverageTypeSelect.closest('.form-group') : null;
+    const floorCountField = floorCountSelect ? floorCountSelect.closest('.form-group') : null;
+    
+    // Product Type change handler
+    if (productTypeSelect) {
+        productTypeSelect.addEventListener('change', function() {
+            const selectedValue = this.value;
+            
+            if (coverageTypeField && coverageTypeSelect) {
+                if (selectedValue === 'מבנה בלבד' || selectedValue === 'מבנה בלבד משועבד') {
+                    // Hide coverage type field with animation
+                    coverageTypeField.classList.add('hidden');
+                    // Clear the value when hiding
+                    coverageTypeSelect.value = '';
+                } else {
+                    // Show coverage type field with animation
+                    coverageTypeField.classList.remove('hidden');
+                }
+            }
+            
+            // Update product sections based on selection
+            updateProductSections(selectedValue);
+        });
+    }
+    
+    // Property Type change handler
+    if (propertyTypeSelect) {
+        propertyTypeSelect.addEventListener('change', function() {
+            const selectedValue = this.value;
+            
+            if (floorCountField && floorCountSelect) {
+                if (selectedValue === 'פרטי') {
+                    // Hide floor count field with animation
+                    floorCountField.classList.add('hidden');
+                    // Clear the value when hiding
+                    floorCountSelect.value = '';
+                } else {
+                    // Show floor count field with animation
+                    floorCountField.classList.remove('hidden');
+                }
+            }
+        });
+    }
+}
+
+/**
+ * Update product sections based on product type selection
+ * @param {string} productType - The selected product type
+ */
+function updateProductSections(productType) {
+    const sections = {
+        'מבנה': document.querySelector('[data-section="מבנה"]'),
+        'תכולה': document.querySelector('[data-section="תכולה"]'),
+        'פעילות עסקית': document.querySelector('[data-section="פעילות עסקית"]'),
+        'צד שלישי': document.querySelector('[data-section="צד שלישי"]'),
+        'מעבידים': document.querySelector('[data-section="מעבידים"]'),
+        'סייבר למשפחה': document.querySelector('[data-section="סייבר למשפחה"]'),
+        'טרור': document.querySelector('[data-section="טרור"]')
+    };
+    
+    // First, enable all sections and remove disabled state
+    Object.values(sections).forEach(section => {
+        if (section) {
+            section.classList.remove('disabled');
+            section.classList.add('transitioning');
+            const checkbox = section.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.disabled = false;
+            }
+        }
+    });
+    
+    // Apply conditional logic based on product type
+    switch(productType) {
+        case 'מבנה בלבד':
+            // Disable תכולה
+            disableSection(sections['תכולה']);
+            break;
+            
+        case 'תכולה בלבד':
+            // Disable מבנה
+            disableSection(sections['מבנה']);
+            break;
+            
+        case 'מבנה בלבד משועבד':
+            // Disable multiple sections
+            disableSection(sections['תכולה']);
+            disableSection(sections['פעילות עסקית']);
+            disableSection(sections['סייבר למשפחה']);
+            disableSection(sections['מעבידים']);
+            disableSection(sections['טרור']);
+            break;
+    }
+    
+    // Remove transitioning class after animation
+    setTimeout(() => {
+        Object.values(sections).forEach(section => {
+            if (section) {
+                section.classList.remove('transitioning');
+            }
+        });
+    }, 300);
+}
+
+/**
+ * Disable a product section
+ * @param {HTMLElement} section - The section element to disable
+ */
+function disableSection(section) {
+    if (section) {
+        section.classList.add('disabled');
+        const checkbox = section.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+            checkbox.disabled = true;
+            checkbox.checked = false; // Uncheck if it was checked
+        }
+    }
+}
+
+/**
+ * Initialize product sections event handlers
+ */
+function initializeProductSections() {
+    // Add click handlers to section items for better UX
+    const sectionItems = document.querySelectorAll('.section-item');
+    
+    sectionItems.forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        
+        // Handle checkbox change for styling
+        if (checkbox) {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    item.classList.add('checked');
+                } else {
+                    item.classList.remove('checked');
+                }
+            });
+            
+            // Set initial state
+            if (checkbox.checked) {
+                item.classList.add('checked');
+            }
+        }
+        
+        // Handle click on the container
+        item.addEventListener('click', function(e) {
+            // If clicking on the label or the container (not the checkbox itself)
+            if (!e.target.matches('input[type="checkbox"]') && !this.classList.contains('disabled')) {
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    // Trigger change event
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            }
+        });
+    });
+    
+    // Initialize based on current product type selection
+    const productTypeSelect = document.getElementById('productType');
+    if (productTypeSelect && productTypeSelect.value) {
+        updateProductSections(productTypeSelect.value);
+    }
+}
+
+/**
+ * Close General Details Modal
+ */
+function closeGeneralDetailsModal() {
+    const modal = document.getElementById('generalDetailsModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = ''; // Restore scrolling
+    }
+}
+
+/**
+ * Setup modal close handlers
+ */
+function setupModalCloseHandlers() {
+    const modal = document.getElementById('generalDetailsModal');
+    const closeBtn = modal.querySelector('.close');
+    
+    // Close button click handler
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            closeGeneralDetailsModal();
+        };
+    }
+    
+    // Click outside modal to close
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            closeGeneralDetailsModal();
+        }
+    };
+    
+    // Escape key to close
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && modal.style.display === 'block') {
+            closeGeneralDetailsModal();
+        }
+    });
+}
+
+/**
+ * Submit General Details Form
+ */
+function submitGeneralDetails() {
+    const form = document.getElementById('generalDetailsForm');
+    
+    if (form) {
+        // Clear all previous errors
+        clearFormErrors();
+        
+        // Perform custom validation
+        const isValid = validateGeneralDetailsForm();
+        
+        if (isValid && form.checkValidity()) {
+            // Collect all form data into a structured object
+            const formData = collectFormData();
+            
+            // Print the structured data to console
+            console.log('📋 Collected Form Data:');
+            console.log(JSON.stringify(formData, null, 2));
+            console.log('✅ Form is valid and ready for submission');
+            
+            // For now, just log the data - no submission yet
+            // You can uncomment these lines when ready to actually submit:
+            // submitFormData(formData);
+            // closeGeneralDetailsModal();
+            // alert('הפרטים נשלחו בהצלחה!');
+        } else {
+            // Trigger browser validation for any HTML5 validation issues
+            form.reportValidity();
+        }
+    }
+}
+
+/**
+ * Collect all form data into a structured object
+ * @returns {Object} - Structured form data object
+ */
+function collectFormData() {
+    // Collect basic form fields
+    const idNumber = document.getElementById('idNumber').value.trim();
+    const startDate = document.getElementById('startDate').value;
+    const productType = document.getElementById('productType').value;
+    const coverageType = document.getElementById('coverageType').value;
+    const propertyType = document.getElementById('propertyType').value;
+    const floorCount = document.getElementById('floorCount').value;
+    const city = document.getElementById('city').value;
+    const street = document.getElementById('street').value.trim();
+    const houseNumber = document.getElementById('houseNumber').value;
+    const zipCode = document.getElementById('zipCode').value.trim();
+    
+    // Collect selected product sections
+    const selectedProducts = [];
+    const sectionCheckboxes = document.querySelectorAll('.section-item input[type="checkbox"]:checked');
+    sectionCheckboxes.forEach(checkbox => {
+        selectedProducts.push(checkbox.value);
+    });
+    
+    // Create structured data object
+    const formData = {
+        // Personal Information
+        idNumber: idNumber,
+        
+        // Policy Information
+        startDate: startDate,
+        productType: productType,
+        
+        // Coverage Information (only if visible)
+        ...(coverageType && !document.querySelector('#coverageType').closest('.form-group').classList.contains('hidden') && {
+            coverageType: coverageType
+        }),
+        
+        // Property Information
+        assetType: propertyType,
+        
+        // Floor Information (only if visible)
+        ...(floorCount && !document.querySelector('#floorCount').closest('.form-group').classList.contains('hidden') && {
+            floorsNumber: parseInt(floorCount, 10)
+        }),
+        
+        // Address Information
+        city: city,
+        street: street,
+        houseNumber: parseInt(houseNumber, 10),
+        zipCode: zipCode,
+        
+        // Selected Insurance Products
+        selectedProducts: selectedProducts
+    };
+    
+    // Add metadata
+    formData.timestamp = new Date().toISOString();
+    formData.formVersion = '1.0';
+    
+    return formData;
+}
+
+/**
+ * Submit form data to backend (placeholder for future implementation)
+ * @param {Object} formData - The structured form data to submit
+ */
+function submitFormData(formData) {
+    // This function will be implemented in a future step
+    console.log('📤 Ready to submit data to backend:', formData);
+    // TODO: Implement actual submission logic
+}
+
+/**
+ * Validate General Details Form
+ * @returns {boolean} - True if form is valid, false otherwise
+ */
+function validateGeneralDetailsForm() {
+    let isValid = true;
+    
+    // Validate ID Number
+    const idNumber = document.getElementById('idNumber');
+    if (idNumber) {
+        const idValue = idNumber.value.trim();
+        if (!idValue) {
+            showFormError(idNumber, 'שדה חובה');
+            isValid = false;
+        } else if (!/^\d{9}$/.test(idValue)) {
+            showFormError(idNumber, 'תעודת זהות חייבת להכיל 9 ספרות בדיוק');
+            isValid = false;
+        }
+    }
+    
+    // Validate Start Date
+    const startDate = document.getElementById('startDate');
+    if (startDate) {
+        const dateValue = startDate.value;
+        if (!dateValue) {
+            showFormError(startDate, 'שדה חובה');
+            isValid = false;
+        } else {
+            const selectedDate = new Date(dateValue);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (selectedDate < today) {
+                showFormError(startDate, 'לא ניתן לבחור תאריך בעבר');
+                isValid = false;
+            }
+        }
+    }
+    
+    // Validate Product Type
+    const productType = document.getElementById('productType');
+    if (productType && !productType.value) {
+        showFormError(productType, 'שדה חובה');
+        isValid = false;
+    }
+    
+    // Validate Coverage Type (only if visible)
+    const coverageType = document.getElementById('coverageType');
+    const coverageTypeField = coverageType ? coverageType.closest('.form-group') : null;
+    if (coverageType && coverageTypeField && !coverageTypeField.classList.contains('hidden')) {
+        if (!coverageType.value) {
+            showFormError(coverageType, 'שדה חובה');
+            isValid = false;
+        }
+    }
+    
+    // Validate Property Type
+    const propertyType = document.getElementById('propertyType');
+    if (propertyType && !propertyType.value) {
+        showFormError(propertyType, 'שדה חובה');
+        isValid = false;
+    }
+    
+    // Validate Floor Count (only if visible)
+    const floorCount = document.getElementById('floorCount');
+    const floorCountField = floorCount ? floorCount.closest('.form-group') : null;
+    if (floorCount && floorCountField && !floorCountField.classList.contains('hidden')) {
+        if (!floorCount.value) {
+            showFormError(floorCount, 'שדה חובה');
+            isValid = false;
+        }
+    }
+    
+    // Validate City
+    const city = document.getElementById('city');
+    if (city && !city.value) {
+        showFormError(city, 'שדה חובה');
+        isValid = false;
+    }
+    
+    // Validate Street
+    const street = document.getElementById('street');
+    if (street && !street.value.trim()) {
+        showFormError(street, 'שדה חובה');
+        isValid = false;
+    }
+    
+    // Validate House Number
+    const houseNumber = document.getElementById('houseNumber');
+    if (houseNumber && !houseNumber.value) {
+        showFormError(houseNumber, 'שדה חובה');
+        isValid = false;
+    }
+    
+    // Validate ZIP Code
+    const zipCode = document.getElementById('zipCode');
+    if (zipCode) {
+        const zipValue = zipCode.value.trim();
+        if (!zipValue) {
+            showFormError(zipCode, 'שדה חובה');
+            isValid = false;
+        } else if (!/^\d+$/.test(zipValue)) {
+            showFormError(zipCode, 'מיקוד חייב להכיל ספרות בלבד');
+            isValid = false;
+        }
+    }
+    
+    return isValid;
+}
+
+/**
+ * Show error message for a form field
+ * @param {HTMLElement} field - The form field element
+ * @param {string} message - The error message to display
+ */
+function showFormError(field, message) {
+    // Add error class to field
+    field.classList.add('error');
+    
+    // Create error message element
+    const errorElement = document.createElement('div');
+    errorElement.className = 'form-error-message';
+    errorElement.textContent = message;
+    
+    // Insert error message after the field
+    const formGroup = field.closest('.form-group');
+    if (formGroup) {
+        // Remove any existing error message
+        const existingError = formGroup.querySelector('.form-error-message');
+        if (existingError) {
+            existingError.remove();
+        }
+        
+        // Add new error message
+        formGroup.appendChild(errorElement);
+    }
+}
+
+/**
+ * Clear all form errors
+ */
+function clearFormErrors() {
+    // Remove error classes from all fields
+    const errorFields = document.querySelectorAll('.error');
+    errorFields.forEach(field => {
+        field.classList.remove('error');
+    });
+    
+    // Remove all error messages
+    const errorMessages = document.querySelectorAll('.form-error-message');
+    errorMessages.forEach(message => {
+        message.remove();
+    });
+}
+
+/**
+ * Add input event listeners for real-time validation
+ */
+function addFormInputListeners() {
+    // ID Number - allow only digits and limit to 9
+    const idNumber = document.getElementById('idNumber');
+    if (idNumber) {
+        idNumber.addEventListener('input', function(e) {
+            // Remove non-digits
+            this.value = this.value.replace(/\D/g, '');
+            
+            // Limit to 9 digits
+            if (this.value.length > 9) {
+                this.value = this.value.slice(0, 9);
+            }
+            
+            // Clear error on valid input
+            if (this.value.length === 9) {
+                this.classList.remove('error');
+                const errorMsg = this.closest('.form-group').querySelector('.form-error-message');
+                if (errorMsg) errorMsg.remove();
+            }
+        });
+    }
+    
+    // ZIP Code - allow only digits
+    const zipCode = document.getElementById('zipCode');
+    if (zipCode) {
+        zipCode.addEventListener('input', function(e) {
+            // Remove non-digits
+            this.value = this.value.replace(/\D/g, '');
+        });
+    }
+    
+    // Clear errors on change for select fields
+    const selectFields = document.querySelectorAll('#generalDetailsForm select');
+    selectFields.forEach(field => {
+        field.addEventListener('change', function() {
+            if (this.value) {
+                this.classList.remove('error');
+                const errorMsg = this.closest('.form-group').querySelector('.form-error-message');
+                if (errorMsg) errorMsg.remove();
+            }
+        });
+    });
+    
+    // Clear errors on input for text fields
+    const textFields = document.querySelectorAll('#generalDetailsForm input[type="text"], #generalDetailsForm input[type="date"]');
+    textFields.forEach(field => {
+        field.addEventListener('input', function() {
+            if (this.value) {
+                this.classList.remove('error');
+                const errorMsg = this.closest('.form-group').querySelector('.form-error-message');
+                if (errorMsg) errorMsg.remove();
+            }
+        });
+    });
+}
+
+// Override the CTA button click to open the modal instead of the form
+document.addEventListener('DOMContentLoaded', function() {
+    const ctaButton = document.getElementById('getQuoteBtn');
+    if (ctaButton) {
+        // Remove existing event listeners by cloning the button
+        const newButton = ctaButton.cloneNode(true);
+        ctaButton.parentNode.replaceChild(newButton, ctaButton);
+        
+        // Add new event listener to open modal
+        newButton.addEventListener('click', function() {
+            // Add visual feedback
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+            
+            // Open the modal
+            openGeneralDetailsModal();
+        });
+    }
+});
+
+// Add modal functions to the global app object
+window.HomeInsuranceApp.openGeneralDetailsModal = openGeneralDetailsModal;
+window.HomeInsuranceApp.closeGeneralDetailsModal = closeGeneralDetailsModal;
+window.HomeInsuranceApp.submitGeneralDetails = submitGeneralDetails;
+window.HomeInsuranceApp.initializeConditionalFields = initializeConditionalFields;
+window.HomeInsuranceApp.validateGeneralDetailsForm = validateGeneralDetailsForm;
+window.HomeInsuranceApp.clearFormErrors = clearFormErrors;
+window.HomeInsuranceApp.updateProductSections = updateProductSections;
+window.HomeInsuranceApp.initializeProductSections = initializeProductSections;
+window.HomeInsuranceApp.collectFormData = collectFormData;
+window.HomeInsuranceApp.submitFormData = submitFormData; 

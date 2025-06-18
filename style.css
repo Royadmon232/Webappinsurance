@@ -1015,4 +1015,485 @@ button:focus {
         width: 100%;
         margin: 0.5rem 0;
     }
+}
+
+/* Modal Styles - Enhanced */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 2% auto;
+    padding: 0;
+    border-radius: 16px;
+    width: 95%;
+    max-width: 1000px;
+    max-height: 95vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+    animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 32px;
+    border-bottom: 2px solid #e5e7eb;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    border-radius: 16px 16px 0 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.close {
+    color: white;
+    font-size: 32px;
+    font-weight: 300;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1;
+    opacity: 0.8;
+}
+
+.close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 32px;
+    background-color: #fafbfc;
+}
+
+/* Modal Body Grid Layout - Enhanced */
+.modal-body-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 32px;
+    align-items: start;
+}
+
+.modal-form-section {
+    width: 100%;
+}
+
+/* Form Field Groups */
+.form-field-group {
+    background-color: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e5e7eb;
+}
+
+.form-field-group h4 {
+    margin: 0 0 20px 0;
+    font-size: 1.1rem;
+    color: #1f2937;
+    font-weight: 600;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+/* Modal Form Styles - Enhanced */
+.modal-body .form-group {
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    opacity: 1;
+    max-height: 200px;
+    overflow: visible;
+}
+
+.modal-body .form-group.hidden {
+    opacity: 0;
+    max-height: 0;
+    margin-bottom: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.modal-body .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.95rem;
+    position: relative;
+}
+
+/* Required field indicator */
+.modal-body .form-group label::after {
+    content: attr(data-required);
+    color: #ef4444;
+    margin-left: 4px;
+    font-weight: 700;
+}
+
+.modal-body .form-group input,
+.modal-body .form-group select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: #fff;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.modal-body .form-group input:hover,
+.modal-body .form-group select:hover {
+    border-color: #d1d5db;
+}
+
+.modal-body .form-group input:focus,
+.modal-body .form-group select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    background-color: #fafbfc;
+}
+
+.modal-body .form-group input::placeholder {
+    color: #9ca3af;
+    font-weight: 400;
+}
+
+/* Enhanced Select Styling */
+.modal-body .form-group select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 16px center;
+    background-repeat: no-repeat;
+    background-size: 20px;
+    padding-right: 48px;
+    appearance: none;
+}
+
+.modal-body .form-group select:focus {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%232563eb' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+}
+
+/* Form Error Styles - Enhanced */
+.modal-body .form-group input.error,
+.modal-body .form-group select.error {
+    border-color: #ef4444;
+    background-color: #fef2f2;
+}
+
+.modal-body .form-group input.error:focus,
+.modal-body .form-group select.error:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+.form-error-message {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 6px;
+    font-weight: 500;
+    animation: errorSlideIn 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.form-error-message::before {
+    content: "⚠";
+    font-size: 1rem;
+}
+
+/* Modal Footer - Enhanced */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    padding: 24px 32px;
+    border-top: 2px solid #e5e7eb;
+    background-color: #f9fafb;
+    border-radius: 0 0 16px 16px;
+}
+
+/* Modal Button Styles - Enhanced */
+.modal-footer .btn {
+    padding: 14px 32px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.modal-footer .btn-primary {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    min-width: 120px;
+}
+
+.modal-footer .btn-primary::after {
+    content: "←";
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.modal-footer .btn-primary:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.25);
+}
+
+.modal-footer .btn-primary:hover::after {
+    transform: translateX(-4px);
+}
+
+.modal-footer .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+.modal-footer .btn-secondary {
+    background-color: #6b7280;
+    color: white;
+}
+
+.modal-footer .btn-secondary:hover {
+    background-color: #4b5563;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(107, 114, 128, 0.2);
+}
+
+/* Product Sections Container - Enhanced */
+.modal-sections-container {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid #e5e7eb;
+    position: sticky;
+    top: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.modal-sections-container h3 {
+    margin: 0 0 20px 0;
+    font-size: 1.2rem;
+    color: #1f2937;
+    font-weight: 700;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+/* Product Sections - Enhanced */
+.product-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.section-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    background-color: #f9fafb;
+    border-radius: 10px;
+    border: 2px solid #e5e7eb;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.section-item:hover:not(.disabled) {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+.section-item input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    margin-right: 14px;
+    cursor: pointer;
+    accent-color: #2563eb;
+    flex-shrink: 0;
+}
+
+.section-item label {
+    font-size: 0.95rem;
+    color: #374151;
+    cursor: pointer;
+    flex: 1;
+    margin: 0;
+    font-weight: 500;
+}
+
+.section-item.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background-color: #f3f4f6;
+}
+
+.section-item.disabled:hover {
+    transform: none;
+    border-color: #e5e7eb;
+    box-shadow: none;
+}
+
+/* Checkbox checked state - Enhanced */
+.section-item input[type="checkbox"]:checked + label {
+    color: #1d4ed8;
+    font-weight: 700;
+}
+
+.section-item.checked {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+}
+
+/* Responsive Modal - Enhanced */
+@media (max-width: 968px) {
+    .modal-body-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    
+    .modal-sections-container {
+        position: relative;
+        top: auto;
+        order: -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 100%;
+        margin: 0;
+        max-height: 100%;
+        border-radius: 0;
+    }
+    
+    .modal-header {
+        border-radius: 0;
+        padding: 20px 24px;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.4rem;
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
+    
+    .form-field-group {
+        padding: 20px;
+        margin-bottom: 16px;
+    }
+    
+    .modal-footer {
+        padding: 20px;
+        flex-direction: column-reverse;
+        gap: 12px;
+        border-radius: 0;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 16px;
+    }
+    
+    .modal-sections-container {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-body {
+        padding: 16px;
+    }
+    
+    .form-field-group {
+        padding: 16px;
+    }
+    
+    .modal-body .form-group {
+        margin-bottom: 16px;
+    }
+    
+    .modal-body .form-group input,
+    .modal-body .form-group select {
+        padding: 12px 14px;
+        font-size: 1rem;
+    }
+}
+
+/* Smooth dropdown animation */
+.modal-body .form-group select {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-body .form-group select:focus {
+    transform: translateY(-1px);
+}
+
+/* Loading state for selects */
+.modal-body .form-group select:empty {
+    color: #9ca3af;
+}
+
+/* Custom scrollbar for modal */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 8px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 8px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
 } 
