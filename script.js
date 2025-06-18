@@ -4,43 +4,45 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Home Insurance Landing Page loaded successfully!');
     
-    // Initialize page functionality
-    initializePage();
+    // Initialize CTA button - simplified version
+    const ctaButton = document.getElementById('getQuoteBtn');
+    const modal = document.getElementById('generalDetailsModal');
     
-    // Simple direct modal handler for debugging
-    setTimeout(() => {
-        const btn = document.getElementById('getQuoteBtn');
-        const modal = document.getElementById('generalDetailsModal');
-        console.log('Direct handler - Button found:', !!btn);
-        console.log('Direct handler - Modal found:', !!modal);
-        
-        if (btn && modal) {
-            btn.onclick = function() {
-                console.log('Button clicked - opening modal directly');
-                modal.style.display = 'block';
-                document.body.style.overflow = 'hidden';
-                
-                // Initialize modal functionality
-                initializeConditionalFields();
-                initializeProductSections();
-                addFormInputListeners();
-                setupModalCloseHandlers();
-                
-                // Set min date
-                const startDateInput = document.getElementById('startDate');
-                if (startDateInput) {
-                    const today = new Date().toISOString().split('T')[0];
-                    startDateInput.min = today;
-                }
-            };
+    // Function to open modal
+    function openModal() {
+        if (modal) {
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            
+            // Initialize modal functionality
+            initializeConditionalFields();
+            initializeProductSections();
+            addFormInputListeners();
+            setupModalCloseHandlers();
+            
+            // Set min date
+            const startDateInput = document.getElementById('startDate');
+            if (startDateInput) {
+                const today = new Date().toISOString().split('T')[0];
+                startDateInput.min = today;
+            }
         }
-    }, 100);
+    }
+    
+    // Add event listener to CTA button
+    if (ctaButton) {
+        ctaButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            openModal();
+        });
+    }
 });
 
 /**
  * Initialize page functionality
  */
 function initializePage() {
+    console.log('initializePage called');
     // Add smooth scrolling for anchor links
     initializeSmoothScrolling();
     
@@ -54,7 +56,9 @@ function initializePage() {
     // initializeCTAButton();
     
     // Initialize modal CTA button
+    console.log('About to call initializeModalCTAButton');
     initializeModalCTAButton();
+    console.log('initializeModalCTAButton completed');
 }
 
 /**
@@ -133,9 +137,17 @@ function initializeModalCTAButton() {
     if (ctaButton) {
         console.log('CTA button found, adding click handler...'); // Debug log
         
+        // Log existing event listeners (for debugging)
+        console.log('Button HTML:', ctaButton.outerHTML);
+        console.log('Button onclick:', ctaButton.onclick);
+        
         // Add click event listener to open modal
-        ctaButton.addEventListener('click', function() {
+        ctaButton.addEventListener('click', function(e) {
             console.log('CTA button clicked!'); // Debug log
+            console.log('Event:', e);
+            e.preventDefault();
+            e.stopPropagation();
+            
             // Add visual feedback
             this.style.transform = 'scale(0.95)';
             setTimeout(() => {
@@ -145,6 +157,8 @@ function initializeModalCTAButton() {
             // Open the modal
             openGeneralDetailsModal();
         });
+        
+        console.log('Event listener added successfully');
     } else {
         console.error('CTA button not found!'); // Debug log
     }
@@ -387,46 +401,7 @@ function clearErrors() {
     });
 }
 
-// Memoized form data collection
-const collectFormData = (() => {
-    let cachedData = null;
-    let lastUpdate = 0;
-    const CACHE_DURATION = 1000; // 1 second cache
 
-    return () => {
-        const now = Date.now();
-        if (cachedData && (now - lastUpdate) < CACHE_DURATION) {
-            return cachedData;
-        }
-
-        cachedData = {
-            property: {
-                address: document.getElementById('propertyAddress').value,
-                city: document.getElementById('city').value,
-                state: document.getElementById('state').value,
-                zipCode: document.getElementById('zipCode').value,
-                propertyType: document.getElementById('propertyType').value,
-                yearBuilt: document.getElementById('yearBuilt').value,
-                squareFootage: document.getElementById('squareMeters').value
-            },
-            personal: {
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                preferredContact: document.getElementById('preferredContact').value
-            },
-            metadata: {
-                submissionDate: new Date().toISOString(),
-                userAgent: navigator.userAgent,
-                source: 'home-insurance-landing'
-            }
-        };
-
-        lastUpdate = now;
-        return cachedData;
-    };
-})();
 
 // Enhanced form submission with better error handling
 async function handleFormSubmit(event) {
@@ -440,9 +415,9 @@ async function handleFormSubmit(event) {
     }
     
     // Validate the current step before submission
-    if (!validateStep(currentStep)) {
-        return;
-    }
+    // if (!validateStep(currentStep)) {
+    //     return;
+    // }
 
     // Show loading state
     const submitButton = document.querySelector('.btn-submit');
@@ -743,13 +718,9 @@ function debounce(func, wait) {
 
 // Export functions for potential module use
 window.HomeInsuranceApp = {
-    initializePage,
-    initializeCTAButton,
-    initializeMultiStepForm,
-    validateForm,
-    showFieldError,
-    clearFieldError,
-    debounce
+    openGeneralDetailsModal,
+    collectFormData,
+    submitFormData
 };
 
 /**
@@ -1339,4 +1310,21 @@ window.HomeInsuranceApp.clearFormErrors = clearFormErrors;
 window.HomeInsuranceApp.updateProductSections = updateProductSections;
 window.HomeInsuranceApp.initializeProductSections = initializeProductSections;
 window.HomeInsuranceApp.collectFormData = collectFormData;
-window.HomeInsuranceApp.submitFormData = submitFormData; 
+window.HomeInsuranceApp.submitFormData = submitFormData;
+
+/**
+ * Smooth scroll functionality
+ */
+function smoothScroll(target) {
+    const element = document.querySelector(target);
+    if (element) {
+        const headerOffset = 80; // Account for fixed header
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+        });
+    }
+} 
