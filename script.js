@@ -6,6 +6,35 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize page functionality
     initializePage();
+    
+    // Simple direct modal handler for debugging
+    setTimeout(() => {
+        const btn = document.getElementById('getQuoteBtn');
+        const modal = document.getElementById('generalDetailsModal');
+        console.log('Direct handler - Button found:', !!btn);
+        console.log('Direct handler - Modal found:', !!modal);
+        
+        if (btn && modal) {
+            btn.onclick = function() {
+                console.log('Button clicked - opening modal directly');
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                
+                // Initialize modal functionality
+                initializeConditionalFields();
+                initializeProductSections();
+                addFormInputListeners();
+                setupModalCloseHandlers();
+                
+                // Set min date
+                const startDateInput = document.getElementById('startDate');
+                if (startDateInput) {
+                    const today = new Date().toISOString().split('T')[0];
+                    startDateInput.min = today;
+                }
+            };
+        }
+    }, 100);
 });
 
 /**
