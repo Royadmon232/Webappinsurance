@@ -137,8 +137,8 @@ function initializeMultiStepForm() {
                 <!-- Progress Bar -->
                 <div class="form-progress">
                     <div class="progress-steps">
-                        <div class="step active" data-step="1">Property Information</div>
-                        <div class="step" data-step="2">Personal Information</div>
+                        <div class="step active" data-step="1">פרטי הנכס</div>
+                        <div class="step" data-step="2">פרטים אישיים</div>
                     </div>
                     <div class="progress-bar">
                         <div class="progress" style="width: 50%"></div>
@@ -147,92 +147,87 @@ function initializeMultiStepForm() {
 
                 <!-- Step 1: Property Information -->
                 <div class="form-step active" data-step="1">
-                    <h2>Property Information</h2>
+                    <h2>פרטי הנכס</h2>
                     <div class="form-group">
-                        <label for="propertyAddress">Property Address*</label>
+                        <label for="propertyAddress">כתובת הנכס*</label>
                         <input type="text" id="propertyAddress" name="propertyAddress" required>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="city">City*</label>
+                            <label for="city">עיר*</label>
                             <input type="text" id="city" name="city" required>
                         </div>
                         <div class="form-group">
-                            <label for="state">State*</label>
-                            <select id="state" name="state" required>
-                                <option value="">Select State</option>
-                                <option value="AL">Alabama</option>
-                                <option value="AK">Alaska</option>
-                                <!-- Add all states -->
-                            </select>
+                            <label for="neighborhood">שכונה</label>
+                            <input type="text" id="neighborhood" name="neighborhood">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="zipCode">ZIP Code*</label>
+                            <label for="zipCode">מיקוד*</label>
                             <input type="text" id="zipCode" name="zipCode" required>
                         </div>
                         <div class="form-group">
-                            <label for="propertyType">Property Type*</label>
+                            <label for="propertyType">סוג הנכס*</label>
                             <select id="propertyType" name="propertyType" required>
-                                <option value="">Select Type</option>
-                                <option value="single">Single Family</option>
-                                <option value="multi">Multi Family</option>
-                                <option value="condo">Condo</option>
-                                <option value="townhouse">Townhouse</option>
+                                <option value="">בחר סוג</option>
+                                <option value="apartment">דירה</option>
+                                <option value="house">בית פרטי</option>
+                                <option value="penthouse">פנטהאוז</option>
+                                <option value="cottage">קוטג'</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="yearBuilt">Year Built*</label>
+                            <label for="yearBuilt">שנת בנייה*</label>
                             <input type="number" id="yearBuilt" name="yearBuilt" required>
                         </div>
                         <div class="form-group">
-                            <label for="squareFootage">Square Footage*</label>
-                            <input type="number" id="squareFootage" name="squareFootage" required>
+                            <label for="squareMeters">שטח במ"ר*</label>
+                            <input type="number" id="squareMeters" name="squareMeters" required>
                         </div>
                     </div>
                     <div class="form-navigation">
-                        <button type="button" class="btn-next">Next Step</button>
+                        <button type="button" class="btn-next">השלב הבא</button>
                     </div>
                 </div>
 
                 <!-- Step 2: Personal Information -->
                 <div class="form-step" data-step="2">
-                    <h2>Personal Information</h2>
+                    <h2>פרטים אישיים</h2>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="firstName">First Name*</label>
+                            <label for="firstName">שם פרטי*</label>
                             <input type="text" id="firstName" name="firstName" required>
                         </div>
                         <div class="form-group">
-                            <label for="lastName">Last Name*</label>
+                            <label for="lastName">שם משפחה*</label>
                             <input type="text" id="lastName" name="lastName" required>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="email">Email Address*</label>
+                            <label for="email">כתובת אימייל*</label>
                             <input type="email" id="email" name="email" required>
                         </div>
                         <div class="form-group">
-                            <label for="phone">Phone Number*</label>
+                            <label for="phone">מספר טלפון*</label>
                             <input type="tel" id="phone" name="phone" required>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="preferredContact">Preferred Contact Method*</label>
+                        <label for="preferredContact">דרך יצירת קשר מועדפת*</label>
                         <select id="preferredContact" name="preferredContact" required>
-                            <option value="">Select Method</option>
-                            <option value="email">Email</option>
-                            <option value="phone">Phone</option>
-                            <option value="text">Text Message</option>
+                            <option value="">בחר אפשרות</option>
+                            <option value="email">אימייל</option>
+                            <option value="phone">טלפון</option>
+                            <option value="text">הודעת טקסט</option>
                         </select>
                     </div>
                     <div class="form-navigation">
-                        <button type="button" class="btn-prev">Previous Step</button>
-                        <button type="submit" class="btn-submit">Send My Request</button>
+                        <button type="button" class="btn-prev">השלב הקודם</button>
+                        <button type="submit" class="btn-submit">שלח את הבקשה</button>
                     </div>
                 </div>
             </form>
@@ -259,65 +254,64 @@ function validateEmail(email) {
 }
 
 function validatePhone(phone) {
-    // Allow formats: (123) 456-7890, 123-456-7890, 1234567890
-    const phoneRegex = /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/;
+    // Allow Israeli phone formats: 050-1234567, 05-01234567, 0501234567, +972501234567
+    const phoneRegex = /^(\+972|0)([2-9]\d{1,2})[-\s]?\d{3}[-\s]?\d{4}$/;
     return phoneRegex.test(phone);
 }
 
 function validateZipCode(zipCode) {
-    // US ZIP code format: 12345 or 12345-6789
-    const zipRegex = /^\d{5}(-\d{4})?$/;
+    // Israeli ZIP code format: 5 or 7 digits
+    const zipRegex = /^\d{5}(\d{2})?$/;
     return zipRegex.test(zipCode);
 }
 
 function validateYearBuilt(year) {
     const currentYear = new Date().getFullYear();
-    const minYear = 1800;
+    const minYear = 1900;
     return year >= minYear && year <= currentYear;
 }
 
 function validateSquareFootage(sqft) {
-    return sqft > 0 && sqft <= 100000; // Reasonable range for square footage
+    return sqft > 0 && sqft <= 10000; // Reasonable range for square meters
 }
 
 // Enhanced step validation
 function validateStep(step) {
     const fields = {
         1: {
-            'propertyAddress': { required: true, message: 'Please enter your property address' },
-            'city': { required: true, message: 'Please enter your city' },
-            'state': { required: true, message: 'Please select your state' },
+            'propertyAddress': { required: true, message: 'אנא הזן את כתובת הנכס' },
+            'city': { required: true, message: 'אנא הזן את העיר' },
             'zipCode': { 
                 required: true, 
                 validate: validateZipCode,
-                message: 'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)'
+                message: 'אנא הזן מיקוד תקין (5 או 7 ספרות)'
             },
-            'propertyType': { required: true, message: 'Please select your property type' },
+            'propertyType': { required: true, message: 'אנא בחר את סוג הנכס' },
             'yearBuilt': { 
                 required: true, 
                 validate: validateYearBuilt,
-                message: 'Please enter a valid year between 1800 and current year'
+                message: 'אנא הזן שנת בנייה תקינה (1900 עד היום)'
             },
-            'squareFootage': { 
+            'squareMeters': { 
                 required: true, 
                 validate: validateSquareFootage,
-                message: 'Please enter a valid square footage (1-100,000)'
+                message: 'אנא הזן שטח תקין במ"ר (1-10,000)'
             }
         },
         2: {
-            'firstName': { required: true, message: 'Please enter your first name' },
-            'lastName': { required: true, message: 'Please enter your last name' },
+            'firstName': { required: true, message: 'אנא הזן את שמך הפרטי' },
+            'lastName': { required: true, message: 'אנא הזן את שם המשפחה' },
             'email': { 
                 required: true, 
                 validate: validateEmail,
-                message: 'Please enter a valid email address'
+                message: 'אנא הזן כתובת אימייל תקינה'
             },
             'phone': { 
                 required: true, 
                 validate: validatePhone,
-                message: 'Please enter a valid phone number'
+                message: 'אנא הזן מספר טלפון ישראלי תקין'
             },
-            'preferredContact': { required: true, message: 'Please select your preferred contact method' }
+            'preferredContact': { required: true, message: 'אנא בחר דרך יצירת קשר מועדפת' }
         }
     };
 
@@ -382,7 +376,7 @@ const collectFormData = (() => {
                 zipCode: document.getElementById('zipCode').value,
                 propertyType: document.getElementById('propertyType').value,
                 yearBuilt: document.getElementById('yearBuilt').value,
-                squareFootage: document.getElementById('squareFootage').value
+                squareFootage: document.getElementById('squareMeters').value
             },
             personal: {
                 firstName: document.getElementById('firstName').value,
@@ -423,7 +417,7 @@ async function handleFormSubmit(event) {
     const submitButton = document.querySelector('.btn-submit');
     const originalButtonText = submitButton.textContent;
     submitButton.disabled = true;
-    submitButton.textContent = 'Sending...';
+    submitButton.textContent = 'שולח...';
 
     try {
         // Collect form data using memoized function
@@ -437,12 +431,12 @@ async function handleFormSubmit(event) {
 
     } catch (error) {
         console.error('Form submission error:', error);
-        let errorMessage = 'An unexpected error occurred. Please try again.';
+        let errorMessage = 'אירעה שגיאה בלתי צפויה. אנא נסה שוב.';
         
         if (error.name === 'NetworkError') {
-            errorMessage = 'Network error. Please check your internet connection.';
+            errorMessage = 'שגיאת רשת. אנא בדוק את חיבור האינטרנט שלך.';
         } else if (error.name === 'TimeoutError') {
-            errorMessage = 'Request timed out. Please try again.';
+            errorMessage = 'הבקשה נכשלה עקב תפוגת זמן. אנא נסה שוב.';
         }
         
         showErrorMessage(errorMessage);
@@ -484,14 +478,14 @@ function showSuccessMessage() {
     formContainer.innerHTML = `
         <div class="success-message">
             <div class="success-icon">✅</div>
-            <h2>Thanks! Your request has been received.</h2>
-            <p>We'll contact you shortly to discuss your home insurance needs.</p>
+            <h2>תודה! בקשתך התקבלה בהצלחה.</h2>
+            <p>ניצור איתך קשר בקרוב כדי לדון בצרכי ביטוח הדירה שלך.</p>
             <div class="success-details">
-                <p>What happens next?</p>
+                <p>מה קורה עכשיו?</p>
                 <ul>
-                    <li>Our insurance expert will review your information</li>
-                    <li>You'll receive a personalized quote within 24 hours</li>
-                    <li>We'll contact you via your preferred method</li>
+                    <li>מומחה הביטוח שלנו יבדוק את המידע שלך</li>
+                    <li>תקבל הצעת מחיר מותאמת אישית תוך 24 שעות</li>
+                    <li>ניצור איתך קשר בדרך המועדפת עליך</li>
                 </ul>
             </div>
         </div>
@@ -504,17 +498,14 @@ function showSuccessMessage() {
  */
 function showErrorMessage(errorMessage) {
     const formContainer = document.getElementById('formContainer');
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.innerHTML = `
-        <div class="error-icon">⚠️</div>
-        <h3>Oops! Something went wrong</h3>
-        <p>We couldn't send your request at this time. Please try again in a few moments.</p>
-        <button class="btn-retry" onclick="window.location.reload()">Try Again</button>
+    formContainer.innerHTML = `
+        <div class="error-message">
+            <div class="error-icon">❌</div>
+            <h3>אופס! משהו השתבש</h3>
+            <p>${errorMessage}</p>
+            <button class="btn-retry" onclick="location.reload()">נסה שוב</button>
+        </div>
     `;
-    
-    // Insert error message at the top of the form
-    formContainer.insertBefore(errorDiv, formContainer.firstChild);
 }
 
 /**
