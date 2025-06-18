@@ -21,8 +21,11 @@ function initializePage() {
     // Add form validation (ready for future forms)
     initializeFormValidation();
     
-    // Initialize CTA button functionality
-    initializeCTAButton();
+    // Initialize CTA button functionality - REMOVED to prevent conflict with modal
+    // initializeCTAButton();
+    
+    // Initialize modal CTA button
+    initializeModalCTAButton();
 }
 
 /**
@@ -93,29 +96,28 @@ function initializeFormValidation() {
 }
 
 /**
- * Initialize CTA Button functionality
+ * Initialize modal CTA button functionality
  */
-function initializeCTAButton() {
+function initializeModalCTAButton() {
+    console.log('Initializing modal CTA button...'); // Debug log
     const ctaButton = document.getElementById('getQuoteBtn');
-    const formContainer = document.getElementById('formContainer');
-    
-    if (ctaButton && formContainer) {
+    if (ctaButton) {
+        console.log('CTA button found, adding click handler...'); // Debug log
+        
+        // Add click event listener to open modal
         ctaButton.addEventListener('click', function() {
-            // Smooth scroll to form container
-            formContainer.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-            
+            console.log('CTA button clicked!'); // Debug log
             // Add visual feedback
             this.style.transform = 'scale(0.95)';
             setTimeout(() => {
                 this.style.transform = '';
             }, 150);
             
-            // Initialize the multi-step form
-            initializeMultiStepForm();
+            // Open the modal
+            openGeneralDetailsModal();
         });
+    } else {
+        console.error('CTA button not found!'); // Debug log
     }
 }
 
@@ -726,6 +728,7 @@ window.HomeInsuranceApp = {
  * This function opens the modal dialog for general details input
  */
 function openGeneralDetailsModal() {
+    console.log('openGeneralDetailsModal called!'); // Debug log
     const modal = document.getElementById('generalDetailsModal');
     if (modal) {
         modal.style.display = 'block';
@@ -755,6 +758,8 @@ function openGeneralDetailsModal() {
         if (modalContent) {
             modalContent.focus();
         }
+    } else {
+        console.error('Modal element not found!');
     }
 }
 
@@ -1294,28 +1299,6 @@ function addFormInputListeners() {
         });
     });
 }
-
-// Override the CTA button click to open the modal instead of the form
-document.addEventListener('DOMContentLoaded', function() {
-    const ctaButton = document.getElementById('getQuoteBtn');
-    if (ctaButton) {
-        // Remove existing event listeners by cloning the button
-        const newButton = ctaButton.cloneNode(true);
-        ctaButton.parentNode.replaceChild(newButton, ctaButton);
-        
-        // Add new event listener to open modal
-        newButton.addEventListener('click', function() {
-            // Add visual feedback
-            this.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                this.style.transform = '';
-            }, 150);
-            
-            // Open the modal
-            openGeneralDetailsModal();
-        });
-    }
-});
 
 // Add modal functions to the global app object
 window.HomeInsuranceApp.openGeneralDetailsModal = openGeneralDetailsModal;
