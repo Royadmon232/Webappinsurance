@@ -1544,27 +1544,6 @@ function smoothScroll(target) {
     let currentCity = null;
     let isLoadingStreets = false;
 
-    // Hardcoded street data for common cities (fallback)
-    function getHardcodedStreets(cityName) {
-        const streetData = {
-            'תל אביב-יפו': ['אבן גבירול', 'דיזנגוף', 'רוטשילד', 'אלנבי', 'בן יהודה', 'הירקון', 'שינקין', 'נחמני', 'המלך ג\'ורג\'', 'ויצמן'],
-            'תל אביב': ['אבן גבירול', 'דיזנגוף', 'רוטשילד', 'אלנבי', 'בן יהודה', 'הירקון', 'שינקין', 'נחמני', 'המלך ג\'ורג\'', 'ויצמן'],
-            'ירושלים': ['יפו', 'בן יהודה', 'המלך ג\'ורג\'', 'הרצל', 'עזה', 'בצלאל', 'עמק רפאים', 'אגריפס', 'כנפי נשרים', 'גולדה מאיר'],
-            'חיפה': ['הרצל', 'בן גוריון', 'שדרות הנשיא', 'מוריה', 'החלוץ', 'שדרות הציונות', 'הגפן', 'יפה נוף', 'סטלה מאריס', 'שדרות פל-ים'],
-            'ראשון לציון': ['הרצל', 'רוטשילד', 'ז\'בוטינסקי', 'ירושלים', 'העצמאות', 'הראשונים', 'יעקב', 'משה בקר', 'דוד סחרוב', 'אליעזר בן יהודה'],
-            'פתח תקווה': ['רוטשילד', 'ז\'בוטינסקי', 'העצמאות', 'חיים עוזר', 'ההגנה', 'אורלוב', 'בר כוכבא', 'שפירא', 'סוקולוב', 'כצנלסון'],
-            'אשדוד': ['הרצל', 'רוגוזין', 'ז\'בוטינסקי', 'העצמאות', 'בן גוריון', 'דב גור', 'הבנים', 'ההגנה', 'שדרות ירושלים', 'הרב שך'],
-            'נתניה': ['הרצל', 'ויצמן', 'בנימין', 'דיזנגוף', 'רמז', 'סמילנסקי', 'גד מכנס', 'שדרות ניצה', 'הרב קוק', 'סירקין'],
-            'באר שבע': ['רגר', 'הרצל', 'בן גוריון', 'ז\'בוטינסקי', 'רמב\"ם', 'ההגנה', 'העצמאות', 'הדסה', 'שזר', 'יצחק נפחא'],
-            'בני ברק': ['רבי עקיבא', 'ז\'בוטינסקי', 'כהנמן', 'חזון איש', 'בן גוריון', 'ירושלים', 'השומר', 'רש\"י', 'הרב שך', 'מבצע קדש'],
-            'רמת גן': ['ביאליק', 'ז\'בוטינסקי', 'הרצל', 'בן גוריון', 'הרא\"ה', 'ארלוזורוב', 'רוקח', 'תובל', 'הירדן', 'קריניצי'],
-            'כרמיאל': ['שדרות נשיאי ישראל', 'החרושת', 'המייסדים', 'שפרינצק', 'הגליל', 'רחוב 101', 'רחוב 100', 'מורדי הגטאות', 'ההגנה', 'היוצרים', 'רמב\"ם', 'חרמון', 'תבור', 'מירון', 'הזית', 'השקמה', 'התמר', 'הדקל', 'הברוש', 'האורן'],
-            'כרמיאל ': ['שדרות נשיאי ישראל', 'החרושת', 'המייסדים', 'שפרינצק', 'הגליל', 'רחוב 101', 'רחוב 100', 'מורדי הגטאות', 'ההגנה', 'היוצרים', 'רמב\"ם', 'חרמון', 'תבור', 'מירון', 'הזית', 'השקמה', 'התמר', 'הדקל', 'הברוש', 'האורן']
-        };
-        
-        return streetData[cityName] || [];
-    }
-
     // Elements
     const streetInput = document.getElementById('street');
     const citySelect = document.getElementById('city');
@@ -1640,13 +1619,7 @@ function smoothScroll(target) {
 
     // Fetch streets for a specific city
     async function fetchStreetsForCity(cityName) {
-        console.log('[DEBUG] fetchStreetsForCity called with:', cityName);
-        
-        // Clean city name - remove extra spaces
-        cityName = cityName.trim();
-        
         if (streetsCache.has(cityName)) {
-            console.log('[DEBUG] Found in cache:', cityName);
             return streetsCache.get(cityName);
         }
 
@@ -1659,42 +1632,22 @@ function smoothScroll(target) {
         const limit = 1000;
         
         try {
-            // Use hardcoded street data as fallback
-            const hardcodedStreets = getHardcodedStreets(cityName);
-            if (hardcodedStreets.length > 0) {
-                streets = hardcodedStreets;
-                console.log('[DEBUG] Using hardcoded streets for:', cityName, 'Count:', streets.length);
-            } else {
-                // Try API without proxy
-                while (true) {
-                    try {
-                        const searchQuery = encodeURIComponent(cityName);
-                        const url = `${STREETS_API_URL}?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&q=${searchQuery}`;
-                        console.log('[DEBUG] Fetching from:', url);
-                        
-                        const res = await fetch(url);
-                        if (!res.ok) throw new Error('API error');
-                        const data = await res.json();
-                        if (!data.result || !data.result.records) break;
-                        
-                        // Filter results to match exact city
-                        const batch = data.result.records
-                            .filter(r => r[CITY_NAME_FIELD] === cityName && r[STREET_NAME_FIELD])
-                            .map(r => r[STREET_NAME_FIELD]);
-                        
-                        console.log('[DEBUG] Found records:', data.result.records.length);
-                        console.log('[DEBUG] After city filter:', batch.length);
-                        
-                        streets = streets.concat(batch);
-                        
-                        if (data.result.records.length < limit) break;
-                        start += limit;
-                    } catch (apiError) {
-                        console.log('[DEBUG] API error, using hardcoded data as fallback');
-                        streets = getHardcodedStreets(cityName);
-                        break;
-                    }
-                }
+            while (true) {
+                // Use exact city name for better results
+                const searchQuery = encodeURIComponent(cityName);
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&filters={"${CITY_NAME_FIELD}":"${cityName}"}`)}`;
+                const res = await fetch(proxyUrl);
+                if (!res.ok) throw new Error('API error');
+                const data = await res.json();
+                if (!data.result || !data.result.records) break;
+                
+                const batch = data.result.records
+                    .filter(r => r[STREET_NAME_FIELD])
+                    .map(r => r[STREET_NAME_FIELD]);
+                streets = streets.concat(batch);
+                
+                if (batch.length < limit) break;
+                start += limit;
             }
             
             // Remove duplicates and sort
@@ -1711,7 +1664,6 @@ function smoothScroll(target) {
             }
             
         } catch (e) {
-            console.error('[DEBUG] Error fetching streets:', e);
             errorMsg.style.display = 'block';
             streetAutocompleteInput.disabled = true;
             streetAutocompleteInput.style.opacity = '0.6';
@@ -1764,9 +1716,6 @@ function smoothScroll(target) {
         const cityAutocompleteInput = document.getElementById('city-autocomplete');
         let selectedCity = citySelect.value || (cityAutocompleteInput ? cityAutocompleteInput.value : '');
         
-        // Clean the city name - remove extra spaces
-        selectedCity = selectedCity.trim();
-        
         console.log('[DEBUG] handleCityChange called. selectedCity=', selectedCity);
         
         if (!selectedCity) {
@@ -1783,10 +1732,6 @@ function smoothScroll(target) {
         }
 
         currentCity = selectedCity;
-        
-        // Clear street field when city changes
-        streetAutocompleteInput.value = '';
-        streetInput.value = '';
         
         // Check if we have cached data
         if (streetsCache.has(selectedCity)) {
@@ -1919,10 +1864,8 @@ function smoothScroll(target) {
 
     // Patch: when user types and the value matches an option, update select
     cityAutocompleteInput.addEventListener('input', function() {
-        // Clean the input value
-        const cleanValue = this.value.trim();
-        let opt = findOptionByText(citySelect, cleanValue);
-        if (!opt && cleanValue) opt = ensureOptionExists(citySelect, cleanValue);
+        let opt = findOptionByText(citySelect, cityAutocompleteInput.value);
+        if (!opt && cityAutocompleteInput.value) opt = ensureOptionExists(citySelect, cityAutocompleteInput.value);
         if (opt) {
             citySelect.value = opt.value;
             const event = new Event('change', { bubbles: true });
@@ -1980,8 +1923,6 @@ function smoothScroll(target) {
     // Overwrite handleCityChange to always use the most up-to-date city value
     function handleCityChangePatched() {
         let selectedCity = citySelect.value || cityAutocompleteInput.value;
-        // Clean the city name
-        selectedCity = selectedCity ? selectedCity.trim() : '';
         console.log('[DEBUG] handleCityChangePatched. selectedCity=', selectedCity);
         if (!selectedCity) {
             streetAutocompleteInput.disabled = true;
@@ -1990,10 +1931,9 @@ function smoothScroll(target) {
             if (window.__origDropdown) window.__origDropdown.style.display = 'none';
             return;
         }
-        // Call handleCityChange directly instead of trying to use origHandleCityChange
-        const handleCityChangeFn = window.handleCityChange || handleCityChange;
-        if (typeof handleCityChangeFn === 'function') {
-            handleCityChangeFn();
+        // Call the original logic if exists
+        if (typeof origHandleCityChange === 'function') {
+            origHandleCityChange(selectedCity);
         } else {
             // Fallback: trigger input event
             streetAutocompleteInput.disabled = false;
