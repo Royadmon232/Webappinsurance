@@ -1516,7 +1516,6 @@ function smoothScroll(target) {
     function initCityStreetSync() {
         const citySelect = document.getElementById('city');
         const cityAutocompleteInput = document.getElementById('city-autocomplete');
-        
         if (!citySelect || !cityAutocompleteInput) {
             console.log('[DEBUG] City elements not found, skipping sync');
             return;
@@ -1524,50 +1523,29 @@ function smoothScroll(target) {
 
         // Helper function to find option by text
         function findOptionByText(select, text) {
-            return Array.from(select.options).find(o => 
-                o.text === text || o.value === text || 
-                o.text.includes(text) || text.includes(o.text)
-            );
-        }
-
-        // Helper function to ensure option exists
-        function ensureOptionExists(select, text) {
-            let opt = findOptionByText(select, text);
-            if (!opt && text) {
-                opt = new Option(text, text);
-                select.add(opt);
-            }
-            return opt;
+            return Array.from(select.options).find(o => o.text === text || o.value === text);
         }
 
         // Sync city autocomplete with city select
         cityAutocompleteInput.addEventListener('input', function() {
             const selectedCity = this.value.trim();
-            console.log('[DEBUG] City input matches option:', selectedCity);
-            
-            if (selectedCity && selectedCity.length >= 2) {
-                let opt = findOptionByText(citySelect, selectedCity);
-                if (!opt) opt = ensureOptionExists(citySelect, selectedCity);
-                if (opt) {
-                    citySelect.value = opt.value;
-                    console.log('[DEBUG] City selected from autocomplete dropdown:', selectedCity);
-                    
-                    // Trigger city change after a short delay to allow autocomplete to settle
-                    setTimeout(() => {
-                        if (window.handleCityChange) {
-                            window.handleCityChange();
-                        }
-                    }, 100);
-                }
+            let opt = findOptionByText(citySelect, selectedCity);
+            if (opt) {
+                citySelect.value = opt.value;
+                console.log('[DEBUG] City selected from autocomplete dropdown:', selectedCity);
+                setTimeout(() => {
+                    if (window.handleCityChange) {
+                        window.handleCityChange();
+                    }
+                }, 100);
             }
+            // If no match, do not update select or call handleCityChange
         });
 
         // Sync city select with city autocomplete
         citySelect.addEventListener('change', function() {
             cityAutocompleteInput.value = citySelect.value;
             console.log('[DEBUG] City selected from native dropdown:', citySelect.value);
-            
-            // Trigger city change
             if (window.handleCityChange) {
                 window.handleCityChange();
             }
@@ -1576,16 +1554,12 @@ function smoothScroll(target) {
         // Handle initial values
         if (citySelect.value || cityAutocompleteInput.value) {
             console.log('[DEBUG] Page loaded with city value:', citySelect.value || cityAutocompleteInput.value);
-            // Sync values
             if (citySelect.value) {
                 cityAutocompleteInput.value = citySelect.value;
             } else if (cityAutocompleteInput.value) {
                 let opt = findOptionByText(citySelect, cityAutocompleteInput.value);
-                if (!opt) opt = ensureOptionExists(citySelect, cityAutocompleteInput.value);
                 if (opt) citySelect.value = opt.value;
             }
-            
-            // Trigger city change if we have a valid value
             if (citySelect.value && citySelect.value.length >= 2) {
                 setTimeout(() => {
                     if (window.handleCityChange) {
