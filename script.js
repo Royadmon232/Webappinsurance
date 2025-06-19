@@ -1803,3 +1803,44 @@ function smoothScroll(target) {
 
     // --- End Dynamic Street Dropdown Code ---
 })(); 
+
+// --- Cursor AI Patch: Improved city-street sync ---
+(function() {
+    const citySelect = document.getElementById('city');
+    const cityAutocompleteInput = document.getElementById('city-autocomplete');
+    if (!citySelect || !cityAutocompleteInput) return;
+
+    // Utility: find <option> in select by text
+    function findOptionByText(select, text) {
+        return Array.from(select.options).find(opt => opt.text.trim() === text.trim());
+    }
+
+    // Patch: when user selects from city autocomplete dropdown
+    const cityDropdown = document.querySelector('.city-autocomplete-dropdown');
+    if (cityDropdown) {
+        cityDropdown.addEventListener('mousedown', function(e) {
+            if (e.target && e.target.textContent) {
+                // Set value in input and select
+                cityAutocompleteInput.value = e.target.textContent;
+                const opt = findOptionByText(citySelect, e.target.textContent);
+                if (opt) {
+                    citySelect.value = opt.value;
+                    // Trigger change event for citySelect
+                    const event = new Event('change', { bubbles: true });
+                    citySelect.dispatchEvent(event);
+                }
+            }
+        });
+    }
+
+    // Patch: when user types and the value matches an option, update select
+    cityAutocompleteInput.addEventListener('input', function() {
+        const opt = findOptionByText(citySelect, cityAutocompleteInput.value);
+        if (opt) {
+            citySelect.value = opt.value;
+            const event = new Event('change', { bubbles: true });
+            citySelect.dispatchEvent(event);
+        }
+    });
+})();
+// --- End Cursor AI Patch --- 
