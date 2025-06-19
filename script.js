@@ -2466,3 +2466,8 @@ async function fetchStreetsWithExactMatch(cityName) {
     }
     return streets;
 }
+
+// === Global constants for street API ===
+const STREETS_RESOURCE_ID = '9ad3862c-8391-4b2f-84a4-2d4c68625f4b';
+const CITY_NAME_FIELD = 'שם_ישוב';
+const STREET_NAME_FIELD = 'שם_רחוב';
