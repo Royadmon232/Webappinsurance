@@ -2151,7 +2151,8 @@ function smoothScroll(target) {
     });
 
     // Listen for city selection changes
-    citySelect.addEventListener('change', handleCityChange);
+    // DISABLED: Old implementation conflicts with new Cursor AI implementation
+    // citySelect.addEventListener('change', handleCityChange);
     
     // Also listen for changes from the city autocomplete
     const cityAutocompleteInput = document.getElementById('city-autocomplete');
@@ -2164,9 +2165,10 @@ function smoothScroll(target) {
                 citySelect.value = opt.value;
             }
             // Only trigger city change if we have a valid value and it matches an option
-            if (this.value && this.value.length >= 2 && opt) {
-                handleCityChange();
-            }
+            // DISABLED: Old implementation conflicts with new Cursor AI implementation
+            // if (this.value && this.value.length >= 2 && opt) {
+            //     handleCityChange();
+            // }
         });
         
         // Add change listener for when user selects from dropdown
@@ -2174,7 +2176,8 @@ function smoothScroll(target) {
             const opt = Array.from(citySelect.options).find(o => o.text === this.value || o.value === this.value);
             if (opt) {
                 citySelect.value = opt.value;
-                handleCityChange();
+                // DISABLED: Old implementation conflicts with new Cursor AI implementation
+                // handleCityChange();
             }
         });
     }
@@ -2206,7 +2209,8 @@ function smoothScroll(target) {
     if (initialCityValue) {
         console.log('[DEBUG] Page loaded with city value:', initialCityValue);
         // Trigger city change handler to enable street field
-        handleCityChange();
+        // DISABLED: Old implementation conflicts with new Cursor AI implementation
+        // handleCityChange();
         
         // If there's also a street value, enable the street field
         if (streetInput.value) {
@@ -2257,9 +2261,10 @@ function smoothScroll(target) {
                     citySelect.value = opt.value;
                     // Trigger city change after selection
                     setTimeout(() => {
-                        if (window.handleCityChange) {
-                            window.handleCityChange();
-                        }
+                        // DISABLED: Old implementation conflicts with new Cursor AI implementation
+                        // if (window.handleCityChange) {
+                        //     window.handleCityChange();
+                        // }
                     }, 100);
                     console.log('[DEBUG] City selected from autocomplete dropdown:', opt.value);
                 }
