@@ -1617,6 +1617,40 @@ function smoothScroll(target) {
     loadingMsg.textContent = 'טוען רחובות...';
     wrapper.appendChild(loadingMsg);
 
+    // Function to calculate similarity between two strings
+    function calculateSimilarity(str1, str2) {
+        const s1 = str1.toLowerCase().replace(/[\s\-'"]/g, '');
+        const s2 = str2.toLowerCase().replace(/[\s\-'"]/g, '');
+        
+        if (s1 === s2) return 1;
+        if (s1.includes(s2) || s2.includes(s1)) return 0.8;
+        
+        // Simple Levenshtein distance approximation
+        let distance = 0;
+        const maxLength = Math.max(s1.length, s2.length);
+        
+        for (let i = 0; i < maxLength; i++) {
+            if (s1[i] !== s2[i]) distance++;
+        }
+        
+        return 1 - (distance / maxLength);
+    }
+
+    // Function to find similar city names
+    function findSimilarCities(targetCity, allCities, threshold = 0.6) {
+        const similarCities = [];
+        
+        for (const city of allCities) {
+            const similarity = calculateSimilarity(targetCity, city);
+            if (similarity >= threshold) {
+                similarCities.push({ city, similarity });
+            }
+        }
+        
+        // Sort by similarity (highest first)
+        return similarCities.sort((a, b) => b.similarity - a.similarity);
+    }
+
     // Fetch streets for a specific city
     async function fetchStreetsForCity(cityName) {
         if (streetsCache.has(cityName)) {
@@ -1631,48 +1665,77 @@ function smoothScroll(target) {
         let start = 0;
         const limit = 1000;
         
+        // Try multiple city name variations
+        const cityVariations = [
+            cityName,
+            cityName.replace(/\s+/g, ''), // Remove spaces
+            cityName.replace(/['"]/g, ''), // Remove quotes
+            cityName.split(' ')[0], // First word only
+            cityName.split(' ').slice(-1)[0] // Last word only
+        ];
+        
+        // Remove duplicates from variations
+        const uniqueVariations = [...new Set(cityVariations)];
+        
+        console.log(`[DEBUG] Trying city variations for: ${cityName}`, uniqueVariations);
+        
         try {
-            while (true) {
-                // Try multiple approaches to get streets for the city
-                let url;
+            // Try each city variation
+            for (const variation of uniqueVariations) {
+                if (variation.length < 2) continue; // Skip very short variations
                 
-                // First try: direct query with city name
-                url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&q=${encodeURIComponent(cityName)}`;
+                start = 0; // Reset start for each variation
+                let variationStreets = [];
                 
-                // Use a different CORS proxy that's more reliable
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-                
-                const res = await fetch(proxyUrl);
-                if (!res.ok) {
-                    // Fallback: try without proxy
-                    const directRes = await fetch(url);
-                    if (!directRes.ok) throw new Error('API error');
-                    const data = await directRes.json();
-                    if (!data.result || !data.result.records) break;
+                while (true) {
+                    // Try multiple approaches to get streets for the city
+                    let url;
                     
-                    const batch = data.result.records
-                        .filter(r => r[CITY_NAME_FIELD] === cityName && r[STREET_NAME_FIELD])
-                        .map(r => r[STREET_NAME_FIELD]);
-                    streets = streets.concat(batch);
-                } else {
-                    const data = await res.json();
-                    if (!data.result || !data.result.records) break;
+                    // First try: direct query with city name variation
+                    url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&q=${encodeURIComponent(variation)}`;
                     
-                    const batch = data.result.records
-                        .filter(r => r[CITY_NAME_FIELD] === cityName && r[STREET_NAME_FIELD])
-                        .map(r => r[STREET_NAME_FIELD]);
-                    streets = streets.concat(batch);
+                    // Use a different CORS proxy that's more reliable
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                    
+                    const res = await fetch(proxyUrl);
+                    if (!res.ok) {
+                        // Fallback: try without proxy
+                        const directRes = await fetch(url);
+                        if (!directRes.ok) break; // Try next variation
+                        const data = await directRes.json();
+                        if (!data.result || !data.result.records) break;
+                        
+                        const batch = data.result.records
+                            .filter(r => r[STREET_NAME_FIELD])
+                            .map(r => r[STREET_NAME_FIELD]);
+                        variationStreets = variationStreets.concat(batch);
+                    } else {
+                        const data = await res.json();
+                        if (!data.result || !data.result.records) break;
+                        
+                        const batch = data.result.records
+                            .filter(r => r[STREET_NAME_FIELD])
+                            .map(r => r[STREET_NAME_FIELD]);
+                        variationStreets = variationStreets.concat(batch);
+                    }
+                    
+                    if (batch.length < limit) break;
+                    start += limit;
                 }
                 
-                if (batch.length < limit) break;
-                start += limit;
+                // Add streets from this variation
+                streets = streets.concat(variationStreets);
+                console.log(`[DEBUG] Found ${variationStreets.length} streets for variation: ${variation}`);
+                
+                // If we found enough streets, we can stop
+                if (streets.length > 50) break;
             }
             
             // Remove duplicates and sort
             streets = Array.from(new Set(streets)).sort((a, b) => a.localeCompare(b, 'he'));
             streetsCache.set(cityName, streets);
             
-            console.log(`[DEBUG] Found ${streets.length} streets for city: ${cityName}`);
+            console.log(`[DEBUG] Total found ${streets.length} unique streets for city: ${cityName}`);
             
             if (streets.length === 0) {
                 errorMsg.style.display = 'block';
@@ -1727,8 +1790,36 @@ function smoothScroll(target) {
         const streets = streetsCache.get(currentCity);
         query = query.trim();
         if (!query) return streets.slice(0, 50); // Show first 50 if empty
-        const norm = s => s.replace(/["'\-\s]/g, '').toLowerCase();
-        return streets.filter(street => norm(street).includes(norm(query))).slice(0, 50);
+        
+        // Use fuzzy search for better matching
+        const normalizedQuery = query.replace(/["'\-\s]/g, '').toLowerCase();
+        
+        const filteredStreets = streets.filter(street => {
+            const normalizedStreet = street.replace(/["'\-\s]/g, '').toLowerCase();
+            
+            // Exact match
+            if (normalizedStreet.includes(normalizedQuery)) return true;
+            
+            // Fuzzy match - check if query is similar to street name
+            const similarity = calculateSimilarity(query, street);
+            return similarity >= 0.6; // 60% similarity threshold
+        });
+        
+        // Sort by relevance (exact matches first, then by similarity)
+        const sortedStreets = filteredStreets.sort((a, b) => {
+            const aExact = a.toLowerCase().includes(query.toLowerCase());
+            const bExact = b.toLowerCase().includes(query.toLowerCase());
+            
+            if (aExact && !bExact) return -1;
+            if (!aExact && bExact) return 1;
+            
+            // If both are exact or both are fuzzy, sort by similarity
+            const aSimilarity = calculateSimilarity(query, a);
+            const bSimilarity = calculateSimilarity(query, b);
+            return bSimilarity - aSimilarity;
+        });
+        
+        return sortedStreets.slice(0, 50);
     }
 
     // Handle city selection change
