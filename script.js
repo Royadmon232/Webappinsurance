@@ -1643,70 +1643,85 @@ function smoothScroll(target) {
     loadingMsg.textContent = 'טוען רחובות...';
     wrapper.appendChild(loadingMsg);
 
-    // Clean async helper function to fetch streets by city
+    // --- BEGIN: Variation logic for city name matching (Cursor AI patch) ---
     async function fetchStreetsByCity(cityName) {
         console.log(`[DEBUG] fetchStreetsByCity called with: "${cityName}"`);
-        
         // Check cache first
         if (cityToStreets.has(cityName)) {
             console.log(`[DEBUG] Returning cached streets for "${cityName}"`);
             return cityToStreets.get(cityName);
         }
-
         try {
-            // Clean the city name
             const cleanCityName = cityName.trim();
             if (!cleanCityName) return [];
-
-            // Use exactly the specified API endpoint and filter format
-            const filter = { "שם_ישוב": cleanCityName };
-            const filterStr = encodeURIComponent(JSON.stringify(filter));
-            const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&filters=${filterStr}`;
-            
-            console.log(`[DEBUG] Making API call with filter:`, filter);
-            console.log(`[DEBUG] API URL: ${url}`);
-            
+            // Try the original name first
+            let filter = { "שם_ישוב": cleanCityName };
+            let filterStr = encodeURIComponent(JSON.stringify(filter));
+            let url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&filters=${filterStr}`;
             let res;
             try {
                 res = await fetch(url);
             } catch (e) {
-                console.log('[DEBUG] Direct fetch failed, trying proxy');
                 const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
                 res = await fetch(proxyUrl);
             }
-            
-            if (!res.ok) {
-                console.error(`[DEBUG] API request failed with status: ${res.status}`);
-                throw new Error(`API request failed with status: ${res.status}`);
-            }
-            
-            const data = await res.json();
-            console.log(`[DEBUG] API response received:`, data);
-            
+            let data = res.ok ? await res.json() : null;
             let streets = [];
-            if (data.result && data.result.records && data.result.records.length > 0) {
+            if (data && data.result && data.result.records && data.result.records.length > 0) {
                 streets = data.result.records
                     .filter(r => r[STREET_NAME_FIELD] && r[STREET_NAME_FIELD].trim())
                     .map(r => r[STREET_NAME_FIELD].trim());
-                console.log(`[DEBUG] Found ${streets.length} streets for city: "${cleanCityName}"`);
-            } else {
-                console.log(`[DEBUG] No streets found for city: "${cleanCityName}"`);
             }
-
-            // Remove duplicates and sort
-            streets = Array.from(new Set(streets)).sort((a, b) => a.localeCompare(b, 'he'));
-            
-            // Cache the results
-            cityToStreets.set(cityName, streets);
-            
-            console.log(`[DEBUG] Final result: ${streets.length} streets for city: ${cityName}`);
-            return streets;
-            
+            // If found, cache and return
+            if (streets.length > 0) {
+                streets = Array.from(new Set(streets)).sort((a, b) => a.localeCompare(b, 'he'));
+                cityToStreets.set(cityName, streets);
+                return streets;
+            }
+            // --- Try common variations if no results ---
+            const variations = [
+                cleanCityName.replace('ו', ''),
+                cleanCityName.replace(/-/g, ' '),
+                cleanCityName.replace(/ /g, '-'),
+                cleanCityName.replace(/ /g, ''),
+                cleanCityName.replace('תקווה', 'תקוה'),
+                cleanCityName.replace('תקוה', 'תקווה'),
+            ];
+            for (const variant of variations) {
+                if (!variant || variant === cleanCityName) continue;
+                filter = { "שם_ישוב": variant };
+                filterStr = encodeURIComponent(JSON.stringify(filter));
+                url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&filters=${filterStr}`;
+                let res2;
+                try {
+                    res2 = await fetch(url);
+                } catch (e) {
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                    res2 = await fetch(proxyUrl);
+                }
+                let data2 = res2.ok ? await res2.json() : null;
+                let streets2 = [];
+                if (data2 && data2.result && data2.result.records && data2.result.records.length > 0) {
+                    streets2 = data2.result.records
+                        .filter(r => r[STREET_NAME_FIELD] && r[STREET_NAME_FIELD].trim())
+                        .map(r => r[STREET_NAME_FIELD].trim());
+                }
+                if (streets2.length > 0) {
+                    streets2 = Array.from(new Set(streets2)).sort((a, b) => a.localeCompare(b, 'he'));
+                    cityToStreets.set(cityName, streets2);
+                    return streets2;
+                }
+            }
+            // --- END: Variation logic ---
+            // If still nothing, cache empty and return []
+            cityToStreets.set(cityName, []);
+            return [];
         } catch (error) {
             console.error('[DEBUG] Error fetching streets:', error);
             throw error;
         }
     }
+    // --- END: Variation logic for city name matching (Cursor AI patch) ---
 
     // Debounced function to handle city changes
     function debouncedCityChange(cityName) {
