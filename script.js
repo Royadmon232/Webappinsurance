@@ -2235,17 +2235,26 @@ function smoothScroll(target) {
 
     // Utility: find <option> in select by text
     function findOptionByText(select, text) {
-        return Array.from(select.options).find(opt => opt.text.trim() === text.trim());
+        const normalizedSearchText = text.trim();
+        console.log('[DEBUG] Looking for city:', normalizedSearchText);
+        return Array.from(select.options).find(opt => {
+            const normalizedOption = opt.text.trim();
+            console.log('[DEBUG] Comparing with option:', normalizedOption);
+            return normalizedOption === normalizedSearchText || 
+                   normalizedOption === normalizeCityName(normalizedSearchText);
+        });
     }
 
     // Utility: add option if not exists
     function ensureOptionExists(select, text) {
-        let opt = findOptionByText(select, text);
-        if (!opt && text) {
+        const normalizedText = normalizeCityName(text.trim());
+        let opt = findOptionByText(select, normalizedText);
+        if (!opt && normalizedText) {
             opt = document.createElement('option');
-            opt.value = text;
-            opt.text = text;
+            opt.value = normalizedText;
+            opt.text = normalizedText;
             select.appendChild(opt);
+            console.log('[DEBUG] Added new option:', normalizedText);
         }
         return opt;
     }
@@ -2255,19 +2264,20 @@ function smoothScroll(target) {
     if (cityDropdown) {
         cityDropdown.addEventListener('mousedown', function(e) {
             if (e.target && e.target.textContent) {
-                const selectedCity = e.target.textContent;
-                cityAutocompleteInput.value = selectedCity;
-                let opt = findOptionByText(citySelect, selectedCity);
-                if (!opt) opt = ensureOptionExists(citySelect, selectedCity);
+                const selectedCity = e.target.textContent.trim();
+                console.log('[DEBUG] Selected city from dropdown:', selectedCity);
+                
+                const normalizedCity = normalizeCityName(selectedCity);
+                console.log('[DEBUG] Normalized city name:', normalizedCity);
+                
+                cityAutocompleteInput.value = normalizedCity;
+                let opt = findOptionByText(citySelect, normalizedCity);
+                if (!opt) opt = ensureOptionExists(citySelect, normalizedCity);
                 if (opt) {
                     citySelect.value = opt.value;
-                    // Trigger city change after selection
-                    setTimeout(() => {
-                        // DISABLED: Old implementation conflicts with new Cursor AI implementation
-                        // if (window.handleCityChange) {
-                        //     window.handleCityChange();
-                        // }
-                    }, 100);
+                    // Trigger change event on the select element
+                    const event = new Event('change', { bubbles: true });
+                    citySelect.dispatchEvent(event);
                     console.log('[DEBUG] City selected from autocomplete dropdown:', opt.value);
                 }
             }
@@ -2280,6 +2290,9 @@ function smoothScroll(target) {
         if (!opt && cityAutocompleteInput.value) opt = ensureOptionExists(citySelect, cityAutocompleteInput.value);
         if (opt) {
             citySelect.value = opt.value;
+            // Trigger change event on the select element
+            const event = new Event('change', { bubbles: true });
+            citySelect.dispatchEvent(event);
             console.log('[DEBUG] City input matches option:', opt.value);
         }
     });
