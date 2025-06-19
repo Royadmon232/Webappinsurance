@@ -1470,7 +1470,7 @@ function smoothScroll(target) {
         if (!allCities.length) return [];
         query = query.trim();
         if (!query) return allCities.slice(0, 50); // Show first 50 if empty
-        const norm = s => s.replace(/["'\-]/g, '').toLowerCase();
+        const norm = s => s.replace(/["'\-\s]/g, '').toLowerCase();
         return allCities.filter(city => norm(city).includes(norm(query))).slice(0, 50);
     }
 
@@ -1633,14 +1633,16 @@ function smoothScroll(target) {
         
         try {
             while (true) {
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&q=${encodeURIComponent(cityName)}`)}`;
+                // Use exact city name for better results
+                const searchQuery = encodeURIComponent(cityName);
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&filters={"${CITY_NAME_FIELD}":"${cityName}"}`)}`;
                 const res = await fetch(proxyUrl);
                 if (!res.ok) throw new Error('API error');
                 const data = await res.json();
                 if (!data.result || !data.result.records) break;
                 
                 const batch = data.result.records
-                    .filter(r => r[CITY_NAME_FIELD] === cityName && r[STREET_NAME_FIELD])
+                    .filter(r => r[STREET_NAME_FIELD])
                     .map(r => r[STREET_NAME_FIELD]);
                 streets = streets.concat(batch);
                 
@@ -1704,13 +1706,18 @@ function smoothScroll(target) {
         const streets = streetsCache.get(currentCity);
         query = query.trim();
         if (!query) return streets.slice(0, 50); // Show first 50 if empty
-        const norm = s => s.replace(/["'\-]/g, '').toLowerCase();
+        const norm = s => s.replace(/["'\-\s]/g, '').toLowerCase();
         return streets.filter(street => norm(street).includes(norm(query))).slice(0, 50);
     }
 
     // Handle city selection change
     function handleCityChange() {
-        const selectedCity = citySelect.value;
+        // Get city value from either select or autocomplete input
+        const cityAutocompleteInput = document.getElementById('city-autocomplete');
+        let selectedCity = citySelect.value || (cityAutocompleteInput ? cityAutocompleteInput.value : '');
+        
+        console.log('[DEBUG] handleCityChange called. selectedCity=', selectedCity);
+        
         if (!selectedCity) {
             // No city selected - disable street field
             streetAutocompleteInput.disabled = true;
@@ -1767,11 +1774,21 @@ function smoothScroll(target) {
     // Also listen for changes from the city autocomplete
     const cityAutocompleteInput = document.getElementById('city-autocomplete');
     if (cityAutocompleteInput) {
+        // Remove old listener to avoid duplicates
+        cityAutocompleteInput.removeEventListener('input', handleCityChange);
+        cityAutocompleteInput.removeEventListener('change', handleCityChange);
+        
+        // Add new listeners
         cityAutocompleteInput.addEventListener('input', function() {
             // Update city select value when autocomplete changes
-            citySelect.value = cityAutocompleteInput.value;
+            const opt = Array.from(citySelect.options).find(o => o.text === this.value || o.value === this.value);
+            if (opt) {
+                citySelect.value = opt.value;
+            }
             handleCityChange();
         });
+        
+        cityAutocompleteInput.addEventListener('change', handleCityChange);
     }
 
     // Sync values on form submit
