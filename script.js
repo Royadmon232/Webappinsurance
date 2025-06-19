@@ -1535,7 +1535,7 @@ function smoothScroll(target) {
 (function() {
     // API details for streets
     const STREETS_API_URL = 'https://data.gov.il/api/3/action/datastore_search';
-    const STREETS_RESOURCE_ID = '9ad3862c-8391-4b2f-84a4-2d4c686254b4';
+    const STREETS_RESOURCE_ID = '9ad3862c-8391-4b2f-84a4-2d4c68625f4b'; // Fixed Resource ID
     const STREET_NAME_FIELD = 'שם_רחוב';
     const CITY_NAME_FIELD = 'שם_ישוב';
     
