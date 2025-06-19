@@ -2891,8 +2891,10 @@ const STREET_NAME_FIELD = 'שם_רחוב';
             try {
                 const API_URL = 'https://data.gov.il/api/3/action/datastore_search';
                 const RESOURCE_ID = '9ad3862c-8391-4b2f-84a4-2d4c68625f4b';
-                const filters = JSON.stringify({ 'שם_ישוב': selectedCity });
-                const url = `${API_URL}?resource_id=${RESOURCE_ID}&filters=${encodeURIComponent(filters)}&limit=32000`;
+                // Use 'q' for a more flexible full-text search instead of 'filters' for an exact match.
+                // This helps handle inconsistencies in city name spellings in the database.
+                const queryParams = JSON.stringify({ 'שם_ישוב': selectedCity });
+                const url = `${API_URL}?resource_id=${RESOURCE_ID}&q=${encodeURIComponent(queryParams)}&limit=32000`;
 
                 const response = await fetch(url);
                 if (!response.ok) {
@@ -2900,6 +2902,7 @@ const STREET_NAME_FIELD = 'שם_רחוב';
                 }
                 const data = await response.json();
                 
+                // Sort streets alphabetically in Hebrew and ensure they are unique.
                 const streets = data.success && data.result.records
                     ? [...new Set(data.result.records.map(r => r['שם_רחוב'].trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'he'))
                     : [];
@@ -2923,8 +2926,10 @@ const STREET_NAME_FIELD = 'שם_רחוב';
 
         function renderDropdown(streets, query) {
             dropdown.innerHTML = '';
+            // Make filtering case-insensitive for a better user experience.
+            const normalizedQuery = query.toLowerCase();
             const filteredStreets = query
-                ? streets.filter(s => s.includes(query))
+                ? streets.filter(s => s.toLowerCase().includes(normalizedQuery))
                 : streets;
 
             if (filteredStreets.length === 0) {
