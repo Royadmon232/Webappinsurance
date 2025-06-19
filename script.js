@@ -2524,29 +2524,41 @@ const STREET_NAME_FIELD = 'שם_רחוב';
     function initializeStreetSelectionLogic() {
         const citySelect = document.getElementById('city');
         const streetInput = document.getElementById('street');
+        const streetError = document.getElementById('street-error');
+        const streetAutocompleteContainer = document.getElementById('streetAutocomplete');
         
+        if (!citySelect || !streetInput || !streetError || !streetAutocompleteContainer) {
+            console.error('Street selection elements not found');
+            return;
+        }
+
         // Check if already initialized to avoid multiple listeners
-        if (!citySelect || !streetInput || streetInput.dataset.initialized) {
+        if (streetInput.dataset.initialized === 'true') {
             return;
         }
         streetInput.dataset.initialized = 'true';
-        console.log('Cursor AI: Initializing street selection logic.');
+        console.log('Initializing street selection logic');
 
-        const streetError = document.getElementById('street-error');
-        const streetAutocompleteContainer = document.getElementById('streetAutocomplete');
-
-        // 1. Initially disable street input and clear any previous error messages
+        // Initially disable street input
         streetInput.disabled = true;
-        streetError.style.display = 'none';
+        streetInput.placeholder = 'בחר ישוב תחילה';
+        if (streetError) streetError.style.display = 'none';
 
-        citySelect.addEventListener('change', async (event) => {
+        // Clear any existing event listeners
+        const newCitySelect = citySelect.cloneNode(true);
+        citySelect.parentNode.replaceChild(newCitySelect, citySelect);
+
+        // Add event listener to city select
+        newCitySelect.addEventListener('change', async (event) => {
             const selectedCity = event.target.value;
+            console.log('City selected:', selectedCity);
             
             // Clear previous results and errors
             streetInput.value = '';
             streetAutocompleteContainer.innerHTML = '';
-            if(streetError) streetError.style.display = 'none';
+            streetError.style.display = 'none';
             streetInput.disabled = true;
+            streetInput.placeholder = 'בחר ישוב תחילה';
 
             if (!selectedCity) {
                 return;
@@ -2554,58 +2566,63 @@ const STREET_NAME_FIELD = 'שם_רחוב';
             
             streetInput.placeholder = 'טוען רחובות...';
 
-            // 2. Check cache
-            if (streetCache[selectedCity]) {
-                console.log(`Cursor AI: Loading streets for ${selectedCity} from cache.`);
-                setupStreetAutocomplete(streetCache[selectedCity]);
-                streetInput.disabled = false;
-                streetInput.placeholder = 'הקלד שם רחוב...';
-                return;
-            }
-
-            // 3. Fetch from API
             try {
-                const resource_id = '9ad3862c-8391-4b2f-84a4-2d4c68625f4b';
-                const filters = JSON.stringify({ 'שם_ישוב': selectedCity });
-                const limit = 32000; // Fetch all streets for the city
-                const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${resource_id}&filters=${encodeURIComponent(filters)}&limit=${limit}`;
+                let streets;
+                
+                // Check cache first
+                if (streetCache[selectedCity]) {
+                    console.log(`Loading streets for ${selectedCity} from cache`);
+                    streets = streetCache[selectedCity];
+                } else {
+                    // Fetch from API
+                    const filters = JSON.stringify({ [CITY_NAME_FIELD]: selectedCity });
+                    const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&filters=${encodeURIComponent(filters)}&limit=32000`;
 
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error('API response was not ok.');
+                    console.log('Fetching streets from API:', url);
+                    const response = await fetch(url);
+                    
+                    if (!response.ok) {
+                        throw new Error('API response was not ok');
+                    }
+
+                    const data = await response.json();
+                    
+                    if (!data.success) {
+                        throw new Error('API returned unsuccessful response');
+                    }
+
+                    streets = [...new Set(
+                        data.result.records
+                            .map(record => record[STREET_NAME_FIELD])
+                            .filter(name => name && name.trim() !== '')
+                    )].sort();
+
+                    // Cache the results
+                    streetCache[selectedCity] = streets;
+                    console.log(`Cached ${streets.length} streets for ${selectedCity}`);
                 }
 
-                const data = await response.json();
-
-                if (data.success && data.result.records.length > 0) {
-                    const streets = data.result.records
-                        .map(record => record['שם_רחוב'])
-                        .filter(name => name && name.trim() !== ''); // filter out empty/null names
-                    
-                    const uniqueStreets = [...new Set(streets)].sort();
-                    
-                    streetCache[selectedCity] = uniqueStreets;
-                    console.log(`Cursor AI: Fetched and cached ${uniqueStreets.length} streets for ${selectedCity}.`);
-                    
-                    setupStreetAutocomplete(uniqueStreets);
+                if (streets.length > 0) {
+                    setupStreetAutocomplete(streets);
                     streetInput.disabled = false;
                     streetInput.placeholder = 'הקלד שם רחוב...';
                 } else {
-                    // 4. Handle no results
-                    if(streetError) {
-                        streetError.textContent = 'לא נמצאו רחובות זמינים בעיר שבחרת, אנא נסה שוב מאוחר יותר.';
-                        streetError.style.display = 'block';
-                    }
+                    streetError.textContent = 'לא נמצאו רחובות בעיר זו';
+                    streetError.style.display = 'block';
                     streetInput.placeholder = 'לא נמצאו רחובות';
                 }
             } catch (error) {
-                console.error('Cursor AI: Error fetching streets:', error);
-                // 5. Handle API error
-                if(streetError) {
-                    streetError.textContent = 'לא נמצאו רחובות זמינים בעיר שבחרת, אנא נסה שוב מאוחר יותר.';
-                    streetError.style.display = 'block';
-                }
+                console.error('Error fetching streets:', error);
+                streetError.textContent = 'שגיאה בטעינת רחובות. אנא נסה שוב.';
+                streetError.style.display = 'block';
                 streetInput.placeholder = 'שגיאה בטעינת רחובות';
+            }
+        });
+
+        // Setup click outside handling
+        document.addEventListener('click', (event) => {
+            if (!streetInput.contains(event.target) && !streetAutocompleteContainer.contains(event.target)) {
+                streetAutocompleteContainer.innerHTML = '';
             }
         });
     }
@@ -2614,74 +2631,64 @@ const STREET_NAME_FIELD = 'שם_רחוב';
         const streetInput = document.getElementById('street');
         const streetAutocompleteContainer = document.getElementById('streetAutocomplete');
 
-        const inputHandler = () => {
-            const query = streetInput.value.toLowerCase().trim();
+        if (!streetInput || !streetAutocompleteContainer) {
+            console.error('Street autocomplete elements not found');
+            return;
+        }
+
+        // Remove any existing listeners
+        const newStreetInput = streetInput.cloneNode(true);
+        streetInput.parentNode.replaceChild(newStreetInput, streetInput);
+
+        const inputHandler = debounce(() => {
+            const query = newStreetInput.value.trim().toLowerCase();
             streetAutocompleteContainer.innerHTML = '';
 
             if (!query) {
                 return;
             }
 
-            const filteredStreets = streets.filter(street => street.toLowerCase().includes(query));
+            const filteredStreets = streets.filter(street => 
+                street.toLowerCase().includes(query)
+            );
 
-            filteredStreets.slice(0, 10).forEach(street => { // Limit to 10 suggestions
-                const item = document.createElement('div');
-                item.className = 'autocomplete-item';
-                item.textContent = street;
-                item.addEventListener('click', () => {
-                    streetInput.value = street;
-                    streetAutocompleteContainer.innerHTML = '';
+            if (filteredStreets.length > 0) {
+                filteredStreets.slice(0, 10).forEach(street => {
+                    const item = document.createElement('div');
+                    item.className = 'autocomplete-item';
+                    item.textContent = street;
+                    item.addEventListener('click', () => {
+                        newStreetInput.value = street;
+                        streetAutocompleteContainer.innerHTML = '';
+                    });
+                    streetAutocompleteContainer.appendChild(item);
                 });
-                streetAutocompleteContainer.appendChild(item);
-            });
-        };
-        
-        // Use an existing debounce if available, otherwise a simple one.
-        const effectiveDebounce = typeof debounce === 'function' ? debounce : (fn, delay) => {
-            let timeoutId;
-            return (...args) => {
-                clearTimeout(timeoutId);
-                timeoutId = setTimeout(() => fn(...args), delay);
-            };
-        };
-
-        streetInput.addEventListener('input', effectiveDebounce(inputHandler, 250));
-        
-        // Close autocomplete when clicking outside
-        document.addEventListener('click', (event) => {
-            if (!streetInput.contains(event.target) && !streetAutocompleteContainer.contains(event.target)) {
-                streetAutocompleteContainer.innerHTML = '';
             }
-        });
+        }, 250);
+
+        newStreetInput.addEventListener('input', inputHandler);
     }
 
-    // Use a MutationObserver to initialize the logic when the modal becomes visible
-    const observer = new MutationObserver((mutationsList) => {
-        for (const mutation of mutationsList) {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                const modal = mutation.target;
-                if (modal.id === 'generalDetailsModal' && modal.style.display === 'block') {
-                    initializeStreetSelectionLogic();
-                }
+    // Initialize when the modal becomes visible
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && 
+                mutation.attributeName === 'style' && 
+                mutation.target.style.display === 'block') {
+                initializeStreetSelectionLogic();
             }
-        }
+        });
     });
 
-    // Start observing the modal for style changes
+    // Start observing the modal
     const modal = document.getElementById('generalDetailsModal');
     if (modal) {
         observer.observe(modal, { attributes: true });
-    } else {
-        // Fallback for when the modal is not in the DOM at load time.
-        const bodyObserver = new MutationObserver((mutations, obs) => {
-            const modalNode = document.getElementById('generalDetailsModal');
-            if (modalNode) {
-                observer.observe(modalNode, { attributes: true });
-                initializeStreetSelectionLogic(); // try to init once found
-                obs.disconnect(); // stop observing the body
-            }
-        });
-        bodyObserver.observe(document.body, { childList: true, subtree: true });
+    }
+
+    // Also try to initialize immediately in case the modal is already visible
+    if (modal && modal.style.display === 'block') {
+        initializeStreetSelectionLogic();
     }
 })();
 // /***** CURSOR AI: END - Street selection logic *****/
