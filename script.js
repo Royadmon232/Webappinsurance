@@ -2509,3 +2509,172 @@ function findSimilarCitiesLocally(searchCity, availableCities) {
 const STREETS_RESOURCE_ID = '9ad3862c-8391-4b2f-84a4-2d4c68625f4b';
 const CITY_NAME_FIELD = 'שם_ישוב';
 const STREET_NAME_FIELD = 'שם_רחוב';
+
+// /***** CURSOR AI: START - Street selection logic *****/
+(function() {
+    const streetCache = {};
+
+    function initializeStreetSelectionLogic() {
+        const citySelect = document.getElementById('city');
+        const streetInput = document.getElementById('street');
+        
+        // Check if already initialized to avoid multiple listeners
+        if (!citySelect || !streetInput || streetInput.dataset.initialized) {
+            return;
+        }
+        streetInput.dataset.initialized = 'true';
+        console.log('Cursor AI: Initializing street selection logic.');
+
+        const streetError = document.getElementById('street-error');
+        const streetAutocompleteContainer = document.getElementById('streetAutocomplete');
+
+        // 1. Initially disable street input and clear any previous error messages
+        streetInput.disabled = true;
+        streetError.style.display = 'none';
+
+        citySelect.addEventListener('change', async (event) => {
+            const selectedCity = event.target.value;
+            
+            // Clear previous results and errors
+            streetInput.value = '';
+            streetAutocompleteContainer.innerHTML = '';
+            if(streetError) streetError.style.display = 'none';
+            streetInput.disabled = true;
+
+            if (!selectedCity) {
+                return;
+            }
+            
+            streetInput.placeholder = 'טוען רחובות...';
+
+            // 2. Check cache
+            if (streetCache[selectedCity]) {
+                console.log(`Cursor AI: Loading streets for ${selectedCity} from cache.`);
+                setupStreetAutocomplete(streetCache[selectedCity]);
+                streetInput.disabled = false;
+                streetInput.placeholder = 'הקלד שם רחוב...';
+                return;
+            }
+
+            // 3. Fetch from API
+            try {
+                const resource_id = '9ad3862c-8391-4b2f-84a4-2d4c68625f4b';
+                const filters = JSON.stringify({ 'שם_ישוב': selectedCity });
+                const limit = 32000; // Fetch all streets for the city
+                const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${resource_id}&filters=${encodeURIComponent(filters)}&limit=${limit}`;
+
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('API response was not ok.');
+                }
+
+                const data = await response.json();
+
+                if (data.success && data.result.records.length > 0) {
+                    const streets = data.result.records
+                        .map(record => record['שם_רחוב'])
+                        .filter(name => name && name.trim() !== ''); // filter out empty/null names
+                    
+                    const uniqueStreets = [...new Set(streets)].sort();
+                    
+                    streetCache[selectedCity] = uniqueStreets;
+                    console.log(`Cursor AI: Fetched and cached ${uniqueStreets.length} streets for ${selectedCity}.`);
+                    
+                    setupStreetAutocomplete(uniqueStreets);
+                    streetInput.disabled = false;
+                    streetInput.placeholder = 'הקלד שם רחוב...';
+                } else {
+                    // 4. Handle no results
+                    if(streetError) {
+                        streetError.textContent = 'לא נמצאו רחובות זמינים בעיר שבחרת, אנא נסה שוב מאוחר יותר.';
+                        streetError.style.display = 'block';
+                    }
+                    streetInput.placeholder = 'לא נמצאו רחובות';
+                }
+            } catch (error) {
+                console.error('Cursor AI: Error fetching streets:', error);
+                // 5. Handle API error
+                if(streetError) {
+                    streetError.textContent = 'לא נמצאו רחובות זמינים בעיר שבחרת, אנא נסה שוב מאוחר יותר.';
+                    streetError.style.display = 'block';
+                }
+                streetInput.placeholder = 'שגיאה בטעינת רחובות';
+            }
+        });
+    }
+
+    function setupStreetAutocomplete(streets) {
+        const streetInput = document.getElementById('street');
+        const streetAutocompleteContainer = document.getElementById('streetAutocomplete');
+
+        const inputHandler = () => {
+            const query = streetInput.value.toLowerCase().trim();
+            streetAutocompleteContainer.innerHTML = '';
+
+            if (!query) {
+                return;
+            }
+
+            const filteredStreets = streets.filter(street => street.toLowerCase().includes(query));
+
+            filteredStreets.slice(0, 10).forEach(street => { // Limit to 10 suggestions
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                item.textContent = street;
+                item.addEventListener('click', () => {
+                    streetInput.value = street;
+                    streetAutocompleteContainer.innerHTML = '';
+                });
+                streetAutocompleteContainer.appendChild(item);
+            });
+        };
+        
+        // Use an existing debounce if available, otherwise a simple one.
+        const effectiveDebounce = typeof debounce === 'function' ? debounce : (fn, delay) => {
+            let timeoutId;
+            return (...args) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => fn(...args), delay);
+            };
+        };
+
+        streetInput.addEventListener('input', effectiveDebounce(inputHandler, 250));
+        
+        // Close autocomplete when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!streetInput.contains(event.target) && !streetAutocompleteContainer.contains(event.target)) {
+                streetAutocompleteContainer.innerHTML = '';
+            }
+        });
+    }
+
+    // Use a MutationObserver to initialize the logic when the modal becomes visible
+    const observer = new MutationObserver((mutationsList) => {
+        for (const mutation of mutationsList) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                const modal = mutation.target;
+                if (modal.id === 'generalDetailsModal' && modal.style.display === 'block') {
+                    initializeStreetSelectionLogic();
+                }
+            }
+        }
+    });
+
+    // Start observing the modal for style changes
+    const modal = document.getElementById('generalDetailsModal');
+    if (modal) {
+        observer.observe(modal, { attributes: true });
+    } else {
+        // Fallback for when the modal is not in the DOM at load time.
+        const bodyObserver = new MutationObserver((mutations, obs) => {
+            const modalNode = document.getElementById('generalDetailsModal');
+            if (modalNode) {
+                observer.observe(modalNode, { attributes: true });
+                initializeStreetSelectionLogic(); // try to init once found
+                obs.disconnect(); // stop observing the body
+            }
+        });
+        bodyObserver.observe(document.body, { childList: true, subtree: true });
+    }
+})();
+// /***** CURSOR AI: END - Street selection logic *****/
