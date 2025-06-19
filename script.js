@@ -1447,63 +1447,21 @@ function smoothScroll(target) {
             dropdown.style.display = 'none';
             return;
         }
-        
-        // Add a header showing number of results
-        const header = document.createElement('div');
-        header.style.padding = '8px 16px';
-        header.style.fontSize = '0.9em';
-        header.style.color = '#666';
-        header.style.borderBottom = '1px solid #eee';
-        header.style.backgroundColor = '#f8f9fa';
-        header.textContent = `נמצאו ${filtered.length} תוצאות`;
-        dropdown.appendChild(header);
-        
-        filtered.forEach(item => {
-            const city = typeof item === 'string' ? item : item.city;
-            const matchType = typeof item === 'string' ? 'default' : item.matchType;
-            
+        filtered.forEach(city => {
             const option = document.createElement('div');
             option.textContent = city;
             option.style.padding = '10px 16px';
             option.style.cursor = 'pointer';
             option.style.fontSize = '1em';
             option.style.textAlign = 'right';
-            option.style.borderBottom = '1px solid #f0f0f0';
-            
-            // Add visual indicator for match type
-            if (matchType === 'exact') {
-                option.style.fontWeight = 'bold';
-                option.style.color = '#2c5aa0';
-            } else if (matchType === 'word') {
-                option.style.color = '#4a90e2';
-            } else if (matchType === 'fuzzy') {
-                option.style.color = '#666';
-                option.style.fontStyle = 'italic';
-            }
-            
-            // Add hover effect
-            option.addEventListener('mouseenter', function() {
-                this.style.backgroundColor = '#f0f8ff';
-            });
-            
-            option.addEventListener('mouseleave', function() {
-                this.style.backgroundColor = '#fff';
-            });
-            
             option.addEventListener('mousedown', function(e) {
                 e.preventDefault();
                 cityInput.value = city;
                 citySelect.value = city;
                 dropdown.style.display = 'none';
-                
-                // Trigger city change event
-                const event = new Event('change', { bubbles: true });
-                citySelect.dispatchEvent(event);
             });
-            
             dropdown.appendChild(option);
         });
-        
         dropdown.style.display = 'block';
     }
 
@@ -1511,90 +1469,21 @@ function smoothScroll(target) {
     function filterCities(query) {
         if (!allCities.length) return [];
         query = query.trim();
-        if (!query) return allCities.slice(0, 50).map(city => ({ city, matchType: 'default' })); // Show first 50 if empty
+        if (!query) return allCities.slice(0, 50); // Show first 50 if empty
         
-        // Create multiple search variations
-        const searchVariations = [
-            query, // Original query
-            query.replace(/\s+/g, ''), // Without spaces
-            query.replace(/['"]/g, ''), // Without quotes
-            query.split(' ')[0], // First word only
-            query.split(' ').slice(-1)[0] // Last word only
-        ].filter(v => v.length > 0); // Remove empty variations
+        // Create normalized version for comparison but keep original text
+        const normalizedQuery = query.replace(/["'\-]/g, '').toLowerCase();
+        const normalizedQueryNoSpaces = normalizedQuery.replace(/\s/g, '');
         
-        const filteredCities = [];
-        const seenCities = new Set();
-        
-        // Try each search variation
-        for (const variation of searchVariations) {
-            const normalizedVariation = variation.toLowerCase();
+        return allCities.filter(city => {
+            // Normalize city name for comparison
+            const normalizedCity = city.replace(/["'\-]/g, '').toLowerCase();
+            const normalizedCityNoSpaces = normalizedCity.replace(/\s/g, '');
             
-            for (const city of allCities) {
-                if (seenCities.has(city)) continue; // Skip already added cities
-                
-                const normalizedCity = city.toLowerCase();
-                
-                // Check for exact match
-                if (normalizedCity.includes(normalizedVariation)) {
-                    filteredCities.push({ city, score: 1.0, matchType: 'exact' });
-                    seenCities.add(city);
-                    continue;
-                }
-                
-                // Check for word boundary match (better for multi-word cities)
-                const cityWords = normalizedCity.split(/\s+/);
-                const queryWords = normalizedVariation.split(/\s+/);
-                
-                let wordMatchScore = 0;
-                for (const queryWord of queryWords) {
-                    for (const cityWord of cityWords) {
-                        if (cityWord.startsWith(queryWord) || cityWord.includes(queryWord)) {
-                            wordMatchScore += 0.8;
-                            break;
-                        }
-                    }
-                }
-                
-                if (wordMatchScore > 0) {
-                    filteredCities.push({ 
-                        city, 
-                        score: wordMatchScore / queryWords.length, 
-                        matchType: 'word' 
-                    });
-                    seenCities.add(city);
-                    continue;
-                }
-                
-                // Check for fuzzy match (similarity)
-                const similarity = calculateSimilarity(variation, city);
-                if (similarity >= 0.6) {
-                    filteredCities.push({ 
-                        city, 
-                        score: similarity, 
-                        matchType: 'fuzzy' 
-                    });
-                    seenCities.add(city);
-                }
-            }
-        }
-        
-        // Sort by relevance: exact matches first, then word matches, then fuzzy matches
-        const sortedCities = filteredCities.sort((a, b) => {
-            // First sort by match type
-            const typeOrder = { 'exact': 3, 'word': 2, 'fuzzy': 1 };
-            const aType = typeOrder[a.matchType] || 0;
-            const bType = typeOrder[b.matchType] || 0;
-            
-            if (aType !== bType) {
-                return bType - aType;
-            }
-            
-            // Then sort by score
-            return b.score - a.score;
-        });
-        
-        // Return detailed results, limited to 50
-        return sortedCities.slice(0, 50);
+            // Check if query matches with or without spaces
+            return normalizedCity.includes(normalizedQuery) || 
+                   normalizedCityNoSpaces.includes(normalizedQueryNoSpaces);
+        }).slice(0, 50);
     }
 
     // Handle input events
@@ -1740,40 +1629,6 @@ function smoothScroll(target) {
     loadingMsg.textContent = 'טוען רחובות...';
     wrapper.appendChild(loadingMsg);
 
-    // Function to calculate similarity between two strings
-    function calculateSimilarity(str1, str2) {
-        const s1 = str1.toLowerCase().replace(/[\s\-'"]/g, '');
-        const s2 = str2.toLowerCase().replace(/[\s\-'"]/g, '');
-        
-        if (s1 === s2) return 1;
-        if (s1.includes(s2) || s2.includes(s1)) return 0.8;
-        
-        // Simple Levenshtein distance approximation
-        let distance = 0;
-        const maxLength = Math.max(s1.length, s2.length);
-        
-        for (let i = 0; i < maxLength; i++) {
-            if (s1[i] !== s2[i]) distance++;
-        }
-        
-        return 1 - (distance / maxLength);
-    }
-
-    // Function to find similar city names
-    function findSimilarCities(targetCity, allCities, threshold = 0.6) {
-        const similarCities = [];
-        
-        for (const city of allCities) {
-            const similarity = calculateSimilarity(targetCity, city);
-            if (similarity >= threshold) {
-                similarCities.push({ city, similarity });
-            }
-        }
-        
-        // Sort by similarity (highest first)
-        return similarCities.sort((a, b) => b.similarity - a.similarity);
-    }
-
     // Fetch streets for a specific city
     async function fetchStreetsForCity(cityName) {
         if (streetsCache.has(cityName)) {
@@ -1788,77 +1643,48 @@ function smoothScroll(target) {
         let start = 0;
         const limit = 1000;
         
-        // Try multiple city name variations
-        const cityVariations = [
-            cityName,
-            cityName.replace(/\s+/g, ''), // Remove spaces
-            cityName.replace(/['"]/g, ''), // Remove quotes
-            cityName.split(' ')[0], // First word only
-            cityName.split(' ').slice(-1)[0] // Last word only
-        ];
-        
-        // Remove duplicates from variations
-        const uniqueVariations = [...new Set(cityVariations)];
-        
-        console.log(`[DEBUG] Trying city variations for: ${cityName}`, uniqueVariations);
-        
         try {
-            // Try each city variation
-            for (const variation of uniqueVariations) {
-                if (variation.length < 2) continue; // Skip very short variations
+            while (true) {
+                // Try multiple approaches to get streets for the city
+                let url;
                 
-                start = 0; // Reset start for each variation
-                let variationStreets = [];
+                // First try: direct query with city name
+                url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&q=${encodeURIComponent(cityName)}`;
                 
-                while (true) {
-                    // Try multiple approaches to get streets for the city
-                    let url;
+                // Use a different CORS proxy that's more reliable
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                
+                const res = await fetch(proxyUrl);
+                if (!res.ok) {
+                    // Fallback: try without proxy
+                    const directRes = await fetch(url);
+                    if (!directRes.ok) throw new Error('API error');
+                    const data = await directRes.json();
+                    if (!data.result || !data.result.records) break;
                     
-                    // First try: direct query with city name variation
-                    url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&q=${encodeURIComponent(variation)}`;
+                    const batch = data.result.records
+                        .filter(r => r[CITY_NAME_FIELD] === cityName && r[STREET_NAME_FIELD])
+                        .map(r => r[STREET_NAME_FIELD]);
+                    streets = streets.concat(batch);
+                } else {
+                    const data = await res.json();
+                    if (!data.result || !data.result.records) break;
                     
-                    // Use a different CORS proxy that's more reliable
-                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-                    
-                    const res = await fetch(proxyUrl);
-                    if (!res.ok) {
-                        // Fallback: try without proxy
-                        const directRes = await fetch(url);
-                        if (!directRes.ok) break; // Try next variation
-                        const data = await directRes.json();
-                        if (!data.result || !data.result.records) break;
-                        
-                        const batch = data.result.records
-                            .filter(r => r[STREET_NAME_FIELD])
-                            .map(r => r[STREET_NAME_FIELD]);
-                        variationStreets = variationStreets.concat(batch);
-                    } else {
-                        const data = await res.json();
-                        if (!data.result || !data.result.records) break;
-                        
-                        const batch = data.result.records
-                            .filter(r => r[STREET_NAME_FIELD])
-                            .map(r => r[STREET_NAME_FIELD]);
-                        variationStreets = variationStreets.concat(batch);
-                    }
-                    
-                    if (batch.length < limit) break;
-                    start += limit;
+                    const batch = data.result.records
+                        .filter(r => r[CITY_NAME_FIELD] === cityName && r[STREET_NAME_FIELD])
+                        .map(r => r[STREET_NAME_FIELD]);
+                    streets = streets.concat(batch);
                 }
                 
-                // Add streets from this variation
-                streets = streets.concat(variationStreets);
-                console.log(`[DEBUG] Found ${variationStreets.length} streets for variation: ${variation}`);
-                
-                // If we found enough streets, we can stop
-                if (streets.length > 50) break;
+                if (batch.length < limit) break;
+                start += limit;
             }
             
             // Remove duplicates and sort
             streets = Array.from(new Set(streets)).sort((a, b) => a.localeCompare(b, 'he'));
             streetsCache.set(cityName, streets);
             
-            console.log(`[DEBUG] Total found ${streets.length} unique streets for city: ${cityName}`);
+            console.log(`[DEBUG] Found ${streets.length} streets for city: ${cityName}`);
             
             if (streets.length === 0) {
                 errorMsg.style.display = 'block';
@@ -1914,35 +1740,19 @@ function smoothScroll(target) {
         query = query.trim();
         if (!query) return streets.slice(0, 50); // Show first 50 if empty
         
-        // Use fuzzy search for better matching
-        const normalizedQuery = query.replace(/["'\-\s]/g, '').toLowerCase();
+        // Create normalized version for comparison but keep original text
+        const normalizedQuery = query.replace(/["'\-]/g, '').toLowerCase();
+        const normalizedQueryNoSpaces = normalizedQuery.replace(/\s/g, '');
         
-        const filteredStreets = streets.filter(street => {
-            const normalizedStreet = street.replace(/["'\-\s]/g, '').toLowerCase();
+        return streets.filter(street => {
+            // Normalize street name for comparison
+            const normalizedStreet = street.replace(/["'\-]/g, '').toLowerCase();
+            const normalizedStreetNoSpaces = normalizedStreet.replace(/\s/g, '');
             
-            // Exact match
-            if (normalizedStreet.includes(normalizedQuery)) return true;
-            
-            // Fuzzy match - check if query is similar to street name
-            const similarity = calculateSimilarity(query, street);
-            return similarity >= 0.6; // 60% similarity threshold
-        });
-        
-        // Sort by relevance (exact matches first, then by similarity)
-        const sortedStreets = filteredStreets.sort((a, b) => {
-            const aExact = a.toLowerCase().includes(query.toLowerCase());
-            const bExact = b.toLowerCase().includes(query.toLowerCase());
-            
-            if (aExact && !bExact) return -1;
-            if (!aExact && bExact) return 1;
-            
-            // If both are exact or both are fuzzy, sort by similarity
-            const aSimilarity = calculateSimilarity(query, a);
-            const bSimilarity = calculateSimilarity(query, b);
-            return bSimilarity - aSimilarity;
-        });
-        
-        return sortedStreets.slice(0, 50);
+            // Check if query matches with or without spaces
+            return normalizedStreet.includes(normalizedQuery) || 
+                   normalizedStreetNoSpaces.includes(normalizedQueryNoSpaces);
+        }).slice(0, 50);
     }
 
     // Handle city selection change
