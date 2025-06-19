@@ -1693,6 +1693,19 @@ function smoothScroll(target) {
                 cleanCityName.replace(/ /g, ''),
                 cleanCityName.replace('תקווה', 'תקוה'),
                 cleanCityName.replace('תקוה', 'תקווה'),
+                // Additional variations for common Hebrew city names
+                cleanCityName.replace('קרית', 'קריית'),
+                cleanCityName.replace('קריית', 'קרית'),
+                cleanCityName.replace('באר', 'באר'),
+                cleanCityName.replace('שבע', 'שבע'),
+                // Try with common suffixes/prefixes
+                cleanCityName + ' (עיר)',
+                cleanCityName + ' (מועצה)',
+                cleanCityName.replace(/^עיר\s+/, ''),
+                cleanCityName.replace(/^מועצה\s+/, ''),
+                // Try without common words
+                cleanCityName.replace(/\s+עירייה$/, ''),
+                cleanCityName.replace(/\s+מועצה$/, ''),
             ];
             console.log(`[DEBUG] Trying variations:`, variations);
             for (const variant of variations) {
@@ -1796,7 +1809,7 @@ function smoothScroll(target) {
                 console.log('[DEBUG] Sample city names:', uniqueCities.slice(0, 20));
                 
                 // Look for cities that might match what we're searching for
-                const searchTerms = ['אבו גוש', 'קרית אונו', 'פתח תקווה', 'תל אביב'];
+                const searchTerms = ['אבו גוש', 'קרית אונו', 'פתח תקווה', 'תל אביב', 'באר שבע'];
                 searchTerms.forEach(term => {
                     const matches = uniqueCities.filter(city => 
                         city.includes(term) || term.includes(city) || 
@@ -1818,10 +1831,55 @@ function smoothScroll(target) {
         }
     }
 
+    // Function to test API structure and see what fields are available
+    async function testAPIStructure() {
+        console.log('[DEBUG] Testing API structure...');
+        try {
+            const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=5`;
+            console.log('[DEBUG] Fetching sample data from:', url);
+            
+            let res;
+            try {
+                res = await fetch(url);
+            } catch (e) {
+                console.log('[DEBUG] Direct fetch failed, trying proxy');
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                res = await fetch(proxyUrl);
+            }
+            
+            if (!res.ok) {
+                console.error('[DEBUG] API request failed:', res.status);
+                return;
+            }
+            
+            const data = await res.json();
+            console.log('[DEBUG] Full API response structure:', data);
+            
+            if (data.result && data.result.records && data.result.records.length > 0) {
+                const firstRecord = data.result.records[0];
+                console.log('[DEBUG] Available fields in records:', Object.keys(firstRecord));
+                console.log('[DEBUG] First record sample:', firstRecord);
+                
+                // Check what the city name field actually contains
+                if (firstRecord[CITY_NAME_FIELD]) {
+                    console.log(`[DEBUG] City name field "${CITY_NAME_FIELD}" contains: "${firstRecord[CITY_NAME_FIELD]}"`);
+                }
+                
+                // Check what the street name field actually contains
+                if (firstRecord[STREET_NAME_FIELD]) {
+                    console.log(`[DEBUG] Street name field "${STREET_NAME_FIELD}" contains: "${firstRecord[STREET_NAME_FIELD]}"`);
+                }
+            }
+        } catch (error) {
+            console.error('[DEBUG] Error testing API structure:', error);
+        }
+    }
+
     // Make functions available globally for testing
     window.clearStreetsCache = clearStreetsCache;
     window.testStreetsAPI = testStreetsAPI;
     window.exploreStreetsDatabase = exploreStreetsDatabase;
+    window.testAPIStructure = testAPIStructure;
     // --- END: Cache management and testing functions (Cursor AI patch) ---
 
     // Debounced function to handle city changes
