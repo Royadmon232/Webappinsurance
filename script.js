@@ -2235,13 +2235,27 @@ function smoothScroll(target) {
 
     // Utility: find <option> in select by text
     function findOptionByText(select, text) {
-        const normalizedSearchText = text.trim();
+        if (!text) return null;
+        const normalizedSearchText = normalizeCityName(text.trim());
         console.log('[DEBUG] Looking for city:', normalizedSearchText);
-        return Array.from(select.options).find(opt => {
-            const normalizedOption = opt.text.trim();
+        
+        // First try exact match
+        const exactMatch = Array.from(select.options).find(opt => {
+            const normalizedOption = normalizeCityName(opt.text.trim());
             console.log('[DEBUG] Comparing with option:', normalizedOption);
-            return normalizedOption === normalizedSearchText || 
-                   normalizedOption === normalizeCityName(normalizedSearchText);
+            return normalizedOption === normalizedSearchText;
+        });
+        
+        if (exactMatch) return exactMatch;
+        
+        // If no exact match and text is too short, don't do partial matches
+        if (normalizedSearchText.length < 2) return null;
+        
+        // Then try partial match only for longer inputs
+        return Array.from(select.options).find(opt => {
+            const normalizedOption = normalizeCityName(opt.text.trim());
+            // Only match if the input is a prefix of a valid city name
+            return normalizedOption.startsWith(normalizedSearchText);
         });
     }
 
@@ -2270,24 +2284,32 @@ function smoothScroll(target) {
                 const normalizedCity = normalizeCityName(selectedCity);
                 console.log('[DEBUG] Normalized city name:', normalizedCity);
                 
-                cityAutocompleteInput.value = normalizedCity;
+                // First update the autocomplete input
+                cityAutocompleteInput.value = selectedCity;
+                
+                // Then find or create the option in the select
                 let opt = findOptionByText(citySelect, normalizedCity);
-                if (!opt) opt = ensureOptionExists(citySelect, normalizedCity);
-                if (opt) {
-                    citySelect.value = opt.value;
-                    // Trigger change event on the select element
-                    const event = new Event('change', { bubbles: true });
-                    citySelect.dispatchEvent(event);
-                    console.log('[DEBUG] City selected from autocomplete dropdown:', opt.value);
+                if (!opt) {
+                    opt = document.createElement('option');
+                    opt.value = normalizedCity;
+                    opt.text = selectedCity; // Keep original text
+                    citySelect.appendChild(opt);
+                    console.log('[DEBUG] Added new option:', selectedCity);
                 }
+                
+                // Update select and trigger change
+                citySelect.value = opt.value;
+                const event = new Event('change', { bubbles: true });
+                citySelect.dispatchEvent(event);
+                console.log('[DEBUG] City selected from autocomplete dropdown:', selectedCity);
             }
         });
     }
 
     // Patch: when user types and the value matches an option, update select
     cityAutocompleteInput.addEventListener('input', function() {
-        let opt = findOptionByText(citySelect, cityAutocompleteInput.value);
-        if (!opt && cityAutocompleteInput.value) opt = ensureOptionExists(citySelect, cityAutocompleteInput.value);
+        // Don't add new options while typing, only look for existing matches
+        const opt = findOptionByText(citySelect, cityAutocompleteInput.value);
         if (opt) {
             citySelect.value = opt.value;
             // Trigger change event on the select element
@@ -2299,8 +2321,14 @@ function smoothScroll(target) {
 
     // Patch: when user selects from the native dropdown
     citySelect.addEventListener('change', function() {
-        cityAutocompleteInput.value = citySelect.value;
-        console.log('[DEBUG] City selected from native dropdown:', citySelect.value);
+        const selectedOption = citySelect.options[citySelect.selectedIndex];
+        if (selectedOption) {
+            cityAutocompleteInput.value = selectedOption.text; // Use original text
+            console.log('[DEBUG] City selected from native dropdown:', selectedOption.text);
+        } else {
+            cityAutocompleteInput.value = '';
+            console.log('[DEBUG] City selection cleared from native dropdown');
+        }
     });
 
     // Also trigger on page load if יש ערך
