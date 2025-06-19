@@ -670,7 +670,7 @@ function validateForm(form) {
 /**
  * Show error message for a field
  * @param {HTMLElement} field - The form field
- * @param {string} message - The error message
+ * @param {string} message - The error message to display
  */
 function showFieldError(field, message) {
     clearFieldError(field);
@@ -1417,37 +1417,10 @@ function smoothScroll(target) {
         const limit = 1000;
         try {
             while (true) {
-                // Use JSONP to avoid CORS issues
-                const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${RESOURCE_ID}&limit=${limit}&offset=${start}&callback=jsonpCallback`;
-                
-                // Create JSONP request
-                const script = document.createElement('script');
-                script.src = url;
-                
-                // Create promise for JSONP
-                const promise = new Promise((resolve, reject) => {
-                    window.jsonpCallback = function(data) {
-                        resolve(data);
-                        document.head.removeChild(script);
-                        delete window.jsonpCallback;
-                    };
-                    
-                    script.onerror = () => {
-                        reject(new Error('JSONP failed'));
-                        document.head.removeChild(script);
-                        delete window.jsonpCallback;
-                    };
-                    
-                    // Timeout after 10 seconds
-                    setTimeout(() => {
-                        reject(new Error('JSONP timeout'));
-                        document.head.removeChild(script);
-                        delete window.jsonpCallback;
-                    }, 10000);
-                });
-                
-                const data = await promise;
-                
+                const url = `${API_URL}?resource_id=${RESOURCE_ID}&limit=${limit}&offset=${start}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('API error');
+                const data = await res.json();
                 if (!data.result || !data.result.records) break;
                 const batch = data.result.records.map(r => r[CITY_FIELD]).filter(Boolean);
                 cities = cities.concat(batch);
@@ -1460,7 +1433,6 @@ function smoothScroll(target) {
             isLoaded = true;
             loadError = false;
         } catch (e) {
-            console.error('[DEBUG] City fetch error:', e);
             loadError = true;
             errorMsg.style.display = 'block';
         } finally {
@@ -1661,37 +1633,10 @@ function smoothScroll(target) {
         
         try {
             while (true) {
-                // Use JSONP to avoid CORS issues
-                const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&q=${encodeURIComponent(cityName)}&callback=jsonpCallback`;
-                
-                // Create JSONP request
-                const script = document.createElement('script');
-                script.src = url;
-                
-                // Create promise for JSONP
-                const promise = new Promise((resolve, reject) => {
-                    window.jsonpCallback = function(data) {
-                        resolve(data);
-                        document.head.removeChild(script);
-                        delete window.jsonpCallback;
-                    };
-                    
-                    script.onerror = () => {
-                        reject(new Error('JSONP failed'));
-                        document.head.removeChild(script);
-                        delete window.jsonpCallback;
-                    };
-                    
-                    // Timeout after 10 seconds
-                    setTimeout(() => {
-                        reject(new Error('JSONP timeout'));
-                        document.head.removeChild(script);
-                        delete window.jsonpCallback;
-                    }, 10000);
-                });
-                
-                const data = await promise;
-                
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&q=${encodeURIComponent(cityName)}`)}`;
+                const res = await fetch(proxyUrl);
+                if (!res.ok) throw new Error('API error');
+                const data = await res.json();
                 if (!data.result || !data.result.records) break;
                 
                 const batch = data.result.records
@@ -1717,7 +1662,6 @@ function smoothScroll(target) {
             }
             
         } catch (e) {
-            console.error('[DEBUG] Street fetch error:', e);
             errorMsg.style.display = 'block';
             streetAutocompleteInput.disabled = true;
             streetAutocompleteInput.style.opacity = '0.6';
