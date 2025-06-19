@@ -1417,10 +1417,37 @@ function smoothScroll(target) {
         const limit = 1000;
         try {
             while (true) {
-                const url = `${API_URL}?resource_id=${RESOURCE_ID}&limit=${limit}&offset=${start}`;
-                const res = await fetch(url);
-                if (!res.ok) throw new Error('API error');
-                const data = await res.json();
+                // Use JSONP to avoid CORS issues
+                const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${RESOURCE_ID}&limit=${limit}&offset=${start}&callback=jsonpCallback`;
+                
+                // Create JSONP request
+                const script = document.createElement('script');
+                script.src = url;
+                
+                // Create promise for JSONP
+                const promise = new Promise((resolve, reject) => {
+                    window.jsonpCallback = function(data) {
+                        resolve(data);
+                        document.head.removeChild(script);
+                        delete window.jsonpCallback;
+                    };
+                    
+                    script.onerror = () => {
+                        reject(new Error('JSONP failed'));
+                        document.head.removeChild(script);
+                        delete window.jsonpCallback;
+                    };
+                    
+                    // Timeout after 10 seconds
+                    setTimeout(() => {
+                        reject(new Error('JSONP timeout'));
+                        document.head.removeChild(script);
+                        delete window.jsonpCallback;
+                    }, 10000);
+                });
+                
+                const data = await promise;
+                
                 if (!data.result || !data.result.records) break;
                 const batch = data.result.records.map(r => r[CITY_FIELD]).filter(Boolean);
                 cities = cities.concat(batch);
@@ -1433,6 +1460,7 @@ function smoothScroll(target) {
             isLoaded = true;
             loadError = false;
         } catch (e) {
+            console.error('[DEBUG] City fetch error:', e);
             loadError = true;
             errorMsg.style.display = 'block';
         } finally {
@@ -1633,10 +1661,37 @@ function smoothScroll(target) {
         
         try {
             while (true) {
-                const url = `${STREETS_API_URL}?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&q=${encodeURIComponent(cityName)}`;
-                const res = await fetch(url);
-                if (!res.ok) throw new Error('API error');
-                const data = await res.json();
+                // Use JSONP to avoid CORS issues
+                const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&q=${encodeURIComponent(cityName)}&callback=jsonpCallback`;
+                
+                // Create JSONP request
+                const script = document.createElement('script');
+                script.src = url;
+                
+                // Create promise for JSONP
+                const promise = new Promise((resolve, reject) => {
+                    window.jsonpCallback = function(data) {
+                        resolve(data);
+                        document.head.removeChild(script);
+                        delete window.jsonpCallback;
+                    };
+                    
+                    script.onerror = () => {
+                        reject(new Error('JSONP failed'));
+                        document.head.removeChild(script);
+                        delete window.jsonpCallback;
+                    };
+                    
+                    // Timeout after 10 seconds
+                    setTimeout(() => {
+                        reject(new Error('JSONP timeout'));
+                        document.head.removeChild(script);
+                        delete window.jsonpCallback;
+                    }, 10000);
+                });
+                
+                const data = await promise;
+                
                 if (!data.result || !data.result.records) break;
                 
                 const batch = data.result.records
@@ -1662,6 +1717,7 @@ function smoothScroll(target) {
             }
             
         } catch (e) {
+            console.error('[DEBUG] Street fetch error:', e);
             errorMsg.style.display = 'block';
             streetAutocompleteInput.disabled = true;
             streetAutocompleteInput.style.opacity = '0.6';
@@ -1932,64 +1988,5 @@ function smoothScroll(target) {
     // Patch all city change triggers
     citySelect.addEventListener('change', handleCityChangePatched);
     cityAutocompleteInput.addEventListener('input', handleCityChangePatched);
-})();
-// --- End Cursor AI Patch --- 
-
-// --- Cursor AI Patch: CORS Proxy Fix ---
-(function() {
-    // CORS Proxy URLs (fallback options)
-    const CORS_PROXIES = [
-        'https://cors-anywhere.herokuapp.com/',
-        'https://api.allorigins.win/raw?url=',
-        'https://corsproxy.io/?',
-        'https://thingproxy.freeboard.io/fetch/'
-    ];
-    let currentProxyIndex = 0;
-
-    // Function to get URL with CORS proxy
-    function getCorsUrl(originalUrl) {
-        const proxy = CORS_PROXIES[currentProxyIndex];
-        return proxy + encodeURIComponent(originalUrl);
-    }
-
-    // Function to fetch with CORS proxy and fallback
-    async function fetchWithCorsProxy(url, options = {}) {
-        for (let i = 0; i < CORS_PROXIES.length; i++) {
-            try {
-                const proxyUrl = getCorsUrl(url);
-                console.log('[DEBUG] Trying CORS proxy:', CORS_PROXIES[currentProxyIndex]);
-                const response = await fetch(proxyUrl, {
-                    ...options,
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...options.headers
-                    }
-                });
-                if (response.ok) {
-                    console.log('[DEBUG] CORS proxy success:', CORS_PROXIES[currentProxyIndex]);
-                    return response;
-                }
-            } catch (error) {
-                console.log('[DEBUG] CORS proxy failed:', CORS_PROXIES[currentProxyIndex], error.message);
-            }
-            currentProxyIndex = (currentProxyIndex + 1) % CORS_PROXIES.length;
-        }
-        throw new Error('All CORS proxies failed');
-    }
-
-    // Patch the original fetch calls in the street dropdown code
-    const originalFetch = window.fetch;
-    window.fetch = function(url, options) {
-        // Only apply CORS proxy to data.gov.il URLs
-        if (url.includes('data.gov.il')) {
-            console.log('[DEBUG] Applying CORS proxy to:', url);
-            return fetchWithCorsProxy(url, options);
-        }
-        // Use original fetch for other URLs
-        return originalFetch.call(this, url, options);
-    };
-
-    console.log('[DEBUG] CORS Proxy patch applied');
 })();
 // --- End Cursor AI Patch --- 
