@@ -1447,21 +1447,63 @@ function smoothScroll(target) {
             dropdown.style.display = 'none';
             return;
         }
-        filtered.forEach(city => {
+        
+        // Add a header showing number of results
+        const header = document.createElement('div');
+        header.style.padding = '8px 16px';
+        header.style.fontSize = '0.9em';
+        header.style.color = '#666';
+        header.style.borderBottom = '1px solid #eee';
+        header.style.backgroundColor = '#f8f9fa';
+        header.textContent = `נמצאו ${filtered.length} תוצאות`;
+        dropdown.appendChild(header);
+        
+        filtered.forEach(item => {
+            const city = typeof item === 'string' ? item : item.city;
+            const matchType = typeof item === 'string' ? 'default' : item.matchType;
+            
             const option = document.createElement('div');
             option.textContent = city;
             option.style.padding = '10px 16px';
             option.style.cursor = 'pointer';
             option.style.fontSize = '1em';
             option.style.textAlign = 'right';
+            option.style.borderBottom = '1px solid #f0f0f0';
+            
+            // Add visual indicator for match type
+            if (matchType === 'exact') {
+                option.style.fontWeight = 'bold';
+                option.style.color = '#2c5aa0';
+            } else if (matchType === 'word') {
+                option.style.color = '#4a90e2';
+            } else if (matchType === 'fuzzy') {
+                option.style.color = '#666';
+                option.style.fontStyle = 'italic';
+            }
+            
+            // Add hover effect
+            option.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f0f8ff';
+            });
+            
+            option.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = '#fff';
+            });
+            
             option.addEventListener('mousedown', function(e) {
                 e.preventDefault();
                 cityInput.value = city;
                 citySelect.value = city;
                 dropdown.style.display = 'none';
+                
+                // Trigger city change event
+                const event = new Event('change', { bubbles: true });
+                citySelect.dispatchEvent(event);
             });
+            
             dropdown.appendChild(option);
         });
+        
         dropdown.style.display = 'block';
     }
 
@@ -1469,9 +1511,90 @@ function smoothScroll(target) {
     function filterCities(query) {
         if (!allCities.length) return [];
         query = query.trim();
-        if (!query) return allCities.slice(0, 50); // Show first 50 if empty
-        const norm = s => s.replace(/["'\-\s]/g, '').toLowerCase();
-        return allCities.filter(city => norm(city).includes(norm(query))).slice(0, 50);
+        if (!query) return allCities.slice(0, 50).map(city => ({ city, matchType: 'default' })); // Show first 50 if empty
+        
+        // Create multiple search variations
+        const searchVariations = [
+            query, // Original query
+            query.replace(/\s+/g, ''), // Without spaces
+            query.replace(/['"]/g, ''), // Without quotes
+            query.split(' ')[0], // First word only
+            query.split(' ').slice(-1)[0] // Last word only
+        ].filter(v => v.length > 0); // Remove empty variations
+        
+        const filteredCities = [];
+        const seenCities = new Set();
+        
+        // Try each search variation
+        for (const variation of searchVariations) {
+            const normalizedVariation = variation.toLowerCase();
+            
+            for (const city of allCities) {
+                if (seenCities.has(city)) continue; // Skip already added cities
+                
+                const normalizedCity = city.toLowerCase();
+                
+                // Check for exact match
+                if (normalizedCity.includes(normalizedVariation)) {
+                    filteredCities.push({ city, score: 1.0, matchType: 'exact' });
+                    seenCities.add(city);
+                    continue;
+                }
+                
+                // Check for word boundary match (better for multi-word cities)
+                const cityWords = normalizedCity.split(/\s+/);
+                const queryWords = normalizedVariation.split(/\s+/);
+                
+                let wordMatchScore = 0;
+                for (const queryWord of queryWords) {
+                    for (const cityWord of cityWords) {
+                        if (cityWord.startsWith(queryWord) || cityWord.includes(queryWord)) {
+                            wordMatchScore += 0.8;
+                            break;
+                        }
+                    }
+                }
+                
+                if (wordMatchScore > 0) {
+                    filteredCities.push({ 
+                        city, 
+                        score: wordMatchScore / queryWords.length, 
+                        matchType: 'word' 
+                    });
+                    seenCities.add(city);
+                    continue;
+                }
+                
+                // Check for fuzzy match (similarity)
+                const similarity = calculateSimilarity(variation, city);
+                if (similarity >= 0.6) {
+                    filteredCities.push({ 
+                        city, 
+                        score: similarity, 
+                        matchType: 'fuzzy' 
+                    });
+                    seenCities.add(city);
+                }
+            }
+        }
+        
+        // Sort by relevance: exact matches first, then word matches, then fuzzy matches
+        const sortedCities = filteredCities.sort((a, b) => {
+            // First sort by match type
+            const typeOrder = { 'exact': 3, 'word': 2, 'fuzzy': 1 };
+            const aType = typeOrder[a.matchType] || 0;
+            const bType = typeOrder[b.matchType] || 0;
+            
+            if (aType !== bType) {
+                return bType - aType;
+            }
+            
+            // Then sort by score
+            return b.score - a.score;
+        });
+        
+        // Return detailed results, limited to 50
+        return sortedCities.slice(0, 50);
     }
 
     // Handle input events
