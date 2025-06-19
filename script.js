@@ -1521,3 +1521,285 @@ function smoothScroll(target) {
 
     // --- End Dynamic City Dropdown Code ---
 })(); 
+
+// ==========================
+// Dynamic Street Dropdown + Autocomplete (Cursor AI Task)
+// ==========================
+// This code adds dynamic loading and autocomplete to the 'street' field ("שם הרחוב")
+// It depends on city selection and does NOT overwrite any existing code.
+//
+// Author: Cursor AI
+//
+// --- Begin Dynamic Street Dropdown Code ---
+
+(function() {
+    // API details for streets
+    const STREETS_API_URL = 'https://data.gov.il/api/3/action/datastore_search';
+    const STREETS_RESOURCE_ID = '9ad3862c-8391-4b2f-84a4-2d4c686254b4';
+    const STREET_NAME_FIELD = 'שם_רחוב';
+    const CITY_NAME_FIELD = 'שם_ישוב';
+    
+    // Cache for streets by city
+    const streetsCache = new Map();
+    let currentCity = null;
+    let isLoadingStreets = false;
+
+    // Elements
+    const streetInput = document.getElementById('street');
+    const citySelect = document.getElementById('city');
+    if (!streetInput || !citySelect) return;
+
+    // Create a wrapper for custom dropdown/autocomplete
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'relative';
+    wrapper.style.width = '100%';
+    streetInput.parentNode.insertBefore(wrapper, streetInput);
+    wrapper.appendChild(streetInput);
+
+    // Create autocomplete input
+    const streetAutocompleteInput = document.createElement('input');
+    streetAutocompleteInput.type = 'text';
+    streetAutocompleteInput.id = 'street-autocomplete';
+    streetAutocompleteInput.setAttribute('placeholder', 'שם הרחוב');
+    streetAutocompleteInput.setAttribute('autocomplete', 'off');
+    streetAutocompleteInput.required = true;
+    streetAutocompleteInput.disabled = true; // Initially disabled
+    streetAutocompleteInput.style.width = '100%';
+    streetAutocompleteInput.style.boxSizing = 'border-box';
+    streetAutocompleteInput.style.marginBottom = '0.5em';
+    streetAutocompleteInput.style.fontSize = 'inherit';
+    streetAutocompleteInput.style.padding = '12px 16px';
+    streetAutocompleteInput.style.borderRadius = 'var(--radius-md, 8px)';
+    streetAutocompleteInput.style.border = '1px solid var(--border-color, #ccc)';
+    streetAutocompleteInput.style.direction = 'rtl';
+    streetAutocompleteInput.style.background = 'var(--primary-white, #fff)';
+    streetAutocompleteInput.style.position = 'relative';
+    streetAutocompleteInput.style.zIndex = '2';
+    streetAutocompleteInput.style.opacity = '0.6'; // Visual indication of disabled state
+    
+    // Hide the original input visually but keep it for form submission
+    streetInput.style.display = 'none';
+    wrapper.insertBefore(streetAutocompleteInput, streetInput);
+
+    // Dropdown for autocomplete results
+    const dropdown = document.createElement('div');
+    dropdown.className = 'street-autocomplete-dropdown';
+    dropdown.style.position = 'absolute';
+    dropdown.style.top = '48px';
+    dropdown.style.right = '0';
+    dropdown.style.left = '0';
+    dropdown.style.background = '#fff';
+    dropdown.style.border = '1px solid #ddd';
+    dropdown.style.borderTop = 'none';
+    dropdown.style.maxHeight = '200px';
+    dropdown.style.overflowY = 'auto';
+    dropdown.style.zIndex = '10';
+    dropdown.style.display = 'none';
+    dropdown.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)';
+    dropdown.style.direction = 'rtl';
+    wrapper.appendChild(dropdown);
+
+    // Error message
+    const errorMsg = document.createElement('div');
+    errorMsg.style.color = '#e74c3c';
+    errorMsg.style.fontSize = '0.95em';
+    errorMsg.style.marginTop = '0.25em';
+    errorMsg.style.display = 'none';
+    errorMsg.textContent = 'לא נמצאו רחובות זמינים בעיר שבחרת, אנא נסה שוב מאוחר יותר.';
+    wrapper.appendChild(errorMsg);
+
+    // Loading indicator
+    const loadingMsg = document.createElement('div');
+    loadingMsg.style.color = '#3498db';
+    loadingMsg.style.fontSize = '0.95em';
+    loadingMsg.style.marginTop = '0.25em';
+    loadingMsg.style.display = 'none';
+    loadingMsg.textContent = 'טוען רחובות...';
+    wrapper.appendChild(loadingMsg);
+
+    // Fetch streets for a specific city
+    async function fetchStreetsForCity(cityName) {
+        if (streetsCache.has(cityName)) {
+            return streetsCache.get(cityName);
+        }
+
+        isLoadingStreets = true;
+        loadingMsg.style.display = 'block';
+        errorMsg.style.display = 'none';
+        
+        let streets = [];
+        let start = 0;
+        const limit = 1000;
+        
+        try {
+            while (true) {
+                const url = `${STREETS_API_URL}?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&q=${encodeURIComponent(cityName)}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('API error');
+                const data = await res.json();
+                if (!data.result || !data.result.records) break;
+                
+                const batch = data.result.records
+                    .filter(r => r[CITY_NAME_FIELD] === cityName && r[STREET_NAME_FIELD])
+                    .map(r => r[STREET_NAME_FIELD]);
+                streets = streets.concat(batch);
+                
+                if (batch.length < limit) break;
+                start += limit;
+            }
+            
+            // Remove duplicates and sort
+            streets = Array.from(new Set(streets)).sort((a, b) => a.localeCompare(b, 'he'));
+            streetsCache.set(cityName, streets);
+            
+            if (streets.length === 0) {
+                errorMsg.style.display = 'block';
+                streetAutocompleteInput.disabled = true;
+                streetAutocompleteInput.style.opacity = '0.6';
+            } else {
+                streetAutocompleteInput.disabled = false;
+                streetAutocompleteInput.style.opacity = '1';
+            }
+            
+        } catch (e) {
+            errorMsg.style.display = 'block';
+            streetAutocompleteInput.disabled = true;
+            streetAutocompleteInput.style.opacity = '0.6';
+        } finally {
+            isLoadingStreets = false;
+            loadingMsg.style.display = 'none';
+        }
+        
+        return streets;
+    }
+
+    // Show dropdown with filtered streets
+    function showDropdown(filtered) {
+        dropdown.innerHTML = '';
+        if (!filtered.length) {
+            dropdown.style.display = 'none';
+            return;
+        }
+        filtered.forEach(street => {
+            const option = document.createElement('div');
+            option.textContent = street;
+            option.style.padding = '10px 16px';
+            option.style.cursor = 'pointer';
+            option.style.fontSize = '1em';
+            option.style.textAlign = 'right';
+            option.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                streetAutocompleteInput.value = street;
+                streetInput.value = street;
+                dropdown.style.display = 'none';
+            });
+            dropdown.appendChild(option);
+        });
+        dropdown.style.display = 'block';
+    }
+
+    // Filter streets by input
+    function filterStreets(query) {
+        if (!currentCity || !streetsCache.has(currentCity)) return [];
+        const streets = streetsCache.get(currentCity);
+        query = query.trim();
+        if (!query) return streets.slice(0, 50); // Show first 50 if empty
+        const norm = s => s.replace(/["'\-]/g, '').toLowerCase();
+        return streets.filter(street => norm(street).includes(norm(query))).slice(0, 50);
+    }
+
+    // Handle city selection change
+    function handleCityChange() {
+        const selectedCity = citySelect.value;
+        if (!selectedCity) {
+            // No city selected - disable street field
+            streetAutocompleteInput.disabled = true;
+            streetAutocompleteInput.style.opacity = '0.6';
+            streetAutocompleteInput.value = '';
+            streetInput.value = '';
+            dropdown.style.display = 'none';
+            errorMsg.style.display = 'none';
+            loadingMsg.style.display = 'none';
+            currentCity = null;
+            return;
+        }
+
+        currentCity = selectedCity;
+        
+        // Check if we have cached data
+        if (streetsCache.has(selectedCity)) {
+            const streets = streetsCache.get(selectedCity);
+            if (streets.length > 0) {
+                streetAutocompleteInput.disabled = false;
+                streetAutocompleteInput.style.opacity = '1';
+                errorMsg.style.display = 'none';
+            } else {
+                streetAutocompleteInput.disabled = true;
+                streetAutocompleteInput.style.opacity = '0.6';
+                errorMsg.style.display = 'block';
+            }
+        } else {
+            // Fetch streets for the selected city
+            fetchStreetsForCity(selectedCity);
+        }
+    }
+
+    // Handle street input events
+    streetAutocompleteInput.addEventListener('focus', function() {
+        if (currentCity && streetsCache.has(currentCity)) {
+            showDropdown(filterStreets(streetAutocompleteInput.value));
+        }
+    });
+    
+    streetAutocompleteInput.addEventListener('input', function() {
+        if (currentCity && streetsCache.has(currentCity)) {
+            showDropdown(filterStreets(streetAutocompleteInput.value));
+        }
+    });
+    
+    streetAutocompleteInput.addEventListener('blur', function() {
+        setTimeout(() => { dropdown.style.display = 'none'; }, 150);
+    });
+
+    // Listen for city selection changes
+    citySelect.addEventListener('change', handleCityChange);
+    
+    // Also listen for changes from the city autocomplete
+    const cityAutocompleteInput = document.getElementById('city-autocomplete');
+    if (cityAutocompleteInput) {
+        cityAutocompleteInput.addEventListener('input', function() {
+            // Update city select value when autocomplete changes
+            citySelect.value = cityAutocompleteInput.value;
+            handleCityChange();
+        });
+    }
+
+    // Sync values on form submit
+    streetAutocompleteInput.form && streetAutocompleteInput.form.addEventListener('submit', function() {
+        streetInput.value = streetAutocompleteInput.value;
+    });
+
+    // If form is reset, clear input
+    streetAutocompleteInput.form && streetAutocompleteInput.form.addEventListener('reset', function() {
+        streetAutocompleteInput.value = '';
+        streetInput.value = '';
+        currentCity = null;
+        streetAutocompleteInput.disabled = true;
+        streetAutocompleteInput.style.opacity = '0.6';
+        errorMsg.style.display = 'none';
+        loadingMsg.style.display = 'none';
+    });
+
+    // If page loads with values, sync
+    if (streetInput.value) {
+        streetAutocompleteInput.value = streetInput.value;
+    }
+    if (citySelect.value) {
+        handleCityChange();
+    }
+
+    // Responsive/mobile: make dropdown font-size inherit
+    dropdown.style.fontSize = 'inherit';
+
+    // --- End Dynamic Street Dropdown Code ---
+})(); 
