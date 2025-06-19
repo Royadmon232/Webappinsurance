@@ -1709,22 +1709,27 @@ function smoothScroll(target) {
         let streets = [];
         
         try {
+            console.log(`[DEBUG] ===== Starting street search for city: "${cityName}" =====`);
+            
             // Strategy 1: Try exact match first - most reliable
-            console.log('[DEBUG] Fetching streets for city:', cityName);
+            console.log('[DEBUG] Strategy 1: Trying exact match');
             streets = await fetchStreetsWithExactMatch(cityName);
+            console.log(`[DEBUG] Strategy 1 result: ${streets.length} streets found`);
             
             // Strategy 2: If no results, try with normalized name
             if (streets.length === 0) {
-                console.log('[DEBUG] No results with exact match, trying normalized name');
+                console.log('[DEBUG] Strategy 2: Trying normalized name');
                 const normalizedCityName = normalizeCityName(cityName);
                 if (normalizedCityName !== cityName) {
+                    console.log(`[DEBUG] Normalized city name: "${normalizedCityName}"`);
                     streets = await fetchStreetsWithExactMatch(normalizedCityName);
+                    console.log(`[DEBUG] Strategy 2 result: ${streets.length} streets found`);
                 }
             }
             
             // Strategy 3: Try common variations
             if (streets.length === 0) {
-                console.log('[DEBUG] No results with normalized name, trying common variations');
+                console.log('[DEBUG] Strategy 3: Trying common variations');
                 const commonVariations = [];
                 
                 // Add hyphen/space variations
@@ -1735,6 +1740,8 @@ function smoothScroll(target) {
                     commonVariations.push(cityName.replace(/-/g, ' '));
                     commonVariations.push(cityName.replace(/-/g, ''));
                 }
+                
+                console.log(`[DEBUG] Common variations to try:`, commonVariations);
                 
                 // Try each variation
                 for (const variation of commonVariations) {
@@ -1750,8 +1757,10 @@ function smoothScroll(target) {
             
             // Strategy 4: If still no results, try with fuzzy matching
             if (streets.length === 0) {
-                console.log('[DEBUG] No results with variations, trying fuzzy matching');
+                console.log('[DEBUG] Strategy 4: Trying fuzzy matching');
                 const similarCities = await findSimilarCitiesInStreetsAPI(cityName);
+                console.log(`[DEBUG] Found ${similarCities.length} similar cities:`, similarCities);
+                
                 for (const similarCity of similarCities.slice(0, 5)) { // Increased from 3 to 5
                     console.log(`[DEBUG] Trying similar city: ${similarCity}`);
                     const similarStreets = await fetchStreetsWithExactMatch(similarCity);
@@ -1773,7 +1782,7 @@ function smoothScroll(target) {
             streets = Array.from(new Set(streets)).sort((a, b) => a.localeCompare(b, 'he'));
             streetsCache.set(cityName, streets);
             
-            console.log(`[DEBUG] Found ${streets.length} streets for city: ${cityName}`);
+            console.log(`[DEBUG] ===== Final result: ${streets.length} streets for city: ${cityName} =====`);
             
             if (streets.length === 0) {
                 errorMsg.style.display = 'block';
@@ -1803,43 +1812,133 @@ function smoothScroll(target) {
     // Simplified function to fetch streets with exact match only
     async function fetchStreetsWithExactMatch(cityName) {
         let streets = [];
-        let start = 0;
-        const limit = 1000;
         
         try {
-            while (true) {
-                const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&filters={"${CITY_NAME_FIELD}":"${cityName}"}`;
-                
-                // Try direct fetch first, fallback to proxy if needed
-                let res;
-                try {
-                    res = await fetch(url);
-                } catch (e) {
-                    // If direct fetch fails, try with proxy
-                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-                    res = await fetch(proxyUrl);
-                }
-                
-                if (!res.ok) {
-                    console.warn(`[DEBUG] API request failed with status: ${res.status}`);
-                    break;
-                }
-                
-                const data = await res.json();
-                if (!data.result || !data.result.records) break;
-                
-                const batch = data.result.records
-                    .filter(r => r[STREET_NAME_FIELD])
-                    .map(r => r[STREET_NAME_FIELD]);
-                
-                streets = streets.concat(batch);
-                
-                if (batch.length < limit) break;
-                start += limit;
-                
-                // Limit to prevent infinite loops
-                if (start > 5000) break;
+            console.log(`[DEBUG] Fetching streets for city: "${cityName}"`);
+            
+            // Fetch more data to ensure we get enough records
+            const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=10000`;
+            
+            console.log(`[DEBUG] API URL: ${url}`);
+            
+            // Try direct fetch first, fallback to proxy if needed
+            let res;
+            try {
+                res = await fetch(url);
+            } catch (e) {
+                console.log('[DEBUG] Direct fetch failed, trying proxy');
+                // If direct fetch fails, try with proxy
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                res = await fetch(proxyUrl);
             }
+            
+            if (!res.ok) {
+                console.warn(`[DEBUG] API request failed with status: ${res.status}`);
+                return [];
+            }
+            
+            const data = await res.json();
+            console.log(`[DEBUG] API response received, records: ${data.result?.records?.length || 0}`);
+            
+            if (!data.result || !data.result.records) {
+                console.log('[DEBUG] No records in response');
+                return [];
+            }
+            
+            // Log some sample records to debug
+            console.log('[DEBUG] Sample records:', data.result.records.slice(0, 3));
+            
+            // Log all unique cities in the response to see what's available
+            const allCitiesInResponse = [...new Set(data.result.records
+                .filter(r => r[CITY_NAME_FIELD])
+                .map(r => r[CITY_NAME_FIELD]))];
+            console.log(`[DEBUG] All cities in response (${allCitiesInResponse.length}):`, allCitiesInResponse.slice(0, 20));
+            
+            // Check if our search city is in the response
+            const cityInResponse = allCitiesInResponse.find(city => 
+                city === cityName || 
+                city.toLowerCase() === cityName.toLowerCase() ||
+                city.replace(/[\s\-]/g, '') === cityName.replace(/[\s\-]/g, '')
+            );
+            console.log(`[DEBUG] City "${cityName}" found in response:`, cityInResponse);
+            
+            // Filter records locally for the specific city with multiple matching strategies
+            const cityRecords = data.result.records.filter(r => {
+                if (!r[STREET_NAME_FIELD] || !r[CITY_NAME_FIELD]) return false;
+                
+                const recordCity = r[CITY_NAME_FIELD];
+                const searchCity = cityName;
+                
+                // Strategy 1: Exact match
+                if (recordCity === searchCity) {
+                    console.log(`[DEBUG] Exact match found: "${recordCity}"`);
+                    return true;
+                }
+                
+                // Strategy 2: Case-insensitive match
+                if (recordCity.toLowerCase() === searchCity.toLowerCase()) {
+                    console.log(`[DEBUG] Case-insensitive match found: "${recordCity}"`);
+                    return true;
+                }
+                
+                // Strategy 3: Normalized match (remove spaces and hyphens)
+                const normalizedSearch = searchCity.replace(/[\s\-]/g, '');
+                const normalizedRecord = recordCity.replace(/[\s\-]/g, '');
+                if (normalizedRecord === normalizedSearch) {
+                    console.log(`[DEBUG] Normalized match found: "${recordCity}"`);
+                    return true;
+                }
+                
+                // Strategy 4: Contains match
+                if (recordCity.includes(searchCity) || searchCity.includes(recordCity)) {
+                    console.log(`[DEBUG] Contains match found: "${recordCity}"`);
+                    return true;
+                }
+                
+                return false;
+            });
+            
+            streets = cityRecords.map(r => r[STREET_NAME_FIELD]);
+            
+            console.log(`[DEBUG] Found ${streets.length} streets for city: "${cityName}"`);
+            
+            // If we found streets, great! If not, try with variations
+            if (streets.length === 0) {
+                console.log('[DEBUG] No streets found with exact match, trying variations');
+                const variations = generateHebrewVariations(cityName);
+                
+                for (const variation of variations) {
+                    if (variation === cityName) continue; // Skip the original
+                    
+                    console.log(`[DEBUG] Trying variation: "${variation}"`);
+                    
+                    const variationRecords = data.result.records.filter(r => {
+                        if (!r[STREET_NAME_FIELD] || !r[CITY_NAME_FIELD]) return false;
+                        
+                        const recordCity = r[CITY_NAME_FIELD];
+                        
+                        // Try exact match first
+                        if (recordCity === variation) return true;
+                        
+                        // Try case-insensitive match
+                        if (recordCity.toLowerCase() === variation.toLowerCase()) return true;
+                        
+                        // Try normalized match
+                        const normalizedVariation = variation.replace(/[\s\-]/g, '');
+                        const normalizedRecord = recordCity.replace(/[\s\-]/g, '');
+                        if (normalizedRecord === normalizedVariation) return true;
+                        
+                        return false;
+                    });
+                    
+                    if (variationRecords.length > 0) {
+                        streets = variationRecords.map(r => r[STREET_NAME_FIELD]);
+                        console.log(`[DEBUG] Found ${streets.length} streets using variation: "${variation}"`);
+                        break;
+                    }
+                }
+            }
+            
         } catch (e) {
             console.error('[DEBUG] Error in fetchStreetsWithExactMatch:', e);
         }
@@ -1847,97 +1946,67 @@ function smoothScroll(target) {
         return streets;
     }
     
-    // Helper function to normalize city names for better matching
-    function normalizeCityName(cityName) {
-        // Remove common prefixes/suffixes that might differ between APIs
-        let normalized = cityName
-            .replace(/^עיר\s+/i, '') // Remove "עיר" prefix
-            .replace(/^מועצה\s+/i, '') // Remove "מועצה" prefix
-            .replace(/\s+עירייה$/i, '') // Remove "עירייה" suffix
-            .replace(/\s+מועצה$/i, '') // Remove "מועצה" suffix
-            .trim();
+    // Helper function to generate Hebrew variations of city names
+    function generateHebrewVariations(cityName) {
+        const variations = [];
         
-        // Handle common variations and alternative names
-        const variations = {
-            'תל אביב': 'תל אביב - יפו',
-            'תל אביב-יפו': 'תל אביב - יפו',
-            'תל אביב יפו': 'תל אביב - יפו',
-            'ירושלים': 'ירושלים',
-            'חיפה': 'חיפה',
-            'באר שבע': 'באר שבע',
-            'ראשון לציון': 'ראשון לציון',
-            'פתח תקווה': 'פתח תקווה',
-            'פתח תקוה': 'פתח תקווה',
-            'אשדוד': 'אשדוד',
-            'נתניה': 'נתניה',
-            'רמת גן': 'רמת גן',
-            'גבעתיים': 'גבעתיים',
-            'רמת השרון': 'רמת השרון',
-            'הוד השרון': 'הוד השרון',
-            'כפר סבא': 'כפר סבא',
-            'רעננה': 'רעננה',
-            'הרצליה': 'הרצליה',
-            'קריית אונו': 'קריית אונו',
-            'יהוד': 'יהוד',
-            'יהוד-מונוסון': 'יהוד-מונוסון',
-            'אור יהודה': 'אור יהודה',
-            'קריית גת': 'קריית גת',
-            'אשקלון': 'אשקלון',
-            'רחובות': 'רחובות',
-            'רמלה': 'רמלה',
-            'לוד': 'לוד',
-            'מודיעין עילית': 'מודיעין עילית',
-            'מודיעין': 'מודיעין-מכבים-רעות',
-            'מודיעין-מכבים-רעות': 'מודיעין-מכבים-רעות',
-            'מודיעין מכבים רעות': 'מודיעין-מכבים-רעות',
-            'בית שמש': 'בית שמש',
-            'ביתר עילית': 'ביתר עילית',
-            'קריית מלאכי': 'קריית מלאכי',
-            'קריית שמונה': 'קריית שמונה',
-            'צפת': 'צפת',
-            'טבריה': 'טבריה',
-            'עכו': 'עכו',
-            'נהריה': 'נהריה',
-            'קריית ביאליק': 'קריית ביאליק',
-            'קריית מוצקין': 'קריית מוצקין',
-            'קריית ים': 'קריית ים',
-            'נצרת': 'נצרת',
-            'נצרת עילית': 'נוף הגליל',
-            'נוף הגליל': 'נוף הגליל',
-            'עפולה': 'עפולה',
-            'בית שאן': 'בית שאן',
-            'אריאל': 'אריאל',
-            'כפר יונה': 'כפר יונה',
-            'טירה': 'טירה',
-            'טירת כרמל': 'טירת כרמל',
-            'נשר': 'נשר',
-            'אום אל-פחם': 'אום אל-פחם',
-            'אום אל פחם': 'אום אל-פחם',
-            'כרמל': 'כרמיאל',
-            'כרמיאל': 'כרמיאל',
-            'כרמאל': 'כרמיאל',
-            'ראש העין': 'ראש העין',
-            'בני ברק': 'בני ברק',
-            'חולון': 'חולון',
-            'בת ים': 'בת ים',
-            'קריית אתא': 'קריית אתא',
-            'קרית אתא': 'קריית אתא',
-            'אילת': 'אילת',
-            'דימונה': 'דימונה',
-            'ערד': 'ערד',
-            'שדרות': 'שדרות',
-            'אופקים': 'אופקים',
-            'נתיבות': 'נתיבות',
-            'קריית עקרון': 'קריית עקרון',
-            'קרית עקרון': 'קריית עקרון',
-            'יבנה': 'יבנה',
-            'גדרה': 'גדרה',
-            'מזכרת בתיה': 'מזכרת בתיה',
-            'נס ציונה': 'נס ציונה',
-            'גן יבנה': 'גן יבנה'
+        // Add the original name
+        variations.push(cityName);
+        
+        // Common Hebrew variations
+        if (cityName.includes(' ')) {
+            variations.push(cityName.replace(/\s+/g, '-'));
+            variations.push(cityName.replace(/\s+/g, ''));
+        }
+        
+        if (cityName.includes('-')) {
+            variations.push(cityName.replace(/-/g, ' '));
+            variations.push(cityName.replace(/-/g, ''));
+        }
+        
+        // Remove common prefixes/suffixes
+        if (cityName.startsWith('עיר ')) {
+            variations.push(cityName.substring(4));
+        }
+        if (cityName.startsWith('מועצה ')) {
+            variations.push(cityName.substring(6));
+        }
+        if (cityName.endsWith(' עירייה')) {
+            variations.push(cityName.substring(0, cityName.length - 6));
+        }
+        if (cityName.endsWith(' מועצה')) {
+            variations.push(cityName.substring(0, cityName.length - 6));
+        }
+        
+        // Add common alternative names
+        const alternativeNames = {
+            'תל אביב': ['תל אביב - יפו', 'תל אביב-יפו', 'תל אביב יפו'],
+            'תל אביב-יפו': ['תל אביב', 'תל אביב יפו'],
+            'תל אביב יפו': ['תל אביב', 'תל אביב - יפו', 'תל אביב-יפו'],
+            'פתח תקווה': ['פתח תקוה'],
+            'פתח תקוה': ['פתח תקווה'],
+            'מודיעין': ['מודיעין-מכבים-רעות', 'מודיעין מכבים רעות'],
+            'מודיעין-מכבים-רעות': ['מודיעין', 'מודיעין מכבים רעות'],
+            'מודיעין מכבים רעות': ['מודיעין', 'מודיעין-מכבים-רעות'],
+            'נצרת עילית': ['נוף הגליל'],
+            'נוף הגליל': ['נצרת עילית'],
+            'אום אל-פחם': ['אום אל פחם'],
+            'אום אל פחם': ['אום אל-פחם'],
+            'כרמל': ['כרמיאל', 'כרמאל'],
+            'כרמיאל': ['כרמל', 'כרמאל'],
+            'כרמאל': ['כרמל', 'כרמיאל'],
+            'קריית אתא': ['קרית אתא'],
+            'קרית אתא': ['קריית אתא'],
+            'קריית עקרון': ['קרית עקרון'],
+            'קרית עקרון': ['קריית עקרון']
         };
         
-        return variations[normalized] || normalized;
+        if (alternativeNames[cityName]) {
+            variations.push(...alternativeNames[cityName]);
+        }
+        
+        // Remove duplicates and return
+        return [...new Set(variations)];
     }
     
     // Helper function to find similar cities in the streets API using fuzzy matching
@@ -1945,40 +2014,37 @@ function smoothScroll(target) {
         try {
             console.log('[DEBUG] Searching for similar cities to:', cityName);
             
-            // Strategy 1: Try to find the city directly in the streets API using search
-            console.log('[DEBUG] Strategy 1: Direct search in streets API');
-            const directMatches = await searchCityDirectlyInStreetsAPI(cityName);
-            if (directMatches.length > 0) {
-                console.log(`[DEBUG] Found ${directMatches.length} direct matches:`, directMatches);
-                return directMatches;
+            // Fetch a sample of cities from the streets API to find similar ones
+            const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=2000`;
+            
+            let res;
+            try {
+                res = await fetch(url);
+            } catch (e) {
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                res = await fetch(proxyUrl);
             }
             
-            // Strategy 2: Try with common Hebrew variations first
-            console.log('[DEBUG] Strategy 2: Trying Hebrew variations');
-            const hebrewVariations = generateHebrewVariations(cityName);
-            for (const variation of hebrewVariations) {
-                const variationMatches = await searchCityDirectlyInStreetsAPI(variation);
-                if (variationMatches.length > 0) {
-                    console.log(`[DEBUG] Found ${variationMatches.length} matches with variation "${variation}":`, variationMatches);
-                    return variationMatches;
-                }
+            if (!res.ok) {
+                console.warn('[DEBUG] Failed to fetch cities for similarity search');
+                return [];
             }
             
-            // Strategy 3: Try with partial matching using API search
-            console.log('[DEBUG] Strategy 3: Trying partial matching');
-            const partialMatches = await searchCityWithPartialMatch(cityName);
-            if (partialMatches.length > 0) {
-                console.log(`[DEBUG] Found ${partialMatches.length} partial matches:`, partialMatches);
-                return partialMatches;
+            const data = await res.json();
+            if (!data.result || !data.result.records) {
+                return [];
             }
             
-            // Strategy 4: Only as last resort - fetch a small sample for fuzzy matching
-            console.log('[DEBUG] Strategy 4: Fetching small sample for fuzzy matching');
-            const sampleCities = await fetchSmallSampleForFuzzyMatching();
-            console.log(`[DEBUG] Fetched ${sampleCities.length} sample cities from streets API`);
+            // Extract unique city names from the sample
+            const availableCities = [...new Set(data.result.records
+                .filter(r => r[CITY_NAME_FIELD])
+                .map(r => r[CITY_NAME_FIELD]))];
             
-            const similarCities = findSimilarCitiesLocally(cityName, sampleCities);
-            console.log(`[DEBUG] Found ${similarCities.length} similar cities using local matching`);
+            console.log(`[DEBUG] Found ${availableCities.length} unique cities in sample`);
+            
+            // Use local fuzzy matching to find similar cities
+            const similarCities = findSimilarCitiesLocally(cityName, availableCities);
+            console.log(`[DEBUG] Found ${similarCities.length} similar cities:`, similarCities);
             
             return similarCities;
             
@@ -1986,125 +2052,6 @@ function smoothScroll(target) {
             console.error('[DEBUG] Error finding similar cities:', e);
             return [];
         }
-    }
-    
-    // Helper function to search for a city directly in the streets API
-    async function searchCityDirectlyInStreetsAPI(cityName) {
-        const matches = new Set();
-        
-        // Try different variations of the city name
-        const searchVariations = [
-            cityName,
-            cityName.replace(/\s+/g, '-'),
-            cityName.replace(/-/g, ' '),
-            cityName.replace(/\s+/g, ''),
-            cityName.replace(/-/g, '')
-        ];
-        
-        for (const variation of searchVariations) {
-            try {
-                // Search with exact match filter
-                const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=1000&filters={"${CITY_NAME_FIELD}":"${variation}"}`;
-                
-                let res;
-                try {
-                    res = await fetch(url);
-                } catch (e) {
-                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-                    res = await fetch(proxyUrl);
-                }
-                
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.result && data.result.records) {
-                        const cities = [...new Set(data.result.records
-                            .filter(r => r[CITY_NAME_FIELD])
-                            .map(r => r[CITY_NAME_FIELD]))];
-                        cities.forEach(city => matches.add(city));
-                    }
-                }
-            } catch (e) {
-                console.warn(`[DEBUG] Error searching for variation "${variation}":`, e);
-            }
-        }
-        
-        return Array.from(matches);
-    }
-    
-    // Helper function to search for cities with partial matching using API
-    async function searchCityWithPartialMatch(cityName) {
-        const matches = new Set();
-        
-        try {
-            // Get a small sample to find cities that contain the search term
-            const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=2000`;
-            
-            let res;
-            try {
-                res = await fetch(url);
-            } catch (e) {
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-                res = await fetch(proxyUrl);
-            }
-            
-            if (res.ok) {
-                const data = await res.json();
-                if (data.result && data.result.records) {
-                    const normalizedSearch = cityName.trim().toLowerCase();
-                    
-                    // Find cities that contain the search term
-                    const matchingCities = data.result.records
-                        .filter(r => r[CITY_NAME_FIELD])
-                        .map(r => r[CITY_NAME_FIELD])
-                        .filter(city => {
-                            const normalizedCity = city.trim().toLowerCase();
-                            return normalizedCity.includes(normalizedSearch) || 
-                                   normalizedSearch.includes(normalizedCity);
-                        });
-                    
-                    matchingCities.forEach(city => matches.add(city));
-                }
-            }
-        } catch (e) {
-            console.warn(`[DEBUG] Error in partial matching for "${cityName}":`, e);
-        }
-        
-        return Array.from(matches);
-    }
-    
-    // Helper function to fetch a very small sample for fuzzy matching (last resort)
-    async function fetchSmallSampleForFuzzyMatching() {
-        const allCities = new Set();
-        
-        try {
-            // Fetch only one batch of 2000 records for fuzzy matching
-            const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=2000`;
-            
-            let res;
-            try {
-                res = await fetch(url);
-            } catch (e) {
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-                res = await fetch(proxyUrl);
-            }
-            
-            if (res.ok) {
-                const data = await res.json();
-                if (data.result && data.result.records) {
-                    // Extract city names from this batch
-                    data.result.records.forEach(record => {
-                        if (record[CITY_NAME_FIELD]) {
-                            allCities.add(record[CITY_NAME_FIELD]);
-                        }
-                    });
-                }
-            }
-        } catch (e) {
-            console.error('[DEBUG] Error fetching small sample:', e);
-        }
-        
-        console.log(`[DEBUG] Fetched small sample. Unique cities: ${allCities.size}`);
-        return Array.from(allCities);
     }
 
     // Show dropdown with filtered streets
@@ -2338,3 +2285,142 @@ function smoothScroll(target) {
     // Keeping this as a placeholder for any future enhancements
 })();
 // --- End Cursor AI Patch --- 
+
+// Helper function to normalize city names for better matching
+function normalizeCityName(cityName) {
+    console.log(`[DEBUG] Normalizing city name: "${cityName}"`);
+    
+    // Remove common prefixes/suffixes that might differ between APIs
+    let normalized = cityName
+        .replace(/^עיר\s+/i, '') // Remove "עיר" prefix
+        .replace(/^מועצה\s+/i, '') // Remove "מועצה" prefix
+        .replace(/\s+עירייה$/i, '') // Remove "עירייה" suffix
+        .replace(/\s+מועצה$/i, '') // Remove "מועצה" suffix
+        .trim();
+    
+    // Handle common variations and alternative names
+    const variations = {
+        'תל אביב': 'תל אביב - יפו',
+        'תל אביב-יפו': 'תל אביב - יפו',
+        'תל אביב יפו': 'תל אביב - יפו',
+        'ירושלים': 'ירושלים',
+        'חיפה': 'חיפה',
+        'באר שבע': 'באר שבע',
+        'ראשון לציון': 'ראשון לציון',
+        'פתח תקווה': 'פתח תקווה',
+        'פתח תקוה': 'פתח תקווה',
+        'אשדוד': 'אשדוד',
+        'נתניה': 'נתניה',
+        'רמת גן': 'רמת גן',
+        'גבעתיים': 'גבעתיים',
+        'רמת השרון': 'רמת השרון',
+        'הוד השרון': 'הוד השרון',
+        'כפר סבא': 'כפר סבא',
+        'רעננה': 'רעננה',
+        'הרצליה': 'הרצליה',
+        'קריית אונו': 'קריית אונו',
+        'יהוד': 'יהוד',
+        'יהוד-מונוסון': 'יהוד-מונוסון',
+        'אור יהודה': 'אור יהודה',
+        'קריית גת': 'קריית גת',
+        'אשקלון': 'אשקלון',
+        'רחובות': 'רחובות',
+        'רמלה': 'רמלה',
+        'לוד': 'לוד',
+        'מודיעין עילית': 'מודיעין עילית',
+        'מודיעין': 'מודיעין-מכבים-רעות',
+        'מודיעין-מכבים-רעות': 'מודיעין-מכבים-רעות',
+        'מודיעין מכבים רעות': 'מודיעין-מכבים-רעות',
+        'בית שמש': 'בית שמש',
+        'ביתר עילית': 'ביתר עילית',
+        'קריית מלאכי': 'קריית מלאכי',
+        'קריית שמונה': 'קריית שמונה',
+        'צפת': 'צפת',
+        'טבריה': 'טבריה',
+        'עכו': 'עכו',
+        'נהריה': 'נהריה',
+        'קריית ביאליק': 'קריית ביאליק',
+        'קריית מוצקין': 'קריית מוצקין',
+        'קריית ים': 'קריית ים',
+        'נצרת': 'נצרת',
+        'נצרת עילית': 'נוף הגליל',
+        'נוף הגליל': 'נוף הגליל',
+        'עפולה': 'עפולה',
+        'בית שאן': 'בית שאן',
+        'אריאל': 'אריאל',
+        'כפר יונה': 'כפר יונה',
+        'טירה': 'טירה',
+        'טירת כרמל': 'טירת כרמל',
+        'נשר': 'נשר',
+        'אום אל-פחם': 'אום אל-פחם',
+        'אום אל פחם': 'אום אל-פחם',
+        'כרמל': 'כרמיאל',
+        'כרמיאל': 'כרמיאל',
+        'כרמאל': 'כרמיאל',
+        'ראש העין': 'ראש העין',
+        'בני ברק': 'בני ברק',
+        'חולון': 'חולון',
+        'בת ים': 'בת ים',
+        'קריית אתא': 'קריית אתא',
+        'קרית אתא': 'קריית אתא',
+        'אילת': 'אילת',
+        'דימונה': 'דימונה',
+        'ערד': 'ערד',
+        'שדרות': 'שדרות',
+        'אופקים': 'אופקים',
+        'נתיבות': 'נתיבות',
+        'קריית עקרון': 'קריית עקרון',
+        'קרית עקרון': 'קריית עקרון',
+        'יבנה': 'יבנה',
+        'גדרה': 'גדרה',
+        'מזכרת בתיה': 'מזכרת בתיה',
+        'נס ציונה': 'נס ציונה',
+        'גן יבנה': 'גן יבנה'
+    };
+    
+    const result = variations[normalized] || normalized;
+    console.log(`[DEBUG] Normalized result: "${result}"`);
+    return result;
+}
+
+// Test function to check API functionality
+async function testAPI() {
+    console.log('[TEST] Testing API functionality...');
+    
+    try {
+        const url = 'https://data.gov.il/api/3/action/datastore_search?resource_id=9ad3862c-8391-4b2f-84a4-2d4c68625f4b&limit=10';
+        console.log('[TEST] Fetching from URL:', url);
+        
+        const response = await fetch(url);
+        console.log('[TEST] Response status:', response.status);
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('[TEST] API Response:', data);
+            
+            if (data.result && data.result.records) {
+                console.log('[TEST] Records found:', data.result.records.length);
+                console.log('[TEST] Sample records:', data.result.records.slice(0, 3));
+                
+                // Check what fields are available
+                if (data.result.records.length > 0) {
+                    const firstRecord = data.result.records[0];
+                    console.log('[TEST] Available fields:', Object.keys(firstRecord));
+                    console.log('[TEST] First record:', firstRecord);
+                }
+            } else {
+                console.log('[TEST] No records in response');
+            }
+        } else {
+            console.log('[TEST] API request failed');
+        }
+    } catch (error) {
+        console.error('[TEST] Error testing API:', error);
+    }
+}
+
+// Run test when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Uncomment the next line to test the API
+    // testAPI();
+});
