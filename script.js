@@ -1949,7 +1949,7 @@ function smoothScroll(target) {
             // Strategy 2: Fuzzy matching with similarity threshold
             const fuzzyMatches = availableCities.filter(availableCity => {
                 const similarity = calculateStringSimilarity(cityName, availableCity);
-                return similarity > 0.6; // 60% similarity threshold
+                return similarity > 0.75; // 75% similarity threshold
             });
             
             // Strategy 3: Normalized matching
