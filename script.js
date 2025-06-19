@@ -1658,60 +1658,39 @@ function smoothScroll(target) {
             const cleanCityName = cityName.trim();
             if (!cleanCityName) return [];
 
-            // Try multiple filter strategies
-            const filterStrategies = [
-                // Strategy 1: Exact match
-                { [CITY_NAME_FIELD]: cleanCityName },
-                
-                // Strategy 2: Remove trailing spaces and parentheses
-                { [CITY_NAME_FIELD]: cleanCityName.replace(/\s*\([^)]*\)\s*$/, '').trim() },
-                
-                // Strategy 3: Remove leading/trailing spaces
-                { [CITY_NAME_FIELD]: cleanCityName.replace(/^\s+|\s+$/g, '') }
-            ];
+            // Use exactly the specified API endpoint and filter format
+            const filter = { "שם_ישוב": cleanCityName };
+            const filterStr = encodeURIComponent(JSON.stringify(filter));
+            const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&filters=${filterStr}`;
             
-            // Add common variations
-            if (cleanCityName.includes(' ')) {
-                filterStrategies.push({ [CITY_NAME_FIELD]: cleanCityName.replace(/\s+/g, '-') });
-                filterStrategies.push({ [CITY_NAME_FIELD]: cleanCityName.replace(/\s+/g, '') });
+            console.log(`[DEBUG] Making API call with filter:`, filter);
+            console.log(`[DEBUG] API URL: ${url}`);
+            
+            let res;
+            try {
+                res = await fetch(url);
+            } catch (e) {
+                console.log('[DEBUG] Direct fetch failed, trying proxy');
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                res = await fetch(proxyUrl);
             }
-            if (cleanCityName.includes('-')) {
-                filterStrategies.push({ [CITY_NAME_FIELD]: cleanCityName.replace(/-/g, ' ') });
-                filterStrategies.push({ [CITY_NAME_FIELD]: cleanCityName.replace(/-/g, '') });
+            
+            if (!res.ok) {
+                console.error(`[DEBUG] API request failed with status: ${res.status}`);
+                throw new Error(`API request failed with status: ${res.status}`);
             }
-
+            
+            const data = await res.json();
+            console.log(`[DEBUG] API response received:`, data);
+            
             let streets = [];
-
-            // Try each strategy
-            for (const filter of filterStrategies) {
-                const filterStr = encodeURIComponent(JSON.stringify(filter));
-                const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&filters=${filterStr}&limit=1000`;
-                
-                console.log(`[DEBUG] Trying filter:`, filter);
-                
-                let res;
-                try {
-                    res = await fetch(url);
-                } catch (e) {
-                    console.log('[DEBUG] Direct fetch failed, trying proxy');
-                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-                    res = await fetch(proxyUrl);
-                }
-                
-                if (!res.ok) {
-                    console.warn(`[DEBUG] API request failed with status: ${res.status}`);
-                    continue;
-                }
-                
-                const data = await res.json();
-                
-                if (data.result && data.result.records && data.result.records.length > 0) {
-                    streets = data.result.records
-                        .filter(r => r[STREET_NAME_FIELD])
-                        .map(r => r[STREET_NAME_FIELD]);
-                    console.log(`[DEBUG] Found ${streets.length} streets for city: "${cleanCityName}" using filter:`, filter);
-                    break; // Found results, stop trying other strategies
-                }
+            if (data.result && data.result.records && data.result.records.length > 0) {
+                streets = data.result.records
+                    .filter(r => r[STREET_NAME_FIELD] && r[STREET_NAME_FIELD].trim())
+                    .map(r => r[STREET_NAME_FIELD].trim());
+                console.log(`[DEBUG] Found ${streets.length} streets for city: "${cleanCityName}"`);
+            } else {
+                console.log(`[DEBUG] No streets found for city: "${cleanCityName}"`);
             }
 
             // Remove duplicates and sort
@@ -1966,7 +1945,7 @@ function smoothScroll(target) {
                     streetAutocompleteInput.disabled = true;
                     streetAutocompleteInput.style.opacity = '0.6';
                     errorMsg.style.display = 'block';
-                    errorMsg.textContent = 'לא נמצאו רחובות זמינים בעיר שבחרת';
+                    errorMsg.textContent = 'לא נמצאו רחובות זמינים בעיר שבחרת, אנא נסה שוב מאוחר יותר.';
                 }
             })
             .catch(error => {
