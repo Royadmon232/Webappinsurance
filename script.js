@@ -1631,8 +1631,12 @@ function smoothScroll(target) {
 
     // Fetch streets for a specific city
     async function fetchStreetsForCity(cityName) {
+        console.log(`[DEBUG] fetchStreetsForCity called with: ${cityName}`);
+        
         if (streetsCache.has(cityName)) {
-            return streetsCache.get(cityName);
+            const cachedStreets = streetsCache.get(cityName);
+            console.log(`[DEBUG] Using cached streets for ${cityName}: ${cachedStreets.length} streets`);
+            return cachedStreets;
         }
 
         isLoadingStreets = true;
@@ -1644,62 +1648,149 @@ function smoothScroll(target) {
         const limit = 1000;
         
         try {
-            while (true) {
+            let hasMoreData = true;
+            while (hasMoreData) {
                 // Try multiple approaches to get streets for the city
+                let batch = [];
+                
+                // Build the API URL with proper filters
                 let url;
-                
-                // First try: direct query with city name
-                url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&q=${encodeURIComponent(cityName)}`;
-                
-                // Use a different CORS proxy that's more reliable
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-                
-                const res = await fetch(proxyUrl);
-                if (!res.ok) {
-                    // Fallback: try without proxy
-                    const directRes = await fetch(url);
-                    if (!directRes.ok) throw new Error('API error');
-                    const data = await directRes.json();
-                    if (!data.result || !data.result.records) break;
-                    
-                    const batch = data.result.records
-                        .filter(r => r[CITY_NAME_FIELD] === cityName && r[STREET_NAME_FIELD])
-                        .map(r => r[STREET_NAME_FIELD]);
-                    streets = streets.concat(batch);
-                } else {
-                    const data = await res.json();
-                    if (!data.result || !data.result.records) break;
-                    
-                    const batch = data.result.records
-                        .filter(r => r[CITY_NAME_FIELD] === cityName && r[STREET_NAME_FIELD])
-                        .map(r => r[STREET_NAME_FIELD]);
-                    streets = streets.concat(batch);
+                try {
+                    // Try with filters first (more accurate)
+                    const filters = JSON.stringify({[CITY_NAME_FIELD]: cityName});
+                    url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&filters=${encodeURIComponent(filters)}`;
+                } catch (e) {
+                    // Fallback to simple query
+                    url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&q=${encodeURIComponent(cityName)}`;
                 }
                 
-                if (batch.length < limit) break;
-                start += limit;
+                console.log(`[DEBUG] Fetching streets from: ${url}`);
+                
+                try {
+                    // Try with proxy first
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                    const res = await fetch(proxyUrl);
+                    
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.result && data.result.records) {
+                            batch = data.result.records
+                                .filter(r => r[CITY_NAME_FIELD] === cityName && r[STREET_NAME_FIELD])
+                                .map(r => r[STREET_NAME_FIELD]);
+                            console.log(`[DEBUG] Proxy fetch successful, got ${batch.length} streets`);
+                        }
+                    }
+                } catch (proxyError) {
+                    console.log(`[DEBUG] Proxy failed, trying direct fetch`);
+                    
+                    // Fallback: try without proxy
+                    try {
+                        const directRes = await fetch(url);
+                        if (directRes.ok) {
+                            const data = await directRes.json();
+                            if (data.result && data.result.records) {
+                                batch = data.result.records
+                                    .filter(r => r[CITY_NAME_FIELD] === cityName && r[STREET_NAME_FIELD])
+                                    .map(r => r[STREET_NAME_FIELD]);
+                                console.log(`[DEBUG] Direct fetch successful, got ${batch.length} streets`);
+                            }
+                        }
+                    } catch (directError) {
+                        console.error(`[DEBUG] Direct fetch also failed:`, directError);
+                    }
+                }
+                
+                // Add batch to streets
+                streets = streets.concat(batch);
+                
+                // Check if we should continue
+                if (batch.length < limit) {
+                    hasMoreData = false;
+                } else {
+                    start += limit;
+                }
             }
             
             // Remove duplicates and sort
             streets = Array.from(new Set(streets)).sort((a, b) => a.localeCompare(b, 'he'));
+            
+            // If no streets found with exact match, try a more flexible search
+            if (streets.length === 0 && start === 0) {
+                console.log(`[DEBUG] No streets found with exact match, trying flexible search for: ${cityName}`);
+                
+                try {
+                    // Try searching with just the query parameter (more flexible)
+                    const flexibleUrl = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&q=${encodeURIComponent(cityName)}`;
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(flexibleUrl)}`;
+                    
+                    const res = await fetch(proxyUrl);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.result && data.result.records) {
+                            // Get all records that might be related
+                            const allRecords = data.result.records.filter(r => r[STREET_NAME_FIELD]);
+                            
+                            // Group by city to see what cities are available
+                            const citiesFound = new Set();
+                            allRecords.forEach(r => {
+                                if (r[CITY_NAME_FIELD]) {
+                                    citiesFound.add(r[CITY_NAME_FIELD]);
+                                }
+                            });
+                            
+                            console.log(`[DEBUG] Cities found in flexible search:`, Array.from(citiesFound));
+                            
+                            // Try to find a close match
+                            const normalizedSearchCity = cityName.replace(/[\s\-'"]/g, '').toLowerCase();
+                            let bestMatchCity = null;
+                            
+                            for (const city of citiesFound) {
+                                const normalizedCity = city.replace(/[\s\-'"]/g, '').toLowerCase();
+                                if (normalizedCity === normalizedSearchCity || 
+                                    normalizedCity.includes(normalizedSearchCity) || 
+                                    normalizedSearchCity.includes(normalizedCity)) {
+                                    bestMatchCity = city;
+                                    break;
+                                }
+                            }
+                            
+                            if (bestMatchCity) {
+                                console.log(`[DEBUG] Found close match: ${bestMatchCity} for search: ${cityName}`);
+                                streets = allRecords
+                                    .filter(r => r[CITY_NAME_FIELD] === bestMatchCity)
+                                    .map(r => r[STREET_NAME_FIELD]);
+                                streets = Array.from(new Set(streets)).sort((a, b) => a.localeCompare(b, 'he'));
+                            }
+                        }
+                    }
+                } catch (flexError) {
+                    console.error(`[DEBUG] Flexible search also failed:`, flexError);
+                }
+            }
+            
             streetsCache.set(cityName, streets);
             
-            console.log(`[DEBUG] Found ${streets.length} streets for city: ${cityName}`);
+            console.log(`[DEBUG] Total found ${streets.length} unique streets for city: ${cityName}`);
             
             if (streets.length === 0) {
+                errorMsg.textContent = `לא נמצאו רחובות עבור ${cityName}. ייתכן שהעיר לא קיימת במערכת או שיש בעיה בחיבור.`;
                 errorMsg.style.display = 'block';
                 streetAutocompleteInput.disabled = true;
                 streetAutocompleteInput.style.opacity = '0.6';
             } else {
                 streetAutocompleteInput.disabled = false;
                 streetAutocompleteInput.style.opacity = '1';
+                errorMsg.style.display = 'none';
             }
             
         } catch (e) {
             console.error('[DEBUG] Error fetching streets for city:', cityName, e);
+            errorMsg.textContent = 'אירעה שגיאה בטעינת הרחובות. אנא נסה שוב מאוחר יותר.';
             errorMsg.style.display = 'block';
             streetAutocompleteInput.disabled = true;
             streetAutocompleteInput.style.opacity = '0.6';
+            // Cache empty array to prevent repeated failed attempts
+            streetsCache.set(cityName, []);
         } finally {
             isLoadingStreets = false;
             loadingMsg.style.display = 'none';
