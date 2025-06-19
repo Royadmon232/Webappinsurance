@@ -2049,86 +2049,87 @@ function smoothScroll(target) {
         dropdown.style.display = 'block';
         
         // Call fetchStreetsByCity once
-        fetchStreetsByCity(selectedCity)
-            .then(streets => {
-                // Clear loading message
-                loadingMsg.style.display = 'none';
-                dropdown.innerHTML = '';
-                
-                if (streets && streets.length > 0) {
-                    // Populate the dropdown with street options
-                    streets.forEach(street => {
-                        const option = document.createElement('div');
-                        option.textContent = street;
-                        option.style.padding = '8px 12px';
-                        option.style.cursor = 'pointer';
-                        option.style.borderBottom = '1px solid #eee';
-                        
-                        option.addEventListener('mouseenter', function() {
-                            this.style.backgroundColor = '#f5f5f5';
-                        });
-                        
-                        option.addEventListener('mouseleave', function() {
-                            this.style.backgroundColor = '#fff';
-                        });
-                        
-                        option.addEventListener('click', function() {
-                            streetAutocompleteInput.value = street;
-                            streetInput.value = street;
-                            dropdown.style.display = 'none';
-                        });
-                        
-                        dropdown.appendChild(option);
-                    });
-                    
-                    // Re-enable the dropdown
-                    streetAutocompleteInput.disabled = false;
-                    streetAutocompleteInput.style.opacity = '1';
-                    errorMsg.style.display = 'none';
-                    
-                    // Show dropdown initially
-                    dropdown.style.display = 'block';
-                    
-                } else {
-                    // Show "no streets found" message
-                    const noStreetsOption = document.createElement('div');
-                    noStreetsOption.textContent = 'לא נמצאו רחובות';
-                    noStreetsOption.style.padding = '8px 12px';
-                    noStreetsOption.style.color = '#666';
-                    noStreetsOption.style.fontStyle = 'italic';
-                    dropdown.appendChild(noStreetsOption);
-                    dropdown.style.display = 'block';
-                    
-                    // Keep disabled
-                    streetAutocompleteInput.disabled = true;
-                    streetAutocompleteInput.style.opacity = '0.6';
-                    errorMsg.style.display = 'block';
-                    errorMsg.textContent = 'לא נמצאו רחובות זמינים בעיר שבחרת, אנא נסה שוב מאוחר יותר.';
-                }
-            })
-            .catch(error => {
-                console.error('[DEBUG] Error fetching streets:', error);
-                
-                // Clear loading message
-                loadingMsg.style.display = 'none';
-                dropdown.innerHTML = '';
-                
-                // Show error option
-                const errorOption = document.createElement('div');
-                errorOption.textContent = 'שגיאה בטעינת רשימת הרחובות';
-                errorOption.style.padding = '8px 12px';
-                errorOption.style.color = '#e74c3c';
-                errorOption.style.fontStyle = 'italic';
-                errorOption.disabled = true;
-                dropdown.appendChild(errorOption);
-                dropdown.style.display = 'block';
-                
-                // Keep disabled
-                streetAutocompleteInput.disabled = true;
-                streetAutocompleteInput.style.opacity = '0.6';
-                errorMsg.style.display = 'block';
-                errorMsg.textContent = 'שגיאה בטעינת רשימת הרחובות';
-            });
+        // DISABLED: Old implementation conflicts with new Cursor AI implementation
+        // fetchStreetsByCity(selectedCity)
+        //     .then(streets => {
+        //         // Clear loading message
+        //         loadingMsg.style.display = 'none';
+        //         dropdown.innerHTML = '';
+        //         
+        //         if (streets && streets.length > 0) {
+        //             // Populate the dropdown with street options
+        //             streets.forEach(street => {
+        //                 const option = document.createElement('div');
+        //                 option.textContent = street;
+        //                 option.style.padding = '8px 12px';
+        //                 option.style.cursor = 'pointer';
+        //                 option.style.borderBottom = '1px solid #eee';
+        //                 
+        //                 option.addEventListener('mouseenter', function() {
+        //                     this.style.backgroundColor = '#f5f5f5';
+        //                 });
+        //                 
+        //                 option.addEventListener('mouseleave', function() {
+        //                     this.style.backgroundColor = '#fff';
+        //                 });
+        //                 
+        //                 option.addEventListener('click', function() {
+        //                     streetAutocompleteInput.value = street;
+        //                     streetInput.value = street;
+        //                     dropdown.style.display = 'none';
+        //                 });
+        //                 
+        //                 dropdown.appendChild(option);
+        //             });
+        //             
+        //             // Re-enable the dropdown
+        //             streetAutocompleteInput.disabled = false;
+        //             streetAutocompleteInput.style.opacity = '1';
+        //             errorMsg.style.display = 'none';
+        //             
+        //             // Show dropdown initially
+        //             dropdown.style.display = 'block';
+        //             
+        //         } else {
+        //             // Show "no streets found" message
+        //             const noStreetsOption = document.createElement('div');
+        //             noStreetsOption.textContent = 'לא נמצאו רחובות';
+        //             noStreetsOption.style.padding = '8px 12px';
+        //             noStreetsOption.style.color = '#666';
+        //             noStreetsOption.style.fontStyle = 'italic';
+        //             dropdown.appendChild(noStreetsOption);
+        //             dropdown.style.display = 'block';
+        //             
+        //             // Keep disabled
+        //             streetAutocompleteInput.disabled = true;
+        //             streetAutocompleteInput.style.opacity = '0.6';
+        //             errorMsg.style.display = 'block';
+        //             errorMsg.textContent = 'לא נמצאו רחובות זמינים בעיר שבחרת, אנא נסה שוב מאוחר יותר.';
+        //         }
+        //     })
+        //     .catch(error => {
+        //         console.error('[DEBUG] Error fetching streets:', error);
+        //         
+        //         // Clear loading message
+        //         loadingMsg.style.display = 'none';
+        //         dropdown.innerHTML = '';
+        //         
+        //         // Show error option
+        //         const errorOption = document.createElement('div');
+        //         errorOption.textContent = 'שגיאה בטעינת רשימת הרחובות';
+        //         errorOption.style.padding = '8px 12px';
+        //         errorOption.style.color = '#e74c3c';
+        //         errorOption.style.fontStyle = 'italic';
+        //         errorOption.disabled = true;
+        //         dropdown.appendChild(errorOption);
+        //         dropdown.style.display = 'block';
+        //         
+        //         // Keep disabled
+        //         streetAutocompleteInput.disabled = true;
+        //         streetAutocompleteInput.style.opacity = '0.6';
+        //         errorMsg.style.display = 'block';
+        //         errorMsg.textContent = 'שגיאה בטעינת רשימת הרחובות';
+        //     });
     }
 
     // Make handleCityChange available globally
