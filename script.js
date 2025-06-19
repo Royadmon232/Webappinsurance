@@ -1926,6 +1926,12 @@ function smoothScroll(target) {
         
         console.log('[DEBUG] handleCityChange called. selectedCity=', selectedCity);
         
+        // Only proceed if we have a meaningful city name
+        if (!selectedCity || selectedCity.length < 2) {
+            console.log('[DEBUG] City name too short or empty, skipping');
+            return;
+        }
+        
         // Use debounced function to avoid excessive API calls
         debouncedCityChange(selectedCity);
     }
@@ -1962,8 +1968,17 @@ function smoothScroll(target) {
             if (opt) {
                 citySelect.value = opt.value;
             }
-            // Only trigger city change if we have a valid value
-            if (this.value && this.value.length >= 2) {
+            // Only trigger city change if we have a valid value and it matches an option
+            if (this.value && this.value.length >= 2 && opt) {
+                handleCityChange();
+            }
+        });
+        
+        // Add change listener for when user selects from dropdown
+        cityAutocompleteInput.addEventListener('change', function() {
+            const opt = Array.from(citySelect.options).find(o => o.text === this.value || o.value === this.value);
+            if (opt) {
+                citySelect.value = opt.value;
                 handleCityChange();
             }
         });
@@ -2039,12 +2054,18 @@ function smoothScroll(target) {
     if (cityDropdown) {
         cityDropdown.addEventListener('mousedown', function(e) {
             if (e.target && e.target.textContent) {
-                cityAutocompleteInput.value = e.target.textContent;
-                let opt = findOptionByText(citySelect, e.target.textContent);
-                if (!opt) opt = ensureOptionExists(citySelect, e.target.textContent);
+                const selectedCity = e.target.textContent;
+                cityAutocompleteInput.value = selectedCity;
+                let opt = findOptionByText(citySelect, selectedCity);
+                if (!opt) opt = ensureOptionExists(citySelect, selectedCity);
                 if (opt) {
                     citySelect.value = opt.value;
-                    // Don't trigger additional events - let the original handler work
+                    // Trigger city change after selection
+                    setTimeout(() => {
+                        if (window.handleCityChange) {
+                            window.handleCityChange();
+                        }
+                    }, 100);
                     console.log('[DEBUG] City selected from autocomplete dropdown:', opt.value);
                 }
             }
