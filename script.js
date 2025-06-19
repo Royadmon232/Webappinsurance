@@ -1327,4 +1327,197 @@ function smoothScroll(target) {
             behavior: 'smooth'
         });
     }
-} 
+}
+
+// ==========================
+// Dynamic City Dropdown + Autocomplete (Cursor AI Task)
+// ==========================
+// This code adds dynamic loading and autocomplete to the 'city' dropdown ("בחר ישוב")
+// It does NOT overwrite any existing code.
+//
+// Author: Cursor AI
+//
+// --- Begin Dynamic City Dropdown Code ---
+
+(function() {
+    // API details
+    const API_URL = 'https://data.gov.il/api/3/action/datastore_search';
+    const RESOURCE_ID = '5c78e9fa-c2e2-4771-93ff-7f400a12f7ba';
+    const CITY_FIELD = 'שם_ישוב';
+    let allCities = [];
+    let isLoaded = false;
+    let isLoading = false;
+    let loadError = false;
+
+    // Elements
+    const citySelect = document.getElementById('city');
+    if (!citySelect) return;
+
+    // Create a wrapper for custom dropdown/autocomplete
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'relative';
+    wrapper.style.width = '100%';
+    citySelect.parentNode.insertBefore(wrapper, citySelect);
+    wrapper.appendChild(citySelect);
+
+    // Create input for autocomplete
+    const cityInput = document.createElement('input');
+    cityInput.type = 'text';
+    cityInput.id = 'city-autocomplete';
+    cityInput.setAttribute('placeholder', 'בחר ישוב');
+    cityInput.setAttribute('autocomplete', 'off');
+    cityInput.required = true;
+    cityInput.style.width = '100%';
+    cityInput.style.boxSizing = 'border-box';
+    cityInput.style.marginBottom = '0.5em';
+    cityInput.style.fontSize = 'inherit';
+    cityInput.style.padding = '12px 16px';
+    cityInput.style.borderRadius = 'var(--radius-md, 8px)';
+    cityInput.style.border = '1px solid var(--border-color, #ccc)';
+    cityInput.style.direction = 'rtl';
+    cityInput.style.background = 'var(--primary-white, #fff)';
+    cityInput.style.position = 'relative';
+    cityInput.style.zIndex = '2';
+    // Hide the original select visually but keep it for form submission
+    citySelect.style.display = 'none';
+    wrapper.insertBefore(cityInput, citySelect);
+
+    // Dropdown for autocomplete results
+    const dropdown = document.createElement('div');
+    dropdown.className = 'city-autocomplete-dropdown';
+    dropdown.style.position = 'absolute';
+    dropdown.style.top = '48px';
+    dropdown.style.right = '0';
+    dropdown.style.left = '0';
+    dropdown.style.background = '#fff';
+    dropdown.style.border = '1px solid #ddd';
+    dropdown.style.borderTop = 'none';
+    dropdown.style.maxHeight = '200px';
+    dropdown.style.overflowY = 'auto';
+    dropdown.style.zIndex = '10';
+    dropdown.style.display = 'none';
+    dropdown.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)';
+    dropdown.style.direction = 'rtl';
+    wrapper.appendChild(dropdown);
+
+    // Error message
+    const errorMsg = document.createElement('div');
+    errorMsg.style.color = '#e74c3c';
+    errorMsg.style.fontSize = '0.95em';
+    errorMsg.style.marginTop = '0.25em';
+    errorMsg.style.display = 'none';
+    errorMsg.textContent = 'לא ניתן לטעון רשימת ישובים כרגע, נסו שוב מאוחר יותר.';
+    wrapper.appendChild(errorMsg);
+
+    // Fetch all cities from API (with paging)
+    async function fetchAllCities() {
+        isLoading = true;
+        let cities = [];
+        let start = 0;
+        const limit = 1000;
+        try {
+            while (true) {
+                const url = `${API_URL}?resource_id=${RESOURCE_ID}&limit=${limit}&offset=${start}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('API error');
+                const data = await res.json();
+                if (!data.result || !data.result.records) break;
+                const batch = data.result.records.map(r => r[CITY_FIELD]).filter(Boolean);
+                cities = cities.concat(batch);
+                if (batch.length < limit) break;
+                start += limit;
+            }
+            // Remove duplicates and sort
+            cities = Array.from(new Set(cities)).sort((a, b) => a.localeCompare(b, 'he'));
+            allCities = cities;
+            isLoaded = true;
+            loadError = false;
+        } catch (e) {
+            loadError = true;
+            errorMsg.style.display = 'block';
+        } finally {
+            isLoading = false;
+        }
+    }
+
+    // Show dropdown with filtered cities
+    function showDropdown(filtered) {
+        dropdown.innerHTML = '';
+        if (!filtered.length) {
+            dropdown.style.display = 'none';
+            return;
+        }
+        filtered.forEach(city => {
+            const option = document.createElement('div');
+            option.textContent = city;
+            option.style.padding = '10px 16px';
+            option.style.cursor = 'pointer';
+            option.style.fontSize = '1em';
+            option.style.textAlign = 'right';
+            option.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                cityInput.value = city;
+                citySelect.value = city;
+                dropdown.style.display = 'none';
+            });
+            dropdown.appendChild(option);
+        });
+        dropdown.style.display = 'block';
+    }
+
+    // Filter cities by input
+    function filterCities(query) {
+        if (!allCities.length) return [];
+        query = query.trim();
+        if (!query) return allCities.slice(0, 50); // Show first 50 if empty
+        const norm = s => s.replace(/["'\-]/g, '').toLowerCase();
+        return allCities.filter(city => norm(city).includes(norm(query))).slice(0, 50);
+    }
+
+    // Handle input events
+    cityInput.addEventListener('focus', async function() {
+        if (!isLoaded && !isLoading && !loadError) {
+            errorMsg.style.display = 'none';
+            await fetchAllCities();
+        }
+        if (isLoaded) {
+            showDropdown(filterCities(cityInput.value));
+        } else if (loadError) {
+            errorMsg.style.display = 'block';
+        }
+    });
+    cityInput.addEventListener('input', function() {
+        if (isLoaded) {
+            showDropdown(filterCities(cityInput.value));
+        }
+    });
+    cityInput.addEventListener('blur', function() {
+        setTimeout(() => { dropdown.style.display = 'none'; }, 150);
+    });
+
+    // Sync select value on form submit
+    cityInput.form && cityInput.form.addEventListener('submit', function() {
+        citySelect.value = cityInput.value;
+    });
+
+    // If user selects from dropdown, update select
+    citySelect.addEventListener('change', function() {
+        cityInput.value = citySelect.value;
+    });
+
+    // If form is reset, clear input
+    cityInput.form && cityInput.form.addEventListener('reset', function() {
+        cityInput.value = '';
+        citySelect.value = '';
+    });
+
+    // If page loads with value, sync
+    if (citySelect.value) {
+        cityInput.value = citySelect.value;
+    }
+
+    // Responsive/mobile: make dropdown font-size inherit
+    dropdown.style.fontSize = 'inherit';
+
+    // --- End Dynamic City Dropdown Code ---
+})(); 
