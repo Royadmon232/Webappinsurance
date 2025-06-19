@@ -1758,9 +1758,70 @@ function smoothScroll(target) {
         return result;
     }
 
+    // Function to explore what city names exist in the streets database
+    async function exploreStreetsDatabase() {
+        console.log('[DEBUG] Exploring streets database to find actual city names...');
+        try {
+            const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=1000`;
+            console.log('[DEBUG] Fetching sample data from:', url);
+            
+            let res;
+            try {
+                res = await fetch(url);
+            } catch (e) {
+                console.log('[DEBUG] Direct fetch failed, trying proxy');
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                res = await fetch(proxyUrl);
+            }
+            
+            if (!res.ok) {
+                console.error('[DEBUG] API request failed:', res.status);
+                return;
+            }
+            
+            const data = await res.json();
+            console.log('[DEBUG] API response received');
+            
+            if (data.result && data.result.records && data.result.records.length > 0) {
+                // Extract unique city names
+                const cityNames = new Set();
+                data.result.records.forEach(record => {
+                    if (record[CITY_NAME_FIELD]) {
+                        cityNames.add(record[CITY_NAME_FIELD].trim());
+                    }
+                });
+                
+                const uniqueCities = Array.from(cityNames).sort();
+                console.log('[DEBUG] Found', uniqueCities.length, 'unique city names in streets database:');
+                console.log('[DEBUG] Sample city names:', uniqueCities.slice(0, 20));
+                
+                // Look for cities that might match what we're searching for
+                const searchTerms = ['אבו גוש', 'קרית אונו', 'פתח תקווה', 'תל אביב'];
+                searchTerms.forEach(term => {
+                    const matches = uniqueCities.filter(city => 
+                        city.includes(term) || term.includes(city) || 
+                        city.replace(/[\s\-]/g, '').includes(term.replace(/[\s\-]/g, ''))
+                    );
+                    if (matches.length > 0) {
+                        console.log(`[DEBUG] Possible matches for "${term}":`, matches);
+                    } else {
+                        console.log(`[DEBUG] No matches found for "${term}"`);
+                    }
+                });
+                
+                return uniqueCities;
+            } else {
+                console.log('[DEBUG] No records found in API response');
+            }
+        } catch (error) {
+            console.error('[DEBUG] Error exploring database:', error);
+        }
+    }
+
     // Make functions available globally for testing
     window.clearStreetsCache = clearStreetsCache;
     window.testStreetsAPI = testStreetsAPI;
+    window.exploreStreetsDatabase = exploreStreetsDatabase;
     // --- END: Cache management and testing functions (Cursor AI patch) ---
 
     // Debounced function to handle city changes
