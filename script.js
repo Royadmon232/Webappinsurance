@@ -2481,7 +2481,7 @@ async function testAPI() {
 // Run test when page loads
 document.addEventListener('DOMContentLoaded', function() {
     // Uncomment the next line to test the API
-    // testAPI();
+    testAPI();
 });
 
 // Helper function to find similar cities locally using fuzzy matching
@@ -2616,6 +2616,9 @@ const STREET_NAME_FIELD = 'שם_רחוב';
                     const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&filters=${encodeURIComponent(filters)}&limit=32000`;
 
                     console.log('Fetching streets from API:', url);
+                    console.log('[DEBUG] API filters:', filters);
+                    console.log('[DEBUG] Selected city for API:', selectedCity);
+                    
                     const response = await fetch(url);
                     
                     if (!response.ok) {
@@ -2623,9 +2626,16 @@ const STREET_NAME_FIELD = 'שם_רחוב';
                     }
 
                     const data = await response.json();
+                    console.log('[DEBUG] API response:', data);
                     
                     if (!data.success) {
                         throw new Error('API returned unsuccessful response');
+                    }
+
+                    console.log('[DEBUG] API records count:', data.result.records ? data.result.records.length : 0);
+                    if (data.result.records && data.result.records.length > 0) {
+                        console.log('[DEBUG] First few records:', data.result.records.slice(0, 3));
+                        console.log('[DEBUG] Available fields in first record:', Object.keys(data.result.records[0]));
                     }
 
                     streets = [...new Set(
@@ -2633,6 +2643,20 @@ const STREET_NAME_FIELD = 'שם_רחוב';
                             .map(record => record[STREET_NAME_FIELD])
                             .filter(name => name && name.trim() !== '')
                     )].sort();
+
+                    // If no streets found, try without filters to see what's available
+                    if (streets.length === 0) {
+                        console.log('[DEBUG] No streets found with filter, trying without filter...');
+                        const fallbackUrl = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=100`;
+                        const fallbackResponse = await fetch(fallbackUrl);
+                        const fallbackData = await fallbackResponse.json();
+                        
+                        if (fallbackData.success && fallbackData.result.records) {
+                            console.log('[DEBUG] Fallback API response:', fallbackData);
+                            console.log('[DEBUG] Sample cities from fallback:', 
+                                [...new Set(fallbackData.result.records.map(r => r[CITY_NAME_FIELD]).filter(Boolean))].slice(0, 10));
+                        }
+                    }
 
                     // Cache the results
                     streetCache[selectedCity] = streets;
