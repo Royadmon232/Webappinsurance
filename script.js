@@ -1810,42 +1810,10 @@ function smoothScroll(target) {
     }
     
     // Simplified function to fetch streets with exact match only
-    async function fetchStreetsWithExactMatch(cityName) {
-        let streets = [];
-        try {
-            console.log(`[DEBUG] Fetching streets for city (API filter): "${cityName}"`);
-            // Use API filter for city name
-            const filter = encodeURIComponent(JSON.stringify({ [CITY_NAME_FIELD]: cityName }));
-            const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&filters=${filter}&limit=1000`;
-            console.log(`[DEBUG] API URL: ${url}`);
-            let res;
-            try {
-                res = await fetch(url);
-            } catch (e) {
-                console.log('[DEBUG] Direct fetch failed, trying proxy');
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-                res = await fetch(proxyUrl);
-            }
-            if (!res.ok) {
-                console.warn(`[DEBUG] API request failed with status: ${res.status}`);
-                return [];
-            }
-            const data = await res.json();
-            console.log(`[DEBUG] API response received, records: ${data.result?.records?.length || 0}`);
-            if (!data.result || !data.result.records) {
-                console.log('[DEBUG] No records in response');
-                return [];
-            }
-            streets = data.result.records
-                .filter(r => r[STREET_NAME_FIELD])
-                .map(r => r[STREET_NAME_FIELD]);
-            console.log(`[DEBUG] Found ${streets.length} streets for city: "${cityName}" (API filter)`);
-        } catch (e) {
-            console.error('[DEBUG] Error in fetchStreetsWithExactMatch:', e);
-        }
-        return streets;
-    }
-    
+    // async function fetchStreetsWithExactMatch(cityName) {
+    //     ... (remove this function entirely)
+    // }
+
     // Helper function to generate Hebrew variations of city names
     function generateHebrewVariations(cityName) {
         const variations = [];
@@ -2324,3 +2292,177 @@ document.addEventListener('DOMContentLoaded', function() {
     // Uncomment the next line to test the API
     // testAPI();
 });
+
+// Helper function to find similar cities locally using fuzzy matching
+function findSimilarCitiesLocally(searchCity, availableCities) {
+    console.log(`[DEBUG] findSimilarCitiesLocally: searching for "${searchCity}" among ${availableCities.length} cities`);
+    
+    if (!searchCity || searchCity.length < 2) {
+        return [];
+    }
+    
+    const searchNormalized = searchCity.replace(/["'\-\s]/g, '').toLowerCase();
+    const results = [];
+    
+    for (const city of availableCities) {
+        if (!city) continue;
+        
+        const cityNormalized = city.replace(/["'\-\s]/g, '').toLowerCase();
+        
+        // Exact match
+        if (cityNormalized === searchNormalized) {
+            results.unshift({ city, score: 100 }); // Highest priority
+            continue;
+        }
+        
+        // Starts with search term
+        if (cityNormalized.startsWith(searchNormalized)) {
+            results.push({ city, score: 90 });
+            continue;
+        }
+        
+        // Contains search term
+        if (cityNormalized.includes(searchNormalized)) {
+            results.push({ city, score: 80 });
+            continue;
+        }
+        
+        // Search term starts with city
+        if (searchNormalized.startsWith(cityNormalized)) {
+            results.push({ city, score: 70 });
+            continue;
+        }
+        
+        // Partial word match (for multi-word cities)
+        const searchWords = searchNormalized.split(/[\s\-]/);
+        const cityWords = cityNormalized.split(/[\s\-]/);
+        
+        let wordMatches = 0;
+        for (const searchWord of searchWords) {
+            if (searchWord.length < 2) continue;
+            for (const cityWord of cityWords) {
+                if (cityWord.includes(searchWord) || searchWord.includes(cityWord)) {
+                    wordMatches++;
+                    break;
+                }
+            }
+        }
+        
+        if (wordMatches > 0) {
+            const score = Math.min(60 + (wordMatches * 10), 69);
+            results.push({ city, score });
+        }
+    }
+    
+    // Sort by score (highest first) and return top results
+    results.sort((a, b) => b.score - a.score);
+    const topResults = results.slice(0, 10).map(r => r.city);
+    
+    console.log(`[DEBUG] findSimilarCitiesLocally: found ${topResults.length} similar cities:`, topResults);
+    return topResults;
+}
+
+// Improved function to fetch streets with better matching
+async function fetchStreetsWithExactMatch(cityName) {
+    let streets = [];
+    try {
+        console.log(`[DEBUG] Fetching streets for city (API filter): "${cityName}"`);
+        
+        // Clean the city name
+        const cleanCityName = cityName.trim();
+        if (!cleanCityName) return [];
+        
+        // Try multiple filter strategies
+        const filterStrategies = [
+            // Strategy 1: Exact match
+            { [CITY_NAME_FIELD]: cleanCityName },
+            
+            // Strategy 2: Remove trailing spaces and parentheses
+            { [CITY_NAME_FIELD]: cleanCityName.replace(/\s*\([^)]*\)\s*$/, '').trim() },
+            
+            // Strategy 3: Remove leading/trailing spaces
+            { [CITY_NAME_FIELD]: cleanCityName.replace(/^\s+|\s+$/g, '') }
+        ];
+        
+        // Add common variations
+        if (cleanCityName.includes(' ')) {
+            filterStrategies.push({ [CITY_NAME_FIELD]: cleanCityName.replace(/\s+/g, '-') });
+            filterStrategies.push({ [CITY_NAME_FIELD]: cleanCityName.replace(/\s+/g, '') });
+        }
+        if (cleanCityName.includes('-')) {
+            filterStrategies.push({ [CITY_NAME_FIELD]: cleanCityName.replace(/-/g, ' ') });
+            filterStrategies.push({ [CITY_NAME_FIELD]: cleanCityName.replace(/-/g, '') });
+        }
+        
+        // Try each strategy
+        for (const filter of filterStrategies) {
+            const filterStr = encodeURIComponent(JSON.stringify(filter));
+            const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&filters=${filterStr}&limit=1000`;
+            
+            console.log(`[DEBUG] Trying filter:`, filter);
+            console.log(`[DEBUG] API URL: ${url}`);
+            
+            let res;
+            try {
+                res = await fetch(url);
+            } catch (e) {
+                console.log('[DEBUG] Direct fetch failed, trying proxy');
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                res = await fetch(proxyUrl);
+            }
+            
+            if (!res.ok) {
+                console.warn(`[DEBUG] API request failed with status: ${res.status}`);
+                continue;
+            }
+            
+            const data = await res.json();
+            console.log(`[DEBUG] API response received, records: ${data.result?.records?.length || 0}`);
+            
+            if (data.result && data.result.records && data.result.records.length > 0) {
+                streets = data.result.records
+                    .filter(r => r[STREET_NAME_FIELD])
+                    .map(r => r[STREET_NAME_FIELD]);
+                console.log(`[DEBUG] Found ${streets.length} streets for city: "${cleanCityName}" using filter:`, filter);
+                break; // Found results, stop trying other strategies
+            }
+        }
+        
+        // If no results with filters, try without filter and filter locally
+        if (streets.length === 0) {
+            console.log(`[DEBUG] No results with filters, trying without filter for "${cleanCityName}"`);
+            const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=5000`;
+            
+            let res;
+            try {
+                res = await fetch(url);
+            } catch (e) {
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                res = await fetch(proxyUrl);
+            }
+            
+            if (res.ok) {
+                const data = await res.json();
+                if (data.result && data.result.records) {
+                    // Filter locally
+                    const allStreets = data.result.records
+                        .filter(r => r[CITY_NAME_FIELD] && r[STREET_NAME_FIELD])
+                        .filter(r => {
+                            const recordCity = r[CITY_NAME_FIELD].trim();
+                            return recordCity === cleanCityName || 
+                                   recordCity.includes(cleanCityName) || 
+                                   cleanCityName.includes(recordCity);
+                        })
+                        .map(r => r[STREET_NAME_FIELD]);
+                    
+                    streets = Array.from(new Set(allStreets));
+                    console.log(`[DEBUG] Found ${streets.length} streets using local filtering for "${cleanCityName}"`);
+                }
+            }
+        }
+        
+    } catch (e) {
+        console.error('[DEBUG] Error in fetchStreetsWithExactMatch:', e);
+    }
+    return streets;
+}
