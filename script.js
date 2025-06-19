@@ -1654,14 +1654,17 @@ function smoothScroll(target) {
         try {
             const cleanCityName = cityName.trim();
             if (!cleanCityName) return [];
+            console.log(`[DEBUG] Trying original city name: "${cleanCityName}"`);
             // Try the original name first
             let filter = { "שם_ישוב": cleanCityName };
             let filterStr = encodeURIComponent(JSON.stringify(filter));
             let url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&filters=${filterStr}`;
+            console.log(`[DEBUG] API URL for original: ${url}`);
             let res;
             try {
                 res = await fetch(url);
             } catch (e) {
+                console.log('[DEBUG] Direct fetch failed, trying proxy');
                 const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
                 res = await fetch(proxyUrl);
             }
@@ -1671,11 +1674,15 @@ function smoothScroll(target) {
                 streets = data.result.records
                     .filter(r => r[STREET_NAME_FIELD] && r[STREET_NAME_FIELD].trim())
                     .map(r => r[STREET_NAME_FIELD].trim());
+                console.log(`[DEBUG] Found ${streets.length} streets with original name`);
+            } else {
+                console.log(`[DEBUG] No streets found with original name, trying variations...`);
             }
             // If found, cache and return
             if (streets.length > 0) {
                 streets = Array.from(new Set(streets)).sort((a, b) => a.localeCompare(b, 'he'));
                 cityToStreets.set(cityName, streets);
+                console.log(`[DEBUG] Caching and returning ${streets.length} streets for "${cityName}"`);
                 return streets;
             }
             // --- Try common variations if no results ---
@@ -1687,15 +1694,22 @@ function smoothScroll(target) {
                 cleanCityName.replace('תקווה', 'תקוה'),
                 cleanCityName.replace('תקוה', 'תקווה'),
             ];
+            console.log(`[DEBUG] Trying variations:`, variations);
             for (const variant of variations) {
-                if (!variant || variant === cleanCityName) continue;
+                if (!variant || variant === cleanCityName) {
+                    console.log(`[DEBUG] Skipping variant "${variant}" (empty or same as original)`);
+                    continue;
+                }
+                console.log(`[DEBUG] Trying variant: "${variant}"`);
                 filter = { "שם_ישוב": variant };
                 filterStr = encodeURIComponent(JSON.stringify(filter));
                 url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&filters=${filterStr}`;
+                console.log(`[DEBUG] API URL for variant "${variant}": ${url}`);
                 let res2;
                 try {
                     res2 = await fetch(url);
                 } catch (e) {
+                    console.log(`[DEBUG] Direct fetch failed for variant "${variant}", trying proxy`);
                     const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
                     res2 = await fetch(proxyUrl);
                 }
@@ -1705,15 +1719,20 @@ function smoothScroll(target) {
                     streets2 = data2.result.records
                         .filter(r => r[STREET_NAME_FIELD] && r[STREET_NAME_FIELD].trim())
                         .map(r => r[STREET_NAME_FIELD].trim());
+                    console.log(`[DEBUG] Found ${streets2.length} streets with variant "${variant}"`);
+                } else {
+                    console.log(`[DEBUG] No streets found with variant "${variant}"`);
                 }
                 if (streets2.length > 0) {
                     streets2 = Array.from(new Set(streets2)).sort((a, b) => a.localeCompare(b, 'he'));
                     cityToStreets.set(cityName, streets2);
+                    console.log(`[DEBUG] Caching and returning ${streets2.length} streets for "${cityName}" (found with variant "${variant}")`);
                     return streets2;
                 }
             }
             // --- END: Variation logic ---
             // If still nothing, cache empty and return []
+            console.log(`[DEBUG] No streets found with any variation, caching empty result for "${cityName}"`);
             cityToStreets.set(cityName, []);
             return [];
         } catch (error) {
@@ -1722,6 +1741,27 @@ function smoothScroll(target) {
         }
     }
     // --- END: Variation logic for city name matching (Cursor AI patch) ---
+
+    // --- BEGIN: Cache management and testing functions (Cursor AI patch) ---
+    // Function to clear the streets cache (for testing)
+    function clearStreetsCache() {
+        cityToStreets.clear();
+        console.log('[DEBUG] Streets cache cleared');
+    }
+
+    // Function to test API directly
+    async function testStreetsAPI(cityName) {
+        console.log(`[DEBUG] Testing API directly for: "${cityName}"`);
+        clearStreetsCache();
+        const result = await fetchStreetsByCity(cityName);
+        console.log(`[DEBUG] Test result:`, result);
+        return result;
+    }
+
+    // Make functions available globally for testing
+    window.clearStreetsCache = clearStreetsCache;
+    window.testStreetsAPI = testStreetsAPI;
+    // --- END: Cache management and testing functions (Cursor AI patch) ---
 
     // Debounced function to handle city changes
     function debouncedCityChange(cityName) {
