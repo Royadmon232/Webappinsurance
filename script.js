@@ -1812,137 +1812,37 @@ function smoothScroll(target) {
     // Simplified function to fetch streets with exact match only
     async function fetchStreetsWithExactMatch(cityName) {
         let streets = [];
-        
         try {
-            console.log(`[DEBUG] Fetching streets for city: "${cityName}"`);
-            
-            // Fetch more data to ensure we get enough records
-            const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=10000`;
-            
+            console.log(`[DEBUG] Fetching streets for city (API filter): "${cityName}"`);
+            // Use API filter for city name
+            const filter = encodeURIComponent(JSON.stringify({ [CITY_NAME_FIELD]: cityName }));
+            const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&filters=${filter}&limit=1000`;
             console.log(`[DEBUG] API URL: ${url}`);
-            
-            // Try direct fetch first, fallback to proxy if needed
             let res;
             try {
                 res = await fetch(url);
             } catch (e) {
                 console.log('[DEBUG] Direct fetch failed, trying proxy');
-                // If direct fetch fails, try with proxy
                 const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
                 res = await fetch(proxyUrl);
             }
-            
             if (!res.ok) {
                 console.warn(`[DEBUG] API request failed with status: ${res.status}`);
                 return [];
             }
-            
             const data = await res.json();
             console.log(`[DEBUG] API response received, records: ${data.result?.records?.length || 0}`);
-            
             if (!data.result || !data.result.records) {
                 console.log('[DEBUG] No records in response');
                 return [];
             }
-            
-            // Log some sample records to debug
-            console.log('[DEBUG] Sample records:', data.result.records.slice(0, 3));
-            
-            // Log all unique cities in the response to see what's available
-            const allCitiesInResponse = [...new Set(data.result.records
-                .filter(r => r[CITY_NAME_FIELD])
-                .map(r => r[CITY_NAME_FIELD]))];
-            console.log(`[DEBUG] All cities in response (${allCitiesInResponse.length}):`, allCitiesInResponse.slice(0, 20));
-            
-            // Check if our search city is in the response
-            const cityInResponse = allCitiesInResponse.find(city => 
-                city === cityName || 
-                city.toLowerCase() === cityName.toLowerCase() ||
-                city.replace(/[\s\-]/g, '') === cityName.replace(/[\s\-]/g, '')
-            );
-            console.log(`[DEBUG] City "${cityName}" found in response:`, cityInResponse);
-            
-            // Filter records locally for the specific city with multiple matching strategies
-            const cityRecords = data.result.records.filter(r => {
-                if (!r[STREET_NAME_FIELD] || !r[CITY_NAME_FIELD]) return false;
-                
-                const recordCity = r[CITY_NAME_FIELD];
-                const searchCity = cityName;
-                
-                // Strategy 1: Exact match
-                if (recordCity === searchCity) {
-                    console.log(`[DEBUG] Exact match found: "${recordCity}"`);
-                    return true;
-                }
-                
-                // Strategy 2: Case-insensitive match
-                if (recordCity.toLowerCase() === searchCity.toLowerCase()) {
-                    console.log(`[DEBUG] Case-insensitive match found: "${recordCity}"`);
-                    return true;
-                }
-                
-                // Strategy 3: Normalized match (remove spaces and hyphens)
-                const normalizedSearch = searchCity.replace(/[\s\-]/g, '');
-                const normalizedRecord = recordCity.replace(/[\s\-]/g, '');
-                if (normalizedRecord === normalizedSearch) {
-                    console.log(`[DEBUG] Normalized match found: "${recordCity}"`);
-                    return true;
-                }
-                
-                // Strategy 4: Contains match
-                if (recordCity.includes(searchCity) || searchCity.includes(recordCity)) {
-                    console.log(`[DEBUG] Contains match found: "${recordCity}"`);
-                    return true;
-                }
-                
-                return false;
-            });
-            
-            streets = cityRecords.map(r => r[STREET_NAME_FIELD]);
-            
-            console.log(`[DEBUG] Found ${streets.length} streets for city: "${cityName}"`);
-            
-            // If we found streets, great! If not, try with variations
-            if (streets.length === 0) {
-                console.log('[DEBUG] No streets found with exact match, trying variations');
-                const variations = generateHebrewVariations(cityName);
-                
-                for (const variation of variations) {
-                    if (variation === cityName) continue; // Skip the original
-                    
-                    console.log(`[DEBUG] Trying variation: "${variation}"`);
-                    
-                    const variationRecords = data.result.records.filter(r => {
-                        if (!r[STREET_NAME_FIELD] || !r[CITY_NAME_FIELD]) return false;
-                        
-                        const recordCity = r[CITY_NAME_FIELD];
-                        
-                        // Try exact match first
-                        if (recordCity === variation) return true;
-                        
-                        // Try case-insensitive match
-                        if (recordCity.toLowerCase() === variation.toLowerCase()) return true;
-                        
-                        // Try normalized match
-                        const normalizedVariation = variation.replace(/[\s\-]/g, '');
-                        const normalizedRecord = recordCity.replace(/[\s\-]/g, '');
-                        if (normalizedRecord === normalizedVariation) return true;
-                        
-                        return false;
-                    });
-                    
-                    if (variationRecords.length > 0) {
-                        streets = variationRecords.map(r => r[STREET_NAME_FIELD]);
-                        console.log(`[DEBUG] Found ${streets.length} streets using variation: "${variation}"`);
-                        break;
-                    }
-                }
-            }
-            
+            streets = data.result.records
+                .filter(r => r[STREET_NAME_FIELD])
+                .map(r => r[STREET_NAME_FIELD]);
+            console.log(`[DEBUG] Found ${streets.length} streets for city: "${cityName}" (API filter)`);
         } catch (e) {
             console.error('[DEBUG] Error in fetchStreetsWithExactMatch:', e);
         }
-        
         return streets;
     }
     
