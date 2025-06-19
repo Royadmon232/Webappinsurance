@@ -1934,3 +1934,62 @@ function smoothScroll(target) {
     cityAutocompleteInput.addEventListener('input', handleCityChangePatched);
 })();
 // --- End Cursor AI Patch --- 
+
+// --- Cursor AI Patch: CORS Proxy Fix ---
+(function() {
+    // CORS Proxy URLs (fallback options)
+    const CORS_PROXIES = [
+        'https://cors-anywhere.herokuapp.com/',
+        'https://api.allorigins.win/raw?url=',
+        'https://corsproxy.io/?',
+        'https://thingproxy.freeboard.io/fetch/'
+    ];
+    let currentProxyIndex = 0;
+
+    // Function to get URL with CORS proxy
+    function getCorsUrl(originalUrl) {
+        const proxy = CORS_PROXIES[currentProxyIndex];
+        return proxy + encodeURIComponent(originalUrl);
+    }
+
+    // Function to fetch with CORS proxy and fallback
+    async function fetchWithCorsProxy(url, options = {}) {
+        for (let i = 0; i < CORS_PROXIES.length; i++) {
+            try {
+                const proxyUrl = getCorsUrl(url);
+                console.log('[DEBUG] Trying CORS proxy:', CORS_PROXIES[currentProxyIndex]);
+                const response = await fetch(proxyUrl, {
+                    ...options,
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+                if (response.ok) {
+                    console.log('[DEBUG] CORS proxy success:', CORS_PROXIES[currentProxyIndex]);
+                    return response;
+                }
+            } catch (error) {
+                console.log('[DEBUG] CORS proxy failed:', CORS_PROXIES[currentProxyIndex], error.message);
+            }
+            currentProxyIndex = (currentProxyIndex + 1) % CORS_PROXIES.length;
+        }
+        throw new Error('All CORS proxies failed');
+    }
+
+    // Patch the original fetch calls in the street dropdown code
+    const originalFetch = window.fetch;
+    window.fetch = function(url, options) {
+        // Only apply CORS proxy to data.gov.il URLs
+        if (url.includes('data.gov.il')) {
+            console.log('[DEBUG] Applying CORS proxy to:', url);
+            return fetchWithCorsProxy(url, options);
+        }
+        // Use original fetch for other URLs
+        return originalFetch.call(this, url, options);
+    };
+
+    console.log('[DEBUG] CORS Proxy patch applied');
+})();
+// --- End Cursor AI Patch --- 
