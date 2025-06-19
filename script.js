@@ -2116,3 +2116,8 @@ function smoothScroll(target) {
     cityAutocompleteInput.addEventListener('input', handleCityChangePatched);
 })();
 // --- End Cursor AI Patch --- 
+
+cityInput.addEventListener('keydown', function(e) {
+  // אם זה רווח, אל תמנע
+  if (e.key === ' ') return;
+});
