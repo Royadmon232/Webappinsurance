@@ -2749,3 +2749,223 @@ const STREET_NAME_FIELD = 'שם_רחוב';
     }
 })();
 // /***** CURSOR AI: END - Street selection logic *****/
+
+// =======================================================================
+// /***** CURSOR AI: START - New Dynamic Street Dropdown Implementation *****/
+// This self-contained module implements the dynamic street dropdown functionality
+// as per the user's request. It activates when a city is selected, fetches
+// streets for that city with autocomplete, handles errors, and caches results.
+// =======================================================================
+(function() {
+    // Ensure this code runs after the DOM is fully loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initialize);
+    } else {
+        initialize();
+    }
+
+    function initialize() {
+        const modal = document.getElementById('generalDetailsModal');
+        if (!modal) {
+            console.error('Street Dropdown: Modal not found.');
+            return;
+        }
+
+        // Use a MutationObserver to initialize when the modal is displayed
+        const observer = new MutationObserver((mutations, obs) => {
+            if (modal.style.display === 'block') {
+                setupDynamicStreetDropdown();
+            }
+        });
+
+        observer.observe(modal, {
+            attributes: true,
+            attributeFilter: ['style']
+        });
+
+        // Also run if modal is already visible on initialization
+        if (modal.style.display === 'block') {
+            setupDynamicStreetDropdown();
+        }
+    }
+
+    const streetCache = new Map();
+
+    function setupDynamicStreetDropdown() {
+        const citySelect = document.getElementById('city');
+        const streetInput = document.getElementById('street');
+
+        // Check for essential elements
+        if (!citySelect || !streetInput) {
+            console.error('Street Dropdown: City or Street input not found.');
+            return;
+        }
+        
+        // Prevent re-initialization
+        if (streetInput.dataset.dynamicStreetInitialized === 'true') {
+            return;
+        }
+        streetInput.dataset.dynamicStreetInitialized = 'true';
+
+        // --- Create UI Elements ---
+        const wrapper = document.createElement('div');
+        wrapper.className = 'dynamic-street-wrapper';
+        wrapper.style.position = 'relative';
+        streetInput.parentNode.insertBefore(wrapper, streetInput);
+        wrapper.appendChild(streetInput);
+
+        const dropdown = document.createElement('div');
+        dropdown.className = 'street-autocomplete-results';
+        dropdown.style.cssText = `
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1001;
+            display: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            direction: rtl;
+        `;
+        wrapper.appendChild(dropdown);
+
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'street-error-message';
+        errorMsg.style.cssText = `
+            color: #e74c3c;
+            font-size: 0.875rem;
+            margin-top: 4px;
+            display: none;
+        `;
+        wrapper.appendChild(errorMsg);
+
+        // --- Initial State ---
+        streetInput.disabled = true;
+        streetInput.placeholder = 'בחר ישוב תחילה';
+
+        // --- Event Listeners ---
+        citySelect.addEventListener('change', handleCityChange);
+        
+        streetInput.addEventListener('input', () => {
+            const selectedCity = citySelect.value;
+            if (streetCache.has(selectedCity)) {
+                renderDropdown(streetCache.get(selectedCity), streetInput.value);
+            }
+        });
+
+        streetInput.addEventListener('focus', () => {
+            const selectedCity = citySelect.value;
+            if (streetInput.value.length > 0 && streetCache.has(selectedCity)) {
+                renderDropdown(streetCache.get(selectedCity), streetInput.value);
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!wrapper.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        async function handleCityChange() {
+            const selectedCity = citySelect.value;
+            resetStreetField();
+
+            if (!selectedCity) {
+                return;
+            }
+
+            streetInput.disabled = true;
+            streetInput.placeholder = 'טוען רחובות...';
+
+            if (streetCache.has(selectedCity)) {
+                processStreets(streetCache.get(selectedCity));
+                return;
+            }
+
+            try {
+                const API_URL = 'https://data.gov.il/api/3/action/datastore_search';
+                const RESOURCE_ID = '9ad3862c-8391-4b2f-84a4-2d4c68625f4b';
+                const filters = JSON.stringify({ 'שם_ישוב': selectedCity });
+                const url = `${API_URL}?resource_id=${RESOURCE_ID}&filters=${encodeURIComponent(filters)}&limit=32000`;
+
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}`);
+                }
+                const data = await response.json();
+                
+                const streets = data.success && data.result.records
+                    ? [...new Set(data.result.records.map(r => r['שם_רחוב'].trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'he'))
+                    : [];
+
+                streetCache.set(selectedCity, streets);
+                processStreets(streets);
+            } catch (error) {
+                console.error('Error fetching streets:', error);
+                showError('שגיאה בטעינת רשימת הרחובות. נסה שוב מאוחר יותר.');
+            }
+        }
+
+        function processStreets(streets) {
+            if (streets.length > 0) {
+                streetInput.disabled = false;
+                streetInput.placeholder = 'הקלד שם רחוב לחיפוש';
+            } else {
+                showError('לא נמצאו רחובות זמינים בעיר שבחרת, אנא נסה שוב מאוחר יותר.');
+            }
+        }
+
+        function renderDropdown(streets, query) {
+            dropdown.innerHTML = '';
+            const filteredStreets = query
+                ? streets.filter(s => s.includes(query))
+                : streets;
+
+            if (filteredStreets.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            filteredStreets.slice(0, 50).forEach(street => {
+                const item = document.createElement('div');
+                item.textContent = street;
+                item.style.cssText = `
+                    padding: 10px 16px;
+                    cursor: pointer;
+                    text-align: right;
+                `;
+                item.addEventListener('mouseenter', () => item.style.backgroundColor = '#f0f0f0');
+                item.addEventListener('mouseleave', () => item.style.backgroundColor = '#fff');
+                item.addEventListener('click', () => {
+                    streetInput.value = street;
+                    dropdown.style.display = 'none';
+                });
+                dropdown.appendChild(item);
+            });
+
+            dropdown.style.display = 'block';
+        }
+
+        function resetStreetField() {
+            streetInput.disabled = true;
+            streetInput.placeholder = 'בחר ישוב תחילה';
+            streetInput.value = '';
+            errorMsg.style.display = 'none';
+            dropdown.style.display = 'none';
+        }
+
+        function showError(message) {
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+            streetInput.disabled = true;
+            streetInput.placeholder = 'לא נמצאו רחובות';
+        }
+    }
+})();
+// =======================================================================
+// /***** CURSOR AI: END - New Dynamic Street Dropdown Implementation *****/
+// =======================================================================
