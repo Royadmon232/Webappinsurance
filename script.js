@@ -1509,9 +1509,10 @@ function smoothScroll(target) {
         cityInput.value = citySelect.value;
         
         // Trigger street dropdown logic when city changes
-        if (window.handleCityChange) {
-            window.handleCityChange();
-        }
+        // DISABLED: Old implementation conflicts with new Cursor AI implementation
+        // if (window.handleCityChange) {
+        //     window.handleCityChange();
+        // }
     });
 
     // If form is reset, clear input
