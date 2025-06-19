@@ -1552,6 +1552,8 @@ function smoothScroll(target) {
     const streetsCache = new Map();
     let currentCity = null;
     let isLoadingStreets = false;
+    let cityChangeTimeout = null;
+    let searchTimeout = null;
 
     // Elements
     const streetInput = document.getElementById('street');
@@ -1641,10 +1643,63 @@ function smoothScroll(target) {
     loadingMsg.textContent = 'טוען רחובות...';
     wrapper.appendChild(loadingMsg);
 
+    // Debounced function to handle city changes
+    function debouncedCityChange(cityName) {
+        if (cityChangeTimeout) {
+            clearTimeout(cityChangeTimeout);
+        }
+        
+        cityChangeTimeout = setTimeout(() => {
+            handleCityChangeInternal(cityName);
+        }, 500); // Wait 500ms after user stops typing
+    }
+
+    // Internal city change handler
+    async function handleCityChangeInternal(cityName) {
+        console.log('[DEBUG] handleCityChangeInternal called with:', cityName);
+        
+        if (!cityName || cityName.length < 2) {
+            // City name too short, disable street field
+            streetAutocompleteInput.disabled = true;
+            streetAutocompleteInput.style.opacity = '0.6';
+            streetAutocompleteInput.value = '';
+            streetInput.value = '';
+            dropdown.style.display = 'none';
+            errorMsg.style.display = 'none';
+            loadingMsg.style.display = 'none';
+            currentCity = null;
+            return;
+        }
+
+        currentCity = cityName;
+        
+        // Check if we have cached data
+        if (streetsCache.has(cityName)) {
+            const streets = streetsCache.get(cityName);
+            if (streets.length > 0) {
+                streetAutocompleteInput.disabled = false;
+                streetAutocompleteInput.style.opacity = '1';
+                errorMsg.style.display = 'none';
+            } else {
+                streetAutocompleteInput.disabled = true;
+                streetAutocompleteInput.style.opacity = '0.6';
+                errorMsg.style.display = 'block';
+            }
+        } else {
+            // Fetch streets for the selected city
+            await fetchStreetsForCity(cityName);
+        }
+    }
+
     // Fetch streets for a specific city
     async function fetchStreetsForCity(cityName) {
         if (streetsCache.has(cityName)) {
             return streetsCache.get(cityName);
+        }
+
+        // Don't fetch if already loading
+        if (isLoadingStreets) {
+            return [];
         }
 
         isLoadingStreets = true;
@@ -1652,52 +1707,20 @@ function smoothScroll(target) {
         errorMsg.style.display = 'none';
         
         let streets = [];
-        let start = 0;
-        const limit = 1000;
         
         try {
-            // Strategy 1: Try exact city name with filters
-            console.log('[DEBUG] Trying exact city name:', cityName);
-            let foundStreets = await fetchStreetsWithStrategy(cityName, 'exact', limit, start);
+            // Only try exact match first - most reliable
+            console.log('[DEBUG] Fetching streets for city:', cityName);
+            streets = await fetchStreetsWithExactMatch(cityName);
             
-            // Strategy 2: If no results, try with partial match using q parameter
-            if (foundStreets.length === 0) {
-                console.log('[DEBUG] No results with exact match, trying partial search');
-                foundStreets = await fetchStreetsWithStrategy(cityName, 'partial', limit, start);
-            }
-            
-            // Strategy 3: If still no results, try with normalized city name
-            if (foundStreets.length === 0) {
-                console.log('[DEBUG] No results with partial match, trying normalized name');
+            // If no results, try with normalized name
+            if (streets.length === 0) {
+                console.log('[DEBUG] No results with exact match, trying normalized name');
                 const normalizedCityName = normalizeCityName(cityName);
                 if (normalizedCityName !== cityName) {
-                    foundStreets = await fetchStreetsWithStrategy(normalizedCityName, 'exact', limit, start);
+                    streets = await fetchStreetsWithExactMatch(normalizedCityName);
                 }
             }
-            
-            // Strategy 4: If still no results, try without filters (get all streets and filter locally)
-            if (foundStreets.length === 0) {
-                console.log('[DEBUG] No results with normalized name, trying broad search');
-                foundStreets = await fetchStreetsWithStrategy(cityName, 'broad', limit, start);
-            }
-            
-            // Strategy 5: If still no results, try with similar city names
-            if (foundStreets.length === 0) {
-                console.log('[DEBUG] No results with broad search, trying similar cities');
-                const similarCities = await findSimilarCities(cityName);
-                
-                for (const similarCity of similarCities.slice(0, 3)) { // Try up to 3 similar cities
-                    console.log(`[DEBUG] Trying similar city: ${similarCity}`);
-                    const similarStreets = await fetchStreetsWithStrategy(similarCity, 'exact', limit, start);
-                    if (similarStreets.length > 0) {
-                        foundStreets = similarStreets;
-                        console.log(`[DEBUG] Found ${similarStreets.length} streets using similar city: ${similarCity}`);
-                        break;
-                    }
-                }
-            }
-            
-            streets = foundStreets;
             
             // Remove duplicates and sort
             streets = Array.from(new Set(streets)).sort((a, b) => a.localeCompare(b, 'he'));
@@ -1709,35 +1732,7 @@ function smoothScroll(target) {
                 errorMsg.style.display = 'block';
                 streetAutocompleteInput.disabled = true;
                 streetAutocompleteInput.style.opacity = '0.6';
-                
-                // Try to find similar cities for better user experience
-                const similarCities = await findSimilarCities(cityName);
-                if (similarCities.length > 0) {
-                    const suggestions = similarCities.slice(0, 3).join(', ');
-                    errorMsg.innerHTML = `לא נמצאו רחובות בעיר "${cityName}". האם התכוונת לאחת מהערים הבאות: <span class="city-suggestions">${similarCities.slice(0, 3).map(city => `<a href="#" class="city-suggestion" data-city="${city}">${city}</a>`).join(', ')}</span>?`;
-                    
-                    // Add click handlers for city suggestions
-                    setTimeout(() => {
-                        const suggestionLinks = errorMsg.querySelectorAll('.city-suggestion');
-                        suggestionLinks.forEach(link => {
-                            link.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                const suggestedCity = this.getAttribute('data-city');
-                                console.log(`[DEBUG] User selected suggested city: ${suggestedCity}`);
-                                
-                                // Update city input and trigger search
-                                const cityAutocompleteInput = document.getElementById('city-autocomplete');
-                                if (cityAutocompleteInput) {
-                                    cityAutocompleteInput.value = suggestedCity;
-                                    citySelect.value = suggestedCity;
-                                    handleCityChange();
-                                }
-                            });
-                        });
-                    }, 100);
-                } else {
-                    errorMsg.textContent = `לא נמצאו רחובות זמינים בעיר "${cityName}", אנא נסה שוב מאוחר יותר.`;
-                }
+                errorMsg.textContent = `לא נמצאו רחובות זמינים בעיר "${cityName}", אנא נסה שוב מאוחר יותר.`;
             } else {
                 streetAutocompleteInput.disabled = false;
                 streetAutocompleteInput.style.opacity = '1';
@@ -1749,6 +1744,7 @@ function smoothScroll(target) {
             errorMsg.style.display = 'block';
             streetAutocompleteInput.disabled = true;
             streetAutocompleteInput.style.opacity = '0.6';
+            errorMsg.textContent = 'שגיאה בטעינת רחובות, אנא נסה שוב מאוחר יותר.';
         } finally {
             isLoadingStreets = false;
             loadingMsg.style.display = 'none';
@@ -1757,62 +1753,48 @@ function smoothScroll(target) {
         return streets;
     }
     
-    // Helper function to fetch streets with different strategies
-    async function fetchStreetsWithStrategy(cityName, strategy, limit, start) {
+    // Simplified function to fetch streets with exact match only
+    async function fetchStreetsWithExactMatch(cityName) {
         let streets = [];
-        let currentStart = start;
+        let start = 0;
+        const limit = 1000;
         
-        while (true) {
-            let url;
-            
-            switch (strategy) {
-                case 'exact':
-                    // Use exact city name with filters
-                    url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${currentStart}&filters={"${CITY_NAME_FIELD}":"${cityName}"}`;
+        try {
+            while (true) {
+                const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&filters={"${CITY_NAME_FIELD}":"${cityName}"}`;
+                
+                // Try direct fetch first, fallback to proxy if needed
+                let res;
+                try {
+                    res = await fetch(url);
+                } catch (e) {
+                    // If direct fetch fails, try with proxy
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                    res = await fetch(proxyUrl);
+                }
+                
+                if (!res.ok) {
+                    console.warn(`[DEBUG] API request failed with status: ${res.status}`);
                     break;
-                    
-                case 'partial':
-                    // Use q parameter for partial matching
-                    url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${currentStart}&q=${encodeURIComponent(cityName)}`;
-                    break;
-                    
-                case 'broad':
-                    // Get all streets and filter locally
-                    url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${currentStart}`;
-                    break;
-                    
-                default:
-                    url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${currentStart}&q=${encodeURIComponent(cityName)}`;
-            }
-            
-            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-            const res = await fetch(proxyUrl);
-            
-            if (!res.ok) throw new Error('API error');
-            const data = await res.json();
-            
-            if (!data.result || !data.result.records) break;
-            
-            let batch;
-            if (strategy === 'broad') {
-                // Filter locally for broad strategy
-                batch = data.result.records
-                    .filter(r => r[CITY_NAME_FIELD] && r[STREET_NAME_FIELD] && 
-                                (r[CITY_NAME_FIELD] === cityName || 
-                                 r[CITY_NAME_FIELD].includes(cityName) || 
-                                 cityName.includes(r[CITY_NAME_FIELD])))
-                    .map(r => r[STREET_NAME_FIELD]);
-            } else {
-                // Use API filtering for other strategies
-                batch = data.result.records
+                }
+                
+                const data = await res.json();
+                if (!data.result || !data.result.records) break;
+                
+                const batch = data.result.records
                     .filter(r => r[STREET_NAME_FIELD])
                     .map(r => r[STREET_NAME_FIELD]);
+                
+                streets = streets.concat(batch);
+                
+                if (batch.length < limit) break;
+                start += limit;
+                
+                // Limit to prevent infinite loops
+                if (start > 5000) break;
             }
-            
-            streets = streets.concat(batch);
-            
-            if (batch.length < limit) break;
-            currentStart += limit;
+        } catch (e) {
+            console.error('[DEBUG] Error in fetchStreetsWithExactMatch:', e);
         }
         
         return streets;
@@ -1887,79 +1869,6 @@ function smoothScroll(target) {
         
         return variations[normalized] || normalized;
     }
-    
-    // Helper function to find similar city names
-    async function findSimilarCities(cityName) {
-        try {
-            // Get a sample of cities from the streets API to find similar names
-            const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=1000`;
-            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-            const res = await fetch(proxyUrl);
-            
-            if (!res.ok) return [];
-            
-            const data = await res.json();
-            if (!data.result || !data.result.records) return [];
-            
-            // Extract unique city names
-            const availableCities = [...new Set(data.result.records
-                .filter(r => r[CITY_NAME_FIELD])
-                .map(r => r[CITY_NAME_FIELD]))];
-            
-            // Find similar cities using fuzzy matching
-            const similarCities = availableCities.filter(availableCity => {
-                const similarity = calculateSimilarity(cityName, availableCity);
-                return similarity > 0.7; // 70% similarity threshold
-            });
-            
-            console.log(`[DEBUG] Found ${similarCities.length} similar cities for "${cityName}":`, similarCities);
-            return similarCities;
-            
-        } catch (e) {
-            console.error('[DEBUG] Error finding similar cities:', e);
-            return [];
-        }
-    }
-    
-    // Helper function to calculate string similarity (simple implementation)
-    function calculateSimilarity(str1, str2) {
-        const longer = str1.length > str2.length ? str1 : str2;
-        const shorter = str1.length > str2.length ? str2 : str1;
-        
-        if (longer.length === 0) return 1.0;
-        
-        const editDistance = levenshteinDistance(longer, shorter);
-        return (longer.length - editDistance) / longer.length;
-    }
-    
-    // Levenshtein distance implementation
-    function levenshteinDistance(str1, str2) {
-        const matrix = [];
-        
-        for (let i = 0; i <= str2.length; i++) {
-            matrix[i] = [i];
-        }
-        
-        for (let j = 0; j <= str1.length; j++) {
-            matrix[0][j] = j;
-        }
-        
-        for (let i = 1; i <= str2.length; i++) {
-            for (let j = 1; j <= str1.length; j++) {
-                if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
-                    matrix[i][j] = matrix[i - 1][j - 1];
-                } else {
-                    matrix[i][j] = Math.min(
-                        matrix[i - 1][j - 1] + 1,
-                        matrix[i][j - 1] + 1,
-                        matrix[i - 1][j] + 1
-                    );
-                }
-            }
-        }
-        
-        return matrix[str2.length][str1.length];
-    }
 
     // Show dropdown with filtered streets
     function showDropdown(filtered) {
@@ -1986,7 +1895,7 @@ function smoothScroll(target) {
         dropdown.style.display = 'block';
     }
 
-    // Filter streets by input
+    // Filter streets by input with debouncing
     function filterStreets(query) {
         if (!currentCity || !streetsCache.has(currentCity)) return [];
         const streets = streetsCache.get(currentCity);
@@ -1994,6 +1903,19 @@ function smoothScroll(target) {
         if (!query) return streets.slice(0, 50); // Show first 50 if empty
         const norm = s => s.replace(/["'\-\s]/g, '').toLowerCase();
         return streets.filter(street => norm(street).includes(norm(query))).slice(0, 50);
+    }
+
+    // Debounced search function
+    function debouncedSearch() {
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+        
+        searchTimeout = setTimeout(() => {
+            if (currentCity && streetsCache.has(currentCity)) {
+                showDropdown(filterStreets(streetAutocompleteInput.value));
+            }
+        }, 300);
     }
 
     // Handle city selection change
@@ -2004,37 +1926,8 @@ function smoothScroll(target) {
         
         console.log('[DEBUG] handleCityChange called. selectedCity=', selectedCity);
         
-        if (!selectedCity) {
-            // No city selected - disable street field
-            streetAutocompleteInput.disabled = true;
-            streetAutocompleteInput.style.opacity = '0.6';
-            streetAutocompleteInput.value = '';
-            streetInput.value = '';
-            dropdown.style.display = 'none';
-            errorMsg.style.display = 'none';
-            loadingMsg.style.display = 'none';
-            currentCity = null;
-            return;
-        }
-
-        currentCity = selectedCity;
-        
-        // Check if we have cached data
-        if (streetsCache.has(selectedCity)) {
-            const streets = streetsCache.get(selectedCity);
-            if (streets.length > 0) {
-                streetAutocompleteInput.disabled = false;
-                streetAutocompleteInput.style.opacity = '1';
-                errorMsg.style.display = 'none';
-            } else {
-                streetAutocompleteInput.disabled = true;
-                streetAutocompleteInput.style.opacity = '0.6';
-                errorMsg.style.display = 'block';
-            }
-        } else {
-            // Fetch streets for the selected city
-            fetchStreetsForCity(selectedCity);
-        }
+        // Use debounced function to avoid excessive API calls
+        debouncedCityChange(selectedCity);
     }
 
     // Make handleCityChange available globally
@@ -2048,9 +1941,8 @@ function smoothScroll(target) {
     });
     
     streetAutocompleteInput.addEventListener('input', function() {
-        if (currentCity && streetsCache.has(currentCity)) {
-            showDropdown(filterStreets(streetAutocompleteInput.value));
-        }
+        // Use debounced search to avoid excessive filtering
+        debouncedSearch();
     });
     
     streetAutocompleteInput.addEventListener('blur', function() {
