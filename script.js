@@ -1629,13 +1629,28 @@ function smoothScroll(target) {
     loadingMsg.textContent = 'טוען רחובות...';
     wrapper.appendChild(loadingMsg);
 
-    // Fetch streets for a specific city
-    async function fetchStreetsForCity(cityName) {
-        console.log('[DEBUG] fetchStreetsForCity called with:', cityName);
+    // Fetch streets for a specific city with retry mechanism
+    async function fetchStreetsForCity(cityName, retryCount = 0) {
+        console.log('[DEBUG] fetchStreetsForCity called with:', cityName, 'retry:', retryCount);
         
         if (streetsCache.has(cityName)) {
             console.log('[DEBUG] Found in cache:', cityName);
             return streetsCache.get(cityName);
+        }
+
+        // Prevent duplicate requests for the same city
+        if (isLoadingStreets && currentCity === cityName) {
+            console.log('[DEBUG] Already loading streets for:', cityName);
+            return new Promise((resolve) => {
+                const checkCache = () => {
+                    if (streetsCache.has(cityName)) {
+                        resolve(streetsCache.get(cityName));
+                    } else {
+                        setTimeout(checkCache, 100);
+                    }
+                };
+                checkCache();
+            });
         }
 
         isLoadingStreets = true;
@@ -1645,6 +1660,7 @@ function smoothScroll(target) {
         let streets = [];
         let start = 0;
         const limit = 1000;
+        const maxRetries = 2;
         
         try {
             while (true) {
@@ -1674,8 +1690,8 @@ function smoothScroll(target) {
                         const fetchPromise = fetch(proxyUrl, {
                             method: 'GET',
                             headers: {
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json'
+                                'Accept': 'application/json'
+                                // Removed Content-Type to avoid CORS preflight issues
                             }
                         });
                         
@@ -1696,31 +1712,84 @@ function smoothScroll(target) {
                 if (!success || !data || !data.result || !data.result.records) {
                     console.log('[DEBUG] All proxies failed or no data');
                     
-                    // Try JSONP as last resort
+                    // Try JSONP as last resort with improved callback handling
                     try {
                         console.log('[DEBUG] Trying JSONP fallback');
-                        const jsonpUrl = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&q=${encodeURIComponent(cityName)}&callback=jsonpCallback`;
+                        
+                        // Generate unique callback name to avoid conflicts
+                        const callbackName = 'jsonpCallback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                        const jsonpUrl = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${start}&q=${encodeURIComponent(cityName)}&callback=${callbackName}`;
                         
                         // Create a temporary script tag for JSONP
                         const script = document.createElement('script');
                         script.src = jsonpUrl;
                         
-                        // Create a promise-based JSONP handler
+                        // Create a promise-based JSONP handler with better cleanup
                         const jsonpPromise = new Promise((resolve, reject) => {
-                            window.jsonpCallback = function(jsonpData) {
-                                if (jsonpData && jsonpData.result && jsonpData.result.records) {
-                                    resolve(jsonpData);
-                                } else {
-                                    reject(new Error('No data in JSONP response'));
+                            // Set up the callback function before loading the script
+                            window[callbackName] = function(jsonpData) {
+                                try {
+                                    if (jsonpData && jsonpData.result && jsonpData.result.records) {
+                                        resolve(jsonpData);
+                                    } else {
+                                        reject(new Error('No data in JSONP response'));
+                                    }
+                                } catch (e) {
+                                    reject(e);
+                                } finally {
+                                    // Clean up after a delay to ensure script execution
+                                    setTimeout(() => {
+                                        if (window[callbackName]) {
+                                            delete window[callbackName];
+                                        }
+                                        if (script.parentNode) {
+                                            script.parentNode.removeChild(script);
+                                        }
+                                    }, 1000);
                                 }
-                                document.head.removeChild(script);
-                                delete window.jsonpCallback;
                             };
                             
+                            // Set up error handling
                             script.onerror = () => {
                                 reject(new Error('JSONP script failed to load'));
-                                document.head.removeChild(script);
-                                delete window.jsonpCallback;
+                                setTimeout(() => {
+                                    if (window[callbackName]) {
+                                        delete window[callbackName];
+                                    }
+                                    if (script.parentNode) {
+                                        script.parentNode.removeChild(script);
+                                    }
+                                }, 1000);
+                            };
+                            
+                            // Set up timeout for JSONP
+                            setTimeout(() => {
+                                if (window[callbackName]) {
+                                    reject(new Error('JSONP timeout'));
+                                    delete window[callbackName];
+                                    if (script.parentNode) {
+                                        script.parentNode.removeChild(script);
+                                    }
+                                }
+                            }, 10000);
+                            
+                            // Add global error handler for JSONP
+                            const originalOnError = window.onerror;
+                            window.onerror = function(msg, url, line, col, error) {
+                                if (msg && msg.includes('jsonpCallback') && window[callbackName]) {
+                                    console.log('[DEBUG] JSONP error caught:', msg);
+                                    reject(new Error('JSONP execution error: ' + msg));
+                                    delete window[callbackName];
+                                    if (script.parentNode) {
+                                        script.parentNode.removeChild(script);
+                                    }
+                                    window.onerror = originalOnError;
+                                    return true;
+                                }
+                                if (originalOnError) {
+                                    return originalOnError(msg, url, line, col, error);
+                                }
+                                return false;
                             };
                         });
                         
@@ -1733,7 +1802,35 @@ function smoothScroll(target) {
                         
                     } catch (jsonpError) {
                         console.log('[DEBUG] JSONP fallback also failed:', jsonpError.message);
-                        break;
+                        
+                        // Final fallback: try with a different approach
+                        if (retryCount === 0) {
+                            console.log('[DEBUG] Trying alternative approach...');
+                            try {
+                                // Try with a simpler query approach
+                                const simpleUrl = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=100&q=${encodeURIComponent(cityName)}`;
+                                
+                                // Try with a different proxy
+                                const alternativeProxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(simpleUrl)}`;
+                                
+                                const res = await fetch(alternativeProxy, {
+                                    method: 'GET',
+                                    headers: { 'Accept': 'application/json' }
+                                });
+                                
+                                if (res.ok) {
+                                    data = await res.json();
+                                    success = true;
+                                    console.log('[DEBUG] Alternative approach succeeded');
+                                }
+                            } catch (altError) {
+                                console.log('[DEBUG] Alternative approach also failed:', altError.message);
+                            }
+                        }
+                        
+                        if (!success) {
+                            break;
+                        }
                     }
                 }
                 
@@ -1777,6 +1874,18 @@ function smoothScroll(target) {
             
         } catch (e) {
             console.error('[DEBUG] Error fetching streets:', e);
+            
+            // Retry logic for transient errors
+            if (retryCount < maxRetries) {
+                console.log('[DEBUG] Retrying fetchStreetsForCity, attempt:', retryCount + 1);
+                isLoadingStreets = false;
+                loadingMsg.style.display = 'none';
+                
+                // Wait before retry
+                await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+                return fetchStreetsForCity(cityName, retryCount + 1);
+            }
+            
             errorMsg.textContent = 'לא ניתן לטעון רחובות כרגע עקב בעיות טכניות. אנא נסה שוב מאוחר יותר או פנה לתמיכה.';
             errorMsg.style.display = 'block';
             streetAutocompleteInput.disabled = true;
@@ -1855,6 +1964,12 @@ function smoothScroll(target) {
             cityAutocompleteInput.value = selectedCity;
         }
 
+        // Prevent duplicate processing for the same city
+        if (currentCity === selectedCity) {
+            console.log('[DEBUG] Same city selected, skipping duplicate processing');
+            return;
+        }
+
         currentCity = selectedCity;
         
         // Check if we have cached data
@@ -1874,7 +1989,14 @@ function smoothScroll(target) {
         } else {
             // Fetch streets for the selected city
             console.log('[DEBUG] Fetching streets for', selectedCity);
-            fetchStreetsForCity(selectedCity);
+            fetchStreetsForCity(selectedCity).then(() => {
+                // After fetching, trigger focus event to show dropdown if user is on street field
+                if (document.activeElement === streetAutocompleteInput) {
+                    streetAutocompleteInput.dispatchEvent(new Event('focus'));
+                }
+            }).catch((error) => {
+                console.error('[DEBUG] Error in fetchStreetsForCity:', error);
+            });
         }
     }
 
@@ -1883,8 +2005,23 @@ function smoothScroll(target) {
 
     // Handle street input events
     streetAutocompleteInput.addEventListener('focus', function() {
+        console.log('[DEBUG] Street field focused, currentCity:', currentCity);
+        
         if (currentCity && streetsCache.has(currentCity)) {
             showDropdown(filterStreets(streetAutocompleteInput.value));
+        } else if (currentCity && !streetsCache.has(currentCity) && !isLoadingStreets) {
+            // If city is selected but streets aren't loaded yet, load them
+            console.log('[DEBUG] Loading streets for focused field, city:', currentCity);
+            fetchStreetsForCity(currentCity).then(() => {
+                if (streetsCache.has(currentCity)) {
+                    showDropdown(filterStreets(streetAutocompleteInput.value));
+                }
+            });
+        } else if (!currentCity) {
+            // If no city is selected, show a helpful message
+            console.log('[DEBUG] No city selected, cannot load streets');
+            errorMsg.textContent = 'אנא בחר עיר תחילה כדי לטעון רחובות';
+            errorMsg.style.display = 'block';
         }
     });
     
@@ -1908,27 +2045,43 @@ function smoothScroll(target) {
         cityAutocompleteInput.removeEventListener('input', handleCityChange);
         cityAutocompleteInput.removeEventListener('change', handleCityChange);
         
-        // Add new listeners
+        // Add debounced input handler to prevent too many calls
+        let inputTimeout;
         cityAutocompleteInput.addEventListener('input', function() {
             console.log('[DEBUG] City autocomplete input event:', this.value);
+            
+            // Clear previous timeout
+            if (inputTimeout) {
+                clearTimeout(inputTimeout);
+            }
+            
             // Update city select value when autocomplete changes
             const opt = Array.from(citySelect.options).find(o => o.text === this.value || o.value === this.value);
             if (opt) {
                 citySelect.value = opt.value;
                 console.log('[DEBUG] Updated citySelect to:', opt.value);
             }
-            // Trigger city change after a short delay to ensure value is set
-            setTimeout(() => handleCityChange(), 100);
+            
+            // Debounce the city change trigger
+            inputTimeout = setTimeout(() => {
+                handleCityChange();
+            }, 300);
         });
         
         cityAutocompleteInput.addEventListener('change', function() {
             console.log('[DEBUG] City autocomplete change event:', this.value);
+            if (inputTimeout) {
+                clearTimeout(inputTimeout);
+            }
             handleCityChange();
         });
         
         // Also listen for when user selects from dropdown
         cityAutocompleteInput.addEventListener('blur', function() {
             console.log('[DEBUG] City autocomplete blur event:', this.value);
+            if (inputTimeout) {
+                clearTimeout(inputTimeout);
+            }
             // Small delay to allow dropdown selection to complete
             setTimeout(() => handleCityChange(), 150);
         });
