@@ -1952,17 +1952,8 @@ function smoothScroll(target) {
                 return similarity > 0.75; // 75% similarity threshold
             });
             
-            // Strategy 3: Normalized matching
-            const normalizedCityName = normalizeCityName(cityName);
-            const normalizedMatches = availableCities.filter(availableCity => {
-                const normalizedAvailableCity = normalizeCityName(availableCity);
-                return normalizedAvailableCity === normalizedCityName || 
-                       normalizedAvailableCity.includes(normalizedCityName) || 
-                       normalizedCityName.includes(normalizedAvailableCity);
-            });
-            
             // Combine all matches and remove duplicates
-            const allMatches = [...substringMatches, ...fuzzyMatches, ...normalizedMatches];
+            const allMatches = [...substringMatches, ...fuzzyMatches];
             const uniqueMatches = [...new Set(allMatches)];
             
             // Sort by relevance (exact matches first, then by similarity)
