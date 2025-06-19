@@ -1709,16 +1709,31 @@ function smoothScroll(target) {
         let streets = [];
         
         try {
-            // Only try exact match first - most reliable
+            // Strategy 1: Try exact match first - most reliable
             console.log('[DEBUG] Fetching streets for city:', cityName);
             streets = await fetchStreetsWithExactMatch(cityName);
             
-            // If no results, try with normalized name
+            // Strategy 2: If no results, try with normalized name
             if (streets.length === 0) {
                 console.log('[DEBUG] No results with exact match, trying normalized name');
                 const normalizedCityName = normalizeCityName(cityName);
                 if (normalizedCityName !== cityName) {
                     streets = await fetchStreetsWithExactMatch(normalizedCityName);
+                }
+            }
+            
+            // Strategy 3: If still no results, try with fuzzy matching
+            if (streets.length === 0) {
+                console.log('[DEBUG] No results with normalized name, trying fuzzy matching');
+                const similarCities = await findSimilarCitiesInStreetsAPI(cityName);
+                for (const similarCity of similarCities.slice(0, 3)) {
+                    console.log(`[DEBUG] Trying similar city: ${similarCity}`);
+                    const similarStreets = await fetchStreetsWithExactMatch(similarCity);
+                    if (similarStreets.length > 0) {
+                        streets = similarStreets;
+                        console.log(`[DEBUG] Found ${similarStreets.length} streets using similar city: ${similarCity}`);
+                        break;
+                    }
                 }
             }
             
@@ -1864,10 +1879,154 @@ function smoothScroll(target) {
             'אום אל-פחם': 'אום אל פחם',
             'אום אל פחם': 'אום אל-פחם',
             'נצרת עילית': 'נוף הגליל',
-            'נוף הגליל': 'נצרת עילית'
+            'נוף הגליל': 'נצרת עילית',
+            // Add more variations for common city name differences
+            'כרמל': 'כרמיאל',
+            'כרמיאל': 'כרמל',
+            'קריית שמונה': 'קריית שמונה',
+            'קריית שמונה': 'קריית שמונה',
+            'קריית גת': 'קריית גת',
+            'קריית גת': 'קריית גת',
+            'קריית מלאכי': 'קריית מלאכי',
+            'קריית מלאכי': 'קריית מלאכי',
+            'קריית ביאליק': 'קריית ביאליק',
+            'קריית ביאליק': 'קריית ביאליק',
+            'קריית מוצקין': 'קריית מוצקין',
+            'קריית מוצקין': 'קריית מוצקין',
+            'קריית ים': 'קריית ים',
+            'קריית ים': 'קריית ים',
+            'קריית אונו': 'קריית אונו',
+            'קריית אונו': 'קריית אונו'
         };
         
         return variations[normalized] || normalized;
+    }
+    
+    // Helper function to find similar cities in the streets API using fuzzy matching
+    async function findSimilarCitiesInStreetsAPI(cityName) {
+        try {
+            console.log('[DEBUG] Searching for similar cities to:', cityName);
+            
+            // Get a sample of cities from the streets API to find similar names
+            const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=2000`;
+            
+            // Try direct fetch first, fallback to proxy if needed
+            let res;
+            try {
+                res = await fetch(url);
+            } catch (e) {
+                // If direct fetch fails, try with proxy
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                res = await fetch(proxyUrl);
+            }
+            
+            if (!res.ok) {
+                console.warn(`[DEBUG] API request failed with status: ${res.status}`);
+                return [];
+            }
+            
+            const data = await res.json();
+            if (!data.result || !data.result.records) {
+                console.log('[DEBUG] No records found in streets API');
+                return [];
+            }
+            
+            // Extract unique city names from streets API
+            const availableCities = [...new Set(data.result.records
+                .filter(r => r[CITY_NAME_FIELD])
+                .map(r => r[CITY_NAME_FIELD]))];
+            
+            console.log(`[DEBUG] Found ${availableCities.length} unique cities in streets API`);
+            
+            // Find similar cities using multiple matching strategies
+            const similarCities = [];
+            
+            // Strategy 1: Exact substring matching
+            const substringMatches = availableCities.filter(availableCity => 
+                availableCity.includes(cityName) || cityName.includes(availableCity)
+            );
+            
+            // Strategy 2: Fuzzy matching with similarity threshold
+            const fuzzyMatches = availableCities.filter(availableCity => {
+                const similarity = calculateStringSimilarity(cityName, availableCity);
+                return similarity > 0.6; // 60% similarity threshold
+            });
+            
+            // Strategy 3: Normalized matching
+            const normalizedCityName = normalizeCityName(cityName);
+            const normalizedMatches = availableCities.filter(availableCity => {
+                const normalizedAvailableCity = normalizeCityName(availableCity);
+                return normalizedAvailableCity === normalizedCityName || 
+                       normalizedAvailableCity.includes(normalizedCityName) || 
+                       normalizedCityName.includes(normalizedAvailableCity);
+            });
+            
+            // Combine all matches and remove duplicates
+            const allMatches = [...substringMatches, ...fuzzyMatches, ...normalizedMatches];
+            const uniqueMatches = [...new Set(allMatches)];
+            
+            // Sort by relevance (exact matches first, then by similarity)
+            const sortedMatches = uniqueMatches.sort((a, b) => {
+                const aExact = a === cityName || a.includes(cityName) || cityName.includes(a);
+                const bExact = b === cityName || b.includes(cityName) || cityName.includes(b);
+                
+                if (aExact && !bExact) return -1;
+                if (!aExact && bExact) return 1;
+                
+                const aSimilarity = calculateStringSimilarity(cityName, a);
+                const bSimilarity = calculateStringSimilarity(cityName, b);
+                return bSimilarity - aSimilarity;
+            });
+            
+            console.log(`[DEBUG] Found ${sortedMatches.length} similar cities:`, sortedMatches.slice(0, 5));
+            return sortedMatches;
+            
+        } catch (e) {
+            console.error('[DEBUG] Error finding similar cities:', e);
+            return [];
+        }
+    }
+    
+    // Helper function to calculate string similarity (Levenshtein distance based)
+    function calculateStringSimilarity(str1, str2) {
+        if (!str1 || !str2) return 0;
+        
+        const longer = str1.length > str2.length ? str1 : str2;
+        const shorter = str1.length > str2.length ? str2 : str1;
+        
+        if (longer.length === 0) return 1.0;
+        
+        const editDistance = levenshteinDistance(longer, shorter);
+        return (longer.length - editDistance) / longer.length;
+    }
+    
+    // Levenshtein distance implementation
+    function levenshteinDistance(str1, str2) {
+        const matrix = [];
+        
+        for (let i = 0; i <= str2.length; i++) {
+            matrix[i] = [i];
+        }
+        
+        for (let j = 0; j <= str1.length; j++) {
+            matrix[0][j] = j;
+        }
+        
+        for (let i = 1; i <= str2.length; i++) {
+            for (let j = 1; j <= str1.length; j++) {
+                if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                    matrix[i][j] = matrix[i - 1][j - 1];
+                } else {
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j - 1] + 1,
+                        matrix[i][j - 1] + 1,
+                        matrix[i - 1][j] + 1
+                    );
+                }
+            }
+        }
+        
+        return matrix[str2.length][str1.length];
     }
 
     // Show dropdown with filtered streets
