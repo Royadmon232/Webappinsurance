@@ -2525,3 +2525,179 @@ function findSimilarCitiesLocally(searchCity, availableCities) {
 const STREETS_RESOURCE_ID = '9ad3862c-8391-4b2f-84a4-2d4c68625f4b';
 const CITY_NAME_FIELD = 'שם_ישוב';
 const STREET_NAME_FIELD = 'שם_רחוב';
+
+// --- BEGIN: Smart city matching for streets (Cursor AI patch) ---
+// Cache for all unique city names in the streets DB
+let allStreetCities = null;
+let allStreetCitiesLoaded = false;
+let allStreetCitiesLoading = false;
+let allStreetCitiesLoadPromise = null;
+
+// Fetch all unique city names from the streets API (once)
+async function fetchAllStreetCities() {
+    if (allStreetCitiesLoaded) return allStreetCities;
+    if (allStreetCitiesLoading && allStreetCitiesLoadPromise) return allStreetCitiesLoadPromise;
+    allStreetCitiesLoading = true;
+    allStreetCitiesLoadPromise = new Promise(async (resolve, reject) => {
+        try {
+            let offset = 0;
+            let limit = 1000;
+            let uniqueCities = new Set();
+            let more = true;
+            while (more) {
+                const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&limit=${limit}&offset=${offset}`;
+                let res;
+                try {
+                    res = await fetch(url);
+                } catch (e) {
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                    res = await fetch(proxyUrl);
+                }
+                if (!res.ok) break;
+                const data = await res.json();
+                if (data.result && data.result.records && data.result.records.length > 0) {
+                    data.result.records.forEach(record => {
+                        if (record[CITY_NAME_FIELD]) {
+                            uniqueCities.add(record[CITY_NAME_FIELD].trim());
+                        }
+                    });
+                    offset += data.result.records.length;
+                    more = data.result.records.length === limit;
+                } else {
+                    more = false;
+                }
+            }
+            allStreetCities = Array.from(uniqueCities);
+            allStreetCitiesLoaded = true;
+            allStreetCitiesLoading = false;
+            resolve(allStreetCities);
+        } catch (err) {
+            allStreetCitiesLoaded = false;
+            allStreetCitiesLoading = false;
+            reject(err);
+        }
+    });
+    return allStreetCitiesLoadPromise;
+}
+
+// Fuzzy match: find the best matching city name from the streets DB
+function fuzzyFindCityName(selectedCity) {
+    if (!allStreetCities || !selectedCity) return null;
+    const norm = s => s.replace(/["'\-\s]/g, '').toLowerCase();
+    const selectedNorm = norm(selectedCity);
+    // Exact match
+    let found = allStreetCities.find(city => norm(city) === selectedNorm);
+    if (found) return found;
+    // Starts with
+    found = allStreetCities.find(city => norm(city).startsWith(selectedNorm));
+    if (found) return found;
+    // Contains
+    found = allStreetCities.find(city => norm(city).includes(selectedNorm));
+    if (found) return found;
+    // Fuzzy: city contains selected
+    found = allStreetCities.find(city => selectedNorm.includes(norm(city)));
+    if (found) return found;
+    // Partial word match
+    const selectedWords = selectedNorm.split(/\s|-/);
+    for (const city of allStreetCities) {
+        const cityNorm = norm(city);
+        let matches = 0;
+        for (const word of selectedWords) {
+            if (word.length > 1 && cityNorm.includes(word)) matches++;
+        }
+        if (matches > 0) return city;
+    }
+    return null;
+}
+
+// Patch the handleCityChange function to use smart city matching
+const origHandleCityChange = handleCityChange;
+handleCityChange = async function() {
+    // Get city value from either select or autocomplete input
+    const cityAutocompleteInput = document.getElementById('city-autocomplete');
+    let selectedCity = citySelect.value || (cityAutocompleteInput ? cityAutocompleteInput.value : '');
+    selectedCity = selectedCity.trim();
+    console.log('[DEBUG] [SmartMatch] handleCityChange called. selectedCity=', selectedCity);
+    if (!selectedCity || selectedCity.length < 2) {
+        console.log('[DEBUG] [SmartMatch] City name too short or empty, skipping');
+        return;
+    }
+    // Load all street cities if not loaded
+    await fetchAllStreetCities();
+    // Find best match
+    const matchedCity = fuzzyFindCityName(selectedCity);
+    if (!matchedCity) {
+        console.log('[DEBUG] [SmartMatch] No matching city found in streets DB for:', selectedCity);
+        streetAutocompleteInput.disabled = true;
+        streetAutocompleteInput.style.opacity = '0.6';
+        streetAutocompleteInput.value = '';
+        streetInput.value = '';
+        dropdown.style.display = 'none';
+        errorMsg.style.display = 'block';
+        errorMsg.textContent = 'לא נמצאו רחובות ליישוב שבחרת';
+        loadingMsg.style.display = 'none';
+        return;
+    }
+    console.log('[DEBUG] [SmartMatch] Matched city in streets DB:', matchedCity);
+    // Call fetchStreetsByCity with the matched city name
+    fetchStreetsByCity(matchedCity)
+        .then(streets => {
+            loadingMsg.style.display = 'none';
+            dropdown.innerHTML = '';
+            if (streets && streets.length > 0) {
+                streets.forEach(street => {
+                    const option = document.createElement('div');
+                    option.textContent = street;
+                    option.style.padding = '8px 12px';
+                    option.style.cursor = 'pointer';
+                    option.style.borderBottom = '1px solid #eee';
+                    option.addEventListener('mouseenter', function() {
+                        this.style.backgroundColor = '#f5f5f5';
+                    });
+                    option.addEventListener('mouseleave', function() {
+                        this.style.backgroundColor = '#fff';
+                    });
+                    option.addEventListener('click', function() {
+                        streetAutocompleteInput.value = street;
+                        streetInput.value = street;
+                        dropdown.style.display = 'none';
+                    });
+                    dropdown.appendChild(option);
+                });
+                streetAutocompleteInput.disabled = false;
+                streetAutocompleteInput.style.opacity = '1';
+                errorMsg.style.display = 'none';
+                dropdown.style.display = 'block';
+            } else {
+                const noStreetsOption = document.createElement('div');
+                noStreetsOption.textContent = 'לא נמצאו רחובות';
+                noStreetsOption.style.padding = '8px 12px';
+                noStreetsOption.style.color = '#666';
+                noStreetsOption.style.fontStyle = 'italic';
+                dropdown.appendChild(noStreetsOption);
+                dropdown.style.display = 'block';
+                streetAutocompleteInput.disabled = true;
+                streetAutocompleteInput.style.opacity = '0.6';
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = 'לא נמצאו רחובות זמינים בעיר שבחרת, אנא נסה שוב מאוחר יותר.';
+            }
+        })
+        .catch(error => {
+            console.error('[DEBUG] [SmartMatch] Error fetching streets:', error);
+            loadingMsg.style.display = 'none';
+            dropdown.innerHTML = '';
+            const errorOption = document.createElement('div');
+            errorOption.textContent = 'שגיאה בטעינת רשימת הרחובות';
+            errorOption.style.padding = '8px 12px';
+            errorOption.style.color = '#e74c3c';
+            errorOption.style.fontStyle = 'italic';
+            errorOption.disabled = true;
+            dropdown.appendChild(errorOption);
+            dropdown.style.display = 'block';
+            streetAutocompleteInput.disabled = true;
+            streetAutocompleteInput.style.opacity = '0.6';
+            errorMsg.style.display = 'block';
+            errorMsg.textContent = 'שגיאה בטעינת רשימת הרחובות';
+        });
+};
+// --- END: Smart city matching for streets (Cursor AI patch) ---
