@@ -1661,18 +1661,27 @@ function fuzzyFindCityName(selectedCity) {
     if (!allStreetCities || !selectedCity) return null;
     const norm = s => s.replace(/["'\-\s]/g, '').toLowerCase();
     const selectedNorm = norm(selectedCity);
-    // Exact match
-    let found = allStreetCities.find(city => norm(city) === selectedNorm);
+    
+    // First try exact match with trailing space (as stored in database)
+    let found = allStreetCities.find(city => city.trim() === selectedCity.trim());
     if (found) return found;
+    
+    // Try normalized exact match
+    found = allStreetCities.find(city => norm(city) === selectedNorm);
+    if (found) return found;
+    
     // Starts with
     found = allStreetCities.find(city => norm(city).startsWith(selectedNorm));
     if (found) return found;
+    
     // Contains
     found = allStreetCities.find(city => norm(city).includes(selectedNorm));
     if (found) return found;
+    
     // Fuzzy: city contains selected
     found = allStreetCities.find(city => selectedNorm.includes(norm(city)));
     if (found) return found;
+    
     // Partial word match
     const selectedWords = selectedNorm.split(/\s|-/);
     for (const city of allStreetCities) {
@@ -1702,8 +1711,8 @@ async function fetchStreetsByCity(cityName) {
         
         console.log(`[DEBUG] Trying original city name: "${cleanCityName}"`);
         
-        // Try the original name first
-        let filter = { "שם_ישוב": cleanCityName };
+        // Try the original name first (with trailing space as in database)
+        let filter = { "שם_ישוב": cleanCityName + " " };
         let filterStr = encodeURIComponent(JSON.stringify(filter));
         let url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${STREETS_RESOURCE_ID}&filters=${filterStr}`;
         console.log(`[DEBUG] API URL for original: ${url}`);
@@ -1739,8 +1748,20 @@ async function fetchStreetsByCity(cityName) {
             return streets;
         }
         
-        // Try common variations if no results
+        // Try common variations if no results (all with trailing space)
         const variations = [
+            cleanCityName.replace('ו', '') + " ",
+            cleanCityName.replace(/-/g, ' ') + " ",
+            cleanCityName.replace(/ /g, '-') + " ",
+            cleanCityName.replace(/ /g, '') + " ",
+            cleanCityName.replace('תקווה', 'תקוה') + " ",
+            cleanCityName.replace('תקוה', 'תקווה') + " ",
+            cleanCityName.replace('קרית', 'קריית') + " ",
+            cleanCityName.replace('קריית', 'קרית') + " ",
+            cleanCityName + " (עיר) ",
+            cleanCityName + " (מועצה) ",
+            // Also try without trailing space
+            cleanCityName,
             cleanCityName.replace('ו', ''),
             cleanCityName.replace(/-/g, ' '),
             cleanCityName.replace(/ /g, '-'),
@@ -1749,14 +1770,14 @@ async function fetchStreetsByCity(cityName) {
             cleanCityName.replace('תקוה', 'תקווה'),
             cleanCityName.replace('קרית', 'קריית'),
             cleanCityName.replace('קריית', 'קרית'),
-            cleanCityName + ' (עיר)',
-            cleanCityName + ' (מועצה)',
+            cleanCityName + " (עיר)",
+            cleanCityName + " (מועצה)",
         ];
         
         console.log(`[DEBUG] Trying variations:`, variations);
         
         for (const variant of variations) {
-            if (!variant || variant === cleanCityName) {
+            if (!variant || variant === cleanCityName + " ") {
                 console.log(`[DEBUG] Skipping variant "${variant}" (empty or same as original)`);
                 continue;
             }
