@@ -1955,21 +1955,18 @@ function smoothScroll(target) {
     // Also listen for changes from the city autocomplete
     const cityAutocompleteInput = document.getElementById('city-autocomplete');
     if (cityAutocompleteInput) {
-        // Remove old listener to avoid duplicates
-        cityAutocompleteInput.removeEventListener('input', handleCityChange);
-        cityAutocompleteInput.removeEventListener('change', handleCityChange);
-        
-        // Add new listeners
+        // Add input listener for real-time updates
         cityAutocompleteInput.addEventListener('input', function() {
             // Update city select value when autocomplete changes
             const opt = Array.from(citySelect.options).find(o => o.text === this.value || o.value === this.value);
             if (opt) {
                 citySelect.value = opt.value;
             }
-            handleCityChange();
+            // Only trigger city change if we have a valid value
+            if (this.value && this.value.length >= 2) {
+                handleCityChange();
+            }
         });
-        
-        cityAutocompleteInput.addEventListener('change', handleCityChange);
     }
 
     // Sync values on form submit
@@ -2047,8 +2044,7 @@ function smoothScroll(target) {
                 if (!opt) opt = ensureOptionExists(citySelect, e.target.textContent);
                 if (opt) {
                     citySelect.value = opt.value;
-                    const event = new Event('change', { bubbles: true });
-                    citySelect.dispatchEvent(event);
+                    // Don't trigger additional events - let the original handler work
                     console.log('[DEBUG] City selected from autocomplete dropdown:', opt.value);
                 }
             }
@@ -2061,8 +2057,6 @@ function smoothScroll(target) {
         if (!opt && cityAutocompleteInput.value) opt = ensureOptionExists(citySelect, cityAutocompleteInput.value);
         if (opt) {
             citySelect.value = opt.value;
-            const event = new Event('change', { bubbles: true });
-            citySelect.dispatchEvent(event);
             console.log('[DEBUG] City input matches option:', opt.value);
         }
     });
@@ -2071,76 +2065,18 @@ function smoothScroll(target) {
     citySelect.addEventListener('change', function() {
         cityAutocompleteInput.value = citySelect.value;
         console.log('[DEBUG] City selected from native dropdown:', citySelect.value);
-        // Force street dropdown logic to run
-        const streetAutocompleteInput = document.getElementById('street-autocomplete');
-        if (streetAutocompleteInput) {
-            streetAutocompleteInput.disabled = false;
-            streetAutocompleteInput.style.opacity = '1';
-        }
-        // Also trigger street logic directly
-        if (window.__triggerStreetDropdown) {
-            window.__triggerStreetDropdown();
-        }
     });
-
-    // Patch: always trigger street logic when city changes (input or dropdown)
-    window.__triggerStreetDropdown = function() {
-        const streetAutocompleteInput = document.getElementById('street-autocomplete');
-        if (!streetAutocompleteInput) return;
-        let cityVal = citySelect.value || cityAutocompleteInput.value;
-        console.log('[DEBUG] __triggerStreetDropdown called. cityVal=', cityVal);
-        if (cityVal) {
-            streetAutocompleteInput.disabled = false;
-            streetAutocompleteInput.style.opacity = '1';
-            // Simulate focus to show dropdown
-            streetAutocompleteInput.dispatchEvent(new Event('focus'));
-        }
-    };
 
     // Also trigger on page load if יש ערך
     if (citySelect.value || cityAutocompleteInput.value) {
-        window.__triggerStreetDropdown();
+        console.log('[DEBUG] Page loaded with city value:', citySelect.value || cityAutocompleteInput.value);
     }
 })();
 // --- End Cursor AI Patch ---
 
 // --- Cursor AI Patch: Robust street code to use city input if needed ---
 (function() {
-    // Patch the street dropdown code to use city input if select is empty
-    const origHandleCityChange = window.__origHandleCityChange;
-    const citySelect = document.getElementById('city');
-    const cityAutocompleteInput = document.getElementById('city-autocomplete');
-    const streetAutocompleteInput = document.getElementById('street-autocomplete');
-    if (!citySelect || !cityAutocompleteInput || !streetAutocompleteInput) return;
-
-    // Overwrite handleCityChange to always use the most up-to-date city value
-    function handleCityChangePatched() {
-        let selectedCity = citySelect.value || cityAutocompleteInput.value;
-        console.log('[DEBUG] handleCityChangePatched. selectedCity=', selectedCity);
-        if (!selectedCity) {
-            streetAutocompleteInput.disabled = true;
-            streetAutocompleteInput.style.opacity = '0.6';
-            streetAutocompleteInput.value = '';
-            if (window.__origDropdown) window.__origDropdown.style.display = 'none';
-            return;
-        }
-        // Call the original logic if exists
-        if (typeof origHandleCityChange === 'function') {
-            origHandleCityChange(selectedCity);
-        } else {
-            // Fallback: trigger input event
-            streetAutocompleteInput.disabled = false;
-            streetAutocompleteInput.style.opacity = '1';
-            streetAutocompleteInput.dispatchEvent(new Event('focus'));
-        }
-    }
-
-    // Save original if not already
-    if (!window.__origHandleCityChange && typeof window.handleCityChange === 'function') {
-        window.__origHandleCityChange = window.handleCityChange;
-    }
-    // Patch all city change triggers
-    citySelect.addEventListener('change', handleCityChangePatched);
-    cityAutocompleteInput.addEventListener('input', handleCityChangePatched);
+    // This patch is no longer needed as the main street code handles everything
+    // Keeping this as a placeholder for any future enhancements
 })();
 // --- End Cursor AI Patch --- 
