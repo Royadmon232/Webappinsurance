@@ -1804,7 +1804,7 @@ function smoothScroll(target) {
     // --- End Dynamic Street Dropdown Code ---
 })(); 
 
-// --- Cursor AI Patch: Improved city-street sync ---
+// --- Cursor AI Patch: Improved city-street sync + debug ---
 (function() {
     const citySelect = document.getElementById('city');
     const cityAutocompleteInput = document.getElementById('city-autocomplete');
@@ -1820,7 +1820,6 @@ function smoothScroll(target) {
     if (cityDropdown) {
         cityDropdown.addEventListener('mousedown', function(e) {
             if (e.target && e.target.textContent) {
-                // Set value in input and select
                 cityAutocompleteInput.value = e.target.textContent;
                 const opt = findOptionByText(citySelect, e.target.textContent);
                 if (opt) {
@@ -1828,6 +1827,7 @@ function smoothScroll(target) {
                     // Trigger change event for citySelect
                     const event = new Event('change', { bubbles: true });
                     citySelect.dispatchEvent(event);
+                    console.log('[DEBUG] City selected from autocomplete dropdown:', opt.value);
                 }
             }
         });
@@ -1840,6 +1840,19 @@ function smoothScroll(target) {
             citySelect.value = opt.value;
             const event = new Event('change', { bubbles: true });
             citySelect.dispatchEvent(event);
+            console.log('[DEBUG] City input matches option:', opt.value);
+        }
+    });
+
+    // Patch: when user selects from the native dropdown
+    citySelect.addEventListener('change', function() {
+        cityAutocompleteInput.value = citySelect.value;
+        console.log('[DEBUG] City selected from native dropdown:', citySelect.value);
+        // Force street dropdown logic to run
+        const streetAutocompleteInput = document.getElementById('street-autocomplete');
+        if (streetAutocompleteInput) {
+            streetAutocompleteInput.disabled = false;
+            streetAutocompleteInput.style.opacity = '1';
         }
     });
 })();
