@@ -164,12 +164,19 @@ export default async function handler(req, res) {
             // Check if the components match what the user entered
             const cityMatches = cityComponent && (
                 cityComponent.long_name.toLowerCase().includes(city.toLowerCase()) ||
-                city.toLowerCase().includes(cityComponent.long_name.toLowerCase())
+                city.toLowerCase().includes(cityComponent.long_name.toLowerCase()) ||
+                // Also check short_name
+                cityComponent.short_name.toLowerCase().includes(city.toLowerCase()) ||
+                city.toLowerCase().includes(cityComponent.short_name.toLowerCase())
             );
             
+            // More flexible street matching - handle Hebrew street names
             const streetMatches = !street || (streetComponent && (
                 streetComponent.long_name.toLowerCase().includes(street.toLowerCase()) ||
-                street.toLowerCase().includes(streetComponent.long_name.toLowerCase())
+                street.toLowerCase().includes(streetComponent.long_name.toLowerCase()) ||
+                // Check if both contain the same words (order might be different)
+                street.split(' ').some(word => streetComponent.long_name.toLowerCase().includes(word.toLowerCase())) ||
+                streetComponent.long_name.split(' ').some(word => street.toLowerCase().includes(word.toLowerCase()))
             ));
             
             const houseMatches = !house || (streetNumberComponent && 
@@ -194,7 +201,20 @@ export default async function handler(req, res) {
                 officialZip: null,
                 userZip: zipCode,
                 address: result.formatted_address,
-                error: 'No postal code found for this address'
+                error: 'No postal code found for this address',
+                debug: {
+                    triedWithZip: true,
+                    cityComponent: cityComponent?.long_name || 'not found',
+                    streetComponent: streetComponent?.long_name || 'not found', 
+                    numberComponent: streetNumberComponent?.long_name || 'not found',
+                    cityMatches: cityMatches,
+                    streetMatches: streetMatches,
+                    houseMatches: houseMatches,
+                    allComponents: result.address_components.map(c => ({
+                        types: c.types,
+                        long_name: c.long_name
+                    }))
+                }
             });
         }
 
