@@ -1,9 +1,5 @@
 {
-  "functions": {
-    "api/verifyZip.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
+  "outputDirectory": ".",
   "headers": [
     {
       "source": "/script.js",
