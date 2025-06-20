@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Build the address string for geocoding
+        // Build the address string for geocoding - keep it in Hebrew
         let address = city;
         if (street) {
             address = `${street}, ${city}`;
@@ -59,12 +59,12 @@ export default async function handler(req, res) {
                 address = `${street} ${house}, ${city}`;
             }
         }
-        address += ', Israel'; // Add country for better accuracy
+        address += ', ישראל'; // Add country in Hebrew
 
-        console.log(`[API] Geocoding address: ${address}`);
+        console.log(`[API] Geocoding address (Hebrew): ${address}`);
 
-        // First try: Regular geocoding without postal code
-        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_API_KEY}`;
+        // First try: Regular geocoding with Hebrew address and language parameter
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&language=he&key=${GOOGLE_API_KEY}`;
         
         const response = await fetch(geocodeUrl);
         const data = await response.json();
@@ -96,9 +96,9 @@ export default async function handler(req, res) {
             console.log('[API] No postal code in first attempt, trying with postal code in query...');
             
             const addressWithZip = `${address}, ${zipCode}`;
-            console.log(`[API] Geocoding with postal code: ${addressWithZip}`);
+            console.log(`[API] Geocoding with postal code (Hebrew): ${addressWithZip}`);
             
-            const geocodeWithZipUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressWithZip)}&key=${GOOGLE_API_KEY}`;
+            const geocodeWithZipUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressWithZip)}&language=he&key=${GOOGLE_API_KEY}`;
             const responseWithZip = await fetch(geocodeWithZipUrl);
             const dataWithZip = await responseWithZip.json();
             
@@ -128,7 +128,7 @@ export default async function handler(req, res) {
                 const { lat, lng } = result.geometry.location;
                 console.log(`[API] Trying reverse geocoding with coordinates: ${lat}, ${lng}`);
                 
-                const reverseGeocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_API_KEY}`;
+                const reverseGeocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&language=he&key=${GOOGLE_API_KEY}`;
                 const reverseResponse = await fetch(reverseGeocodeUrl);
                 const reverseData = await reverseResponse.json();
                 
@@ -189,58 +189,54 @@ export default async function handler(req, res) {
             console.log('[API] Found components - City:', cityComponent?.long_name, 'Street:', streetComponent?.long_name, 'Number:', streetNumberComponent?.long_name);
             console.log('[API] User input - City:', city, 'Street:', street, 'House:', house);
             
-            // Get English version of city if available
-            const cityEnglish = cityMapping[city] || city;
-            console.log('[API] City mapping:', city, '->', cityEnglish);
-            
-            // Check if the components match what the user entered
+            // Check if the components match what the user entered (simplified for Hebrew)
             const cityMatches = cityComponent && (
                 // Direct Hebrew match
-                cityComponent.long_name.toLowerCase().includes(city.toLowerCase()) ||
-                city.toLowerCase().includes(cityComponent.long_name.toLowerCase()) ||
-                // English translation match
-                cityComponent.long_name.toLowerCase() === cityEnglish.toLowerCase() ||
-                cityComponent.long_name.toLowerCase().includes(cityEnglish.toLowerCase()) ||
-                cityEnglish.toLowerCase().includes(cityComponent.long_name.toLowerCase()) ||
+                cityComponent.long_name === city ||
+                cityComponent.long_name.includes(city) ||
+                city.includes(cityComponent.long_name) ||
                 // Also check short_name
-                cityComponent.short_name.toLowerCase().includes(city.toLowerCase()) ||
-                city.toLowerCase().includes(cityComponent.short_name.toLowerCase()) ||
-                cityComponent.short_name.toLowerCase() === cityEnglish.toLowerCase()
+                cityComponent.short_name === city ||
+                cityComponent.short_name.includes(city) ||
+                city.includes(cityComponent.short_name)
             );
             
-            console.log('[API] City comparison details:');
-            console.log('  - cityComponent.long_name:', cityComponent?.long_name);
-            console.log('  - cityEnglish:', cityEnglish);
-            console.log('  - Direct match:', cityComponent?.long_name.toLowerCase() === cityEnglish.toLowerCase());
-            console.log('  - cityMatches result:', cityMatches);
+            console.log('[API] City comparison:');
+            console.log('  - User city:', city);
+            console.log('  - Component long_name:', cityComponent?.long_name);
+            console.log('  - Component short_name:', cityComponent?.short_name);
+            console.log('  - cityMatches:', cityMatches);
             
             // More flexible street matching - handle Hebrew street names
             const streetMatches = !street || (streetComponent && (() => {
-                // Normalize street names by removing common suffixes
-                const normalizeStreet = (str) => {
-                    return str.toLowerCase()
-                        .replace(/\bstreet\b/gi, '')
-                        .replace(/\bst\b/gi, '')
-                        .replace(/\bרחוב\b/gi, '')
-                        .replace(/\bרח\b/gi, '')
-                        .trim();
-                };
+                const streetLower = street.toLowerCase();
+                const componentLower = streetComponent.long_name.toLowerCase();
                 
-                const streetNorm = normalizeStreet(street);
-                const componentNorm = normalizeStreet(streetComponent.long_name);
+                // Direct comparison
+                if (streetLower === componentLower) return true;
                 
-                return (
-                    // Direct comparison after normalization
-                    streetNorm === componentNorm ||
-                    // Partial matches
-                    componentNorm.includes(streetNorm) ||
-                    streetNorm.includes(componentNorm) ||
-                    // Check if all words from user input are in component (order might differ)
-                    streetNorm.split(' ').filter(w => w).every(word => 
-                        componentNorm.includes(word)
+                // Check if one contains the other
+                if (componentLower.includes(streetLower) || streetLower.includes(componentLower)) return true;
+                
+                // Check if all words from user input exist in component
+                const userWords = street.split(' ').filter(w => w.length > 1);
+                const componentWords = streetComponent.long_name.split(' ');
+                
+                // Check if all user words appear in component
+                const allWordsFound = userWords.every(userWord => 
+                    componentWords.some(compWord => 
+                        compWord.toLowerCase().includes(userWord.toLowerCase()) ||
+                        userWord.toLowerCase().includes(compWord.toLowerCase())
                     )
                 );
+                
+                return allWordsFound;
             })());
+            
+            console.log('[API] Street comparison:');
+            console.log('  - User street:', street);
+            console.log('  - Component street:', streetComponent?.long_name);
+            console.log('  - streetMatches:', streetMatches);
             
             const houseMatches = !house || (streetNumberComponent && 
                 streetNumberComponent.long_name === house.toString()
@@ -270,7 +266,6 @@ export default async function handler(req, res) {
                     cityComponent: cityComponent?.long_name || 'not found',
                     streetComponent: streetComponent?.long_name || 'not found', 
                     numberComponent: streetNumberComponent?.long_name || 'not found',
-                    cityEnglish: cityEnglish,
                     cityMatches: cityMatches,
                     streetMatches: streetMatches,
                     houseMatches: houseMatches,
