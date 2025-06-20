@@ -1327,17 +1327,29 @@ async function handleZipBlur() {
     zipCodeInput.style.borderColor = '#f39c12'; // Orange for loading
 
     try {
-        const response = await fetch('/api/verifyZip', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ city, street, house, userZip }),
-        });
+        // Check if running locally (http-server doesn't support API routes)
+        const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+        
+        let result;
+        
+        if (isLocal) {
+            // Mock response for local development
+            console.log('[LOCAL] Using mock zip verification');
+            result = await mockZipVerification(city, street, house, userZip);
+        } else {
+            // Real API call for production (Vercel)
+            const response = await fetch('/api/verifyZip', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ city, street, house, userZip }),
+            });
 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            result = await response.json();
         }
-
-        const result = await response.json();
 
         // Reset border color
         zipCodeInput.style.borderColor = '';
@@ -1365,24 +1377,51 @@ async function handleZipBlur() {
         console.error('Error verifying zip code:', error);
         // Reset border color on error
         zipCodeInput.style.borderColor = '';
-        // Optionally show a generic error, but might be too noisy
-        // showFormError(zipCodeInput, 'שגיאה באימות המיקוד.');
+        // Don't show error to user in local development
+        if (!window.location.hostname.includes('127.0.0.1') && !window.location.hostname.includes('localhost')) {
+            showFormError(zipCodeInput, 'שגיאה באימות המיקוד.');
+        }
     }
 }
 
 /**
- * Clear a single form error
- * @param {HTMLElement} field - The form field to clear errors for
+ * Mock zip verification for local development
+ * @param {string} city - The city name
+ * @param {string} street - The street name
+ * @param {string} house - The house number
+ * @param {string} userZip - The user's zip code
+ * @returns {Promise<Object>} - Mock response
  */
-function clearFormError(field) {
-     field.classList.remove('error');
-     const formGroup = field.closest('.form-group');
-     if (formGroup) {
-        const existingError = formGroup.querySelector('.form-error-message');
-        if (existingError) {
-            existingError.remove();
-        }
-     }
+async function mockZipVerification(city, street, house, userZip) {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Mock data for common Israeli cities
+    const mockZipCodes = {
+        'תל אביב': '6100000',
+        'תל אביב - יפו': '6100000',
+        'ירושלים': '9100000',
+        'חיפה': '3100000',
+        'באר שבע': '8400000',
+        'פתח תקווה': '4900000',
+        'ראשון לציון': '7500000',
+        'אשדוד': '7700000',
+        'נתניה': '4200000',
+        'רמת גן': '5200000'
+    };
+    
+    // Get the mock official zip for the city
+    const officialZip = mockZipCodes[city] || '1234567';
+    
+    // Check if user's zip matches (first 5 digits)
+    const userZipDigits = userZip.replace(/\D/g, '');
+    const officialZipDigits = officialZip.replace(/\D/g, '');
+    const isValid = userZipDigits.startsWith(officialZipDigits.substring(0, 5));
+    
+    return {
+        valid: isValid,
+        official: officialZip.substring(0, 5) // Return 5-digit zip
+    };
 }
 
 // Add modal functions to the global app object
@@ -2869,3 +2908,18 @@ const STREET_NAME_FIELD = 'שם_רחוב';
 // =======================================================================
 // /***** CURSOR AI: END - New Dynamic Street Dropdown Implementation *****/
 // =======================================================================
+
+/**
+ * Clear a single form error
+ * @param {HTMLElement} field - The form field to clear errors for
+ */
+function clearFormError(field) {
+     field.classList.remove('error');
+     const formGroup = field.closest('.form-group');
+     if (formGroup) {
+        const existingError = formGroup.querySelector('.form-error-message');
+        if (existingError) {
+            existingError.remove();
+        }
+     }
+}
