@@ -35,7 +35,7 @@ export default async function handler(req, res) {
 
         console.log(`[API] Geocoding address: ${address}`);
 
-        // Call Google Geocoding API
+        // First try: Regular geocoding without postal code
         const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_API_KEY}`;
         
         const response = await fetch(geocodeUrl);
@@ -59,9 +59,37 @@ export default async function handler(req, res) {
         console.log('[API] All address components:', JSON.stringify(result.address_components, null, 2));
         
         // Extract postal code from the result
-        const postalCodeComponent = result.address_components.find(
+        let postalCodeComponent = result.address_components.find(
             component => component.types.includes('postal_code')
         );
+
+        // If no postal code found, try geocoding WITH the postal code included
+        if (!postalCodeComponent) {
+            console.log('[API] No postal code in first attempt, trying with postal code in query...');
+            
+            const addressWithZip = `${address}, ${zipCode}`;
+            console.log(`[API] Geocoding with postal code: ${addressWithZip}`);
+            
+            const geocodeWithZipUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressWithZip)}&key=${GOOGLE_API_KEY}`;
+            const responseWithZip = await fetch(geocodeWithZipUrl);
+            const dataWithZip = await responseWithZip.json();
+            
+            if (dataWithZip.status === 'OK' && dataWithZip.results && dataWithZip.results.length > 0) {
+                const resultWithZip = dataWithZip.results[0];
+                console.log('[API] Address components with zip query:', JSON.stringify(resultWithZip.address_components, null, 2));
+                
+                postalCodeComponent = resultWithZip.address_components.find(
+                    component => component.types.includes('postal_code')
+                );
+                
+                if (postalCodeComponent) {
+                    console.log('[API] Found postal code with zip in query:', postalCodeComponent.long_name);
+                    // Update result to use the one with postal code
+                    result.address_components = resultWithZip.address_components;
+                    result.formatted_address = resultWithZip.formatted_address;
+                }
+            }
+        }
 
         if (!postalCodeComponent) {
             console.log('[API] No postal code found in geocoding result');
@@ -114,6 +142,51 @@ export default async function handler(req, res) {
                         }
                     }
                 }
+            }
+            
+            // Fallback: Check if the address components match what user entered
+            console.log('[API] Checking address components match as fallback...');
+            
+            // Extract city, street, and street number from Google's components
+            const cityComponent = result.address_components.find(c => 
+                c.types.includes('locality') || c.types.includes('administrative_area_level_2')
+            );
+            const streetComponent = result.address_components.find(c => 
+                c.types.includes('route')
+            );
+            const streetNumberComponent = result.address_components.find(c => 
+                c.types.includes('street_number')
+            );
+            
+            console.log('[API] Found components - City:', cityComponent?.long_name, 'Street:', streetComponent?.long_name, 'Number:', streetNumberComponent?.long_name);
+            console.log('[API] User input - City:', city, 'Street:', street, 'House:', house);
+            
+            // Check if the components match what the user entered
+            const cityMatches = cityComponent && (
+                cityComponent.long_name.toLowerCase().includes(city.toLowerCase()) ||
+                city.toLowerCase().includes(cityComponent.long_name.toLowerCase())
+            );
+            
+            const streetMatches = !street || (streetComponent && (
+                streetComponent.long_name.toLowerCase().includes(street.toLowerCase()) ||
+                street.toLowerCase().includes(streetComponent.long_name.toLowerCase())
+            ));
+            
+            const houseMatches = !house || (streetNumberComponent && 
+                streetNumberComponent.long_name === house.toString()
+            );
+            
+            if (cityMatches && streetMatches && houseMatches) {
+                console.log('[API] Address components match user input, accepting postal code as valid');
+                
+                // Since we verified the address matches, accept the user's postal code
+                return res.status(200).json({
+                    valid: true,
+                    officialZip: zipCode, // Use user's zip as official since Google doesn't provide one
+                    userZip: zipCode,
+                    address: result.formatted_address,
+                    note: 'Address verified, postal code accepted based on address match'
+                });
             }
             
             return res.status(200).json({
