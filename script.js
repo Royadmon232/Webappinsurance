@@ -1331,32 +1331,9 @@ async function handleZipBlur() {
     zipCodeInput.style.borderColor = '#f39c12'; // Orange for loading
 
     try {
-        // Check if running locally (http-server doesn't support API routes)
-        const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-        
-        console.log(`[ZIP] Environment: ${isLocal ? 'LOCAL' : 'PRODUCTION'}`);
-        
-        let result;
-        
-        if (isLocal) {
-            // Mock response for local development
-            console.log('[LOCAL] Using mock zip verification');
-            result = await mockZipVerification(city, street, house, userZip);
-        } else {
-            // Real API call for production (Vercel)
-            console.log('[PRODUCTION] Calling real API');
-            const response = await fetch('/api/verifyZip', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ city, street, house, userZip }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            result = await response.json();
-        }
+        // Since this is a static site, we'll always use local validation
+        console.log('[ZIP] Using local zip verification (static site)');
+        const result = await mockZipVerification(city, street, house, userZip);
 
         console.log('[ZIP] Result:', result);
 
@@ -1387,15 +1364,13 @@ async function handleZipBlur() {
         console.error('Error verifying zip code:', error);
         // Reset border color on error
         zipCodeInput.style.borderColor = '';
-        // Don't show error to user in local development
-        if (!window.location.hostname.includes('127.0.0.1') && !window.location.hostname.includes('localhost')) {
-            showFormError(zipCodeInput, 'שגיאה באימות המיקוד.');
-        }
+        // Show a generic error message
+        showFormError(zipCodeInput, 'שגיאה באימות המיקוד.');
     }
 }
 
 /**
- * Mock zip verification for local development
+ * Mock zip verification for static site
  * @param {string} city - The city name
  * @param {string} street - The street name
  * @param {string} house - The house number
@@ -1404,12 +1379,14 @@ async function handleZipBlur() {
  */
 async function mockZipVerification(city, street, house, userZip) {
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 300));
     
-    // Mock data for common Israeli cities
+    // Extended mock data for Israeli cities and settlements
     const mockZipCodes = {
+        // Major cities
         'תל אביב': '6100000',
         'תל אביב - יפו': '6100000',
+        'תל אביב יפו': '6100000',
         'ירושלים': '9100000',
         'חיפה': '3100000',
         'באר שבע': '8400000',
@@ -1417,24 +1394,72 @@ async function mockZipVerification(city, street, house, userZip) {
         'ראשון לציון': '7500000',
         'אשדוד': '7700000',
         'נתניה': '4200000',
-        'רמת גן': '5200000'
+        'רמת גן': '5200000',
+        'בני ברק': '5100000',
+        'הרצליה': '4600000',
+        'כפר סבא': '4400000',
+        'רעננה': '4300000',
+        'הוד השרון': '4500000',
+        'רחובות': '7600000',
+        'מודיעין': '7170000',
+        'אילת': '8800000',
+        'צפת': '1300000',
+        'טבריה': '1420000',
+        'עכו': '2410000',
+        'נהריה': '2270000',
+        'קריית שמונה': '1101000',
+        'אשקלון': '7810000',
+        'קריית גת': '8220000',
+        'דימונה': '8610000',
+        'ערד': '8910000',
+        'מעלות תרשיחא': '2417000',
+        'יקנעם': '2066000',
+        
+        // Kibbutzim and Moshavim (examples)
+        'קיבוץ דגניה א': '1511000',
+        'קיבוץ גבעת ברנר': '7080000',
+        'קיבוץ מעגן מיכאל': '3782000',
+        'מושב נהלל': '1692000',
+        'מושב כפר מלל': '4069500',
+        
+        // Regional councils areas
+        'מועצה אזורית עמק יזרעל': '1990000',
+        'מועצה אזורית גליל עליון': '1320000',
+        'מועצה אזורית שפלת יהודה': '9910000'
     };
     
-    // Get the mock official zip for the city
-    const officialZip = mockZipCodes[city] || '1234567';
+    // Normalize city name for lookup
+    const normalizedCity = city.trim();
+    let officialZip = mockZipCodes[normalizedCity];
     
-    // Check if user's zip matches (first 5 digits)
+    // If no exact match, try to find partial matches
+    if (!officialZip) {
+        for (const [cityName, zipCode] of Object.entries(mockZipCodes)) {
+            if (cityName.includes(normalizedCity) || normalizedCity.includes(cityName)) {
+                officialZip = zipCode;
+                break;
+            }
+        }
+    }
+    
+    // Default zip if no match found
+    if (!officialZip) {
+        officialZip = '1234567';
+    }
+    
+    // Check if user's zip matches
     const userZipDigits = userZip.replace(/\D/g, '');
     const officialZipDigits = officialZip.replace(/\D/g, '');
     
-    // For mock, we'll be more lenient - check if user's zip starts with the first 3 digits
-    const isValid = userZipDigits.startsWith(officialZipDigits.substring(0, 3));
+    // For validation: check if user's zip starts with the first 5 digits of official zip
+    const isValid = userZipDigits.length >= 5 && 
+                   userZipDigits.substring(0, 5) === officialZipDigits.substring(0, 5);
     
-    console.log(`[MOCK] City: ${city}, User Zip: ${userZipDigits}, Official: ${officialZipDigits}, Valid: ${isValid}`);
+    console.log(`[MOCK] City: ${normalizedCity}, User Zip: ${userZipDigits}, Official: ${officialZipDigits}, Valid: ${isValid}`);
     
     return {
         valid: isValid,
-        official: officialZipDigits.substring(0, 5) // Return 5-digit zip
+        official: officialZipDigits.substring(0, 7) // Return 7-digit zip as is common in Israel
     };
 }
 
