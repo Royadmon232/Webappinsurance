@@ -7,6 +7,11 @@
     <meta name="keywords" content="ביטוח דירה, ביטוח בית, ביטוח רכוש, הצעות ביטוח, סוכנות הביטוח אדמון">
     <meta name="author" content="סוכנות הביטוח אדמון">
     
+    <!-- Cache Control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <title>הצעת ביטוח דירה | סוכנות הביטוח אדמון</title>
     
     <!-- Favicon -->
@@ -451,12 +456,25 @@
     </footer>
 
     <!-- JavaScript -->
-    <script src="script.js?v=20250620-2"></script>
+    <script src="script.js?v=1750437708436"></script>
     <script>
         // Initialize Feather Icons
         document.addEventListener('DOMContentLoaded', function() {
             feather.replace();
         });
+        
+        // Register Service Worker for cache management
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('[SW] Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('[SW] Service Worker registration failed:', error);
+                    });
+            });
+        }
     </script>
 </body>
 </html> 

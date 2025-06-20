@@ -5,9 +5,10 @@
   "main": "script.js",
   "scripts": {
     "test": "jest",
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+    "build": "node build.js",
+    "prebuild": "node build.js",
+    "start": "http-server -p 3000",
+    "dev": "http-server -p 3000"
   },
   "repository": {
     "type": "git",
@@ -22,7 +23,8 @@
   "homepage": "https://github.com/Royadmon232/Webappinsurance#readme",
   "devDependencies": {
     "jest": "^29.7.0",
-    "node-mocks-http": "^1.14.1"
+    "node-mocks-http": "^1.14.1",
+    "http-server": "^14.1.1"
   },
   "dependencies": {
     "next": "^14.2.16",
