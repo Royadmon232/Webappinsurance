@@ -55,6 +55,9 @@ export default async function handler(req, res) {
         // Get the first result
         const result = data.results[0];
         
+        // Debug: Log all address components to see what's available
+        console.log('[API] All address components:', JSON.stringify(result.address_components, null, 2));
+        
         // Extract postal code from the result
         const postalCodeComponent = result.address_components.find(
             component => component.types.includes('postal_code')
@@ -62,6 +65,57 @@ export default async function handler(req, res) {
 
         if (!postalCodeComponent) {
             console.log('[API] No postal code found in geocoding result');
+            console.log('[API] Available component types:', result.address_components.map(c => c.types).flat());
+            
+            // Try reverse geocoding with the coordinates as an alternative
+            if (result.geometry && result.geometry.location) {
+                const { lat, lng } = result.geometry.location;
+                console.log(`[API] Trying reverse geocoding with coordinates: ${lat}, ${lng}`);
+                
+                const reverseGeocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_API_KEY}`;
+                const reverseResponse = await fetch(reverseGeocodeUrl);
+                const reverseData = await reverseResponse.json();
+                
+                if (reverseData.status === 'OK' && reverseData.results && reverseData.results.length > 0) {
+                    console.log('[API] Reverse geocoding successful, checking for postal code...');
+                    
+                    // Look for postal code in all reverse geocoding results
+                    for (const reverseResult of reverseData.results) {
+                        const reversePostalComponent = reverseResult.address_components.find(
+                            component => component.types.includes('postal_code')
+                        );
+                        
+                        if (reversePostalComponent) {
+                            console.log('[API] Found postal code via reverse geocoding:', reversePostalComponent.long_name);
+                            
+                            const officialZip = reversePostalComponent.long_name;
+                            const userZipClean = zipCode.replace(/\D/g, '');
+                            const officialZipClean = officialZip.replace(/\D/g, '');
+
+                            // Israeli postal codes are 7 digits, but sometimes only 5 are used
+                            let isValid = false;
+                            
+                            if (userZipClean.length === 7 && officialZipClean.length === 7) {
+                                // Both have full 7-digit postal codes - compare all digits
+                                isValid = userZipClean === officialZipClean;
+                            } else if (userZipClean.length >= 5 && officialZipClean.length >= 5) {
+                                // At least one has only 5 digits - compare first 5 digits
+                                isValid = userZipClean.substring(0, 5) === officialZipClean.substring(0, 5);
+                            }
+
+                            console.log(`[API] User zip: ${userZipClean}, Official: ${officialZipClean}, Valid: ${isValid}`);
+
+                            return res.status(200).json({
+                                valid: isValid,
+                                officialZip: officialZip,
+                                userZip: zipCode,
+                                address: result.formatted_address
+                            });
+                        }
+                    }
+                }
+            }
+            
             return res.status(200).json({
                 valid: false,
                 officialZip: null,
