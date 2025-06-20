@@ -43,8 +43,11 @@ export default async function handler(req, res) {
 
         if (data.status !== 'OK' || !data.results || data.results.length === 0) {
             console.log(`[API] Geocoding failed: ${data.status}`);
-            return res.status(400).json({
+            return res.status(200).json({
                 valid: false,
+                officialZip: null,
+                userZip: zipCode,
+                address: null,
                 error: 'Address not found'
             });
         }
@@ -59,8 +62,11 @@ export default async function handler(req, res) {
 
         if (!postalCodeComponent) {
             console.log('[API] No postal code found in geocoding result');
-            return res.status(400).json({
+            return res.status(200).json({
                 valid: false,
+                officialZip: null,
+                userZip: zipCode,
+                address: result.formatted_address,
                 error: 'No postal code found for this address'
             });
         }
@@ -69,24 +75,33 @@ export default async function handler(req, res) {
         const userZipClean = zipCode.replace(/\D/g, ''); // Remove non-digits
         const officialZipClean = officialZip.replace(/\D/g, '');
 
-        // Check if zip codes match (first 5 digits for Israeli postal codes)
-        const isValid = userZipClean.length >= 5 && 
-                       officialZipClean.length >= 5 &&
-                       userZipClean.substring(0, 5) === officialZipClean.substring(0, 5);
+        // Israeli postal codes are 7 digits, but sometimes only 5 are used
+        let isValid = false;
+        
+        if (userZipClean.length === 7 && officialZipClean.length === 7) {
+            // Both have full 7-digit postal codes - compare all digits
+            isValid = userZipClean === officialZipClean;
+        } else if (userZipClean.length >= 5 && officialZipClean.length >= 5) {
+            // At least one has only 5 digits - compare first 5 digits
+            isValid = userZipClean.substring(0, 5) === officialZipClean.substring(0, 5);
+        }
 
         console.log(`[API] User zip: ${userZipClean}, Official: ${officialZipClean}, Valid: ${isValid}`);
 
         return res.status(200).json({
             valid: isValid,
-            official: officialZip,
+            officialZip: officialZip,
             userZip: zipCode,
             address: result.formatted_address
         });
 
     } catch (error) {
         console.error('Error in zip verification:', error);
-        return res.status(500).json({
+        return res.status(200).json({
             valid: false,
+            officialZip: null,
+            userZip: zipCode,
+            address: null,
             error: 'Internal server error'
         });
     }
