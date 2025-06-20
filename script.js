@@ -2,7 +2,7 @@
 // Initialized and ready for development
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Home Insurance Landing Page loaded successfully!');
+    console.log('Home Insurance Landing Page loaded successfully! - Version 20250620-2 (Static site mode)');
     
     // Initialize CTA button - simplified version
     const ctaButton = document.getElementById('getQuoteBtn');
@@ -1332,7 +1332,8 @@ async function handleZipBlur() {
 
     try {
         // Since this is a static site, we'll always use local validation
-        console.log('[ZIP] Using local zip verification (static site)');
+        console.log('[ZIP] Using local zip verification (static site) - Version 20250620-2');
+        console.log('[ZIP] NO API CALLS - This is a static site using mock validation only');
         const result = await mockZipVerification(city, street, house, userZip);
 
         console.log('[ZIP] Result:', result);
