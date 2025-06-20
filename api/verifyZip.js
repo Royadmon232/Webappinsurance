@@ -50,6 +50,110 @@ export default async function handler(req, res) {
         });
     }
 
+    // Helper function to normalize Hebrew text
+    const normalizeHebrew = (text) => {
+        if (!text) return '';
+        return text
+            .toLowerCase()
+            .replace(/[״"']/g, '') // Remove quotes
+            .replace(/[-־]/g, ' ') // Replace dashes with spaces
+            .replace(/\s+/g, ' ') // Multiple spaces to single
+            .trim();
+    };
+
+    // Helper function to calculate similarity between two strings
+    const calculateSimilarity = (str1, str2) => {
+        if (!str1 || !str2) return 0;
+        
+        const s1 = normalizeHebrew(str1);
+        const s2 = normalizeHebrew(str2);
+        
+        // Exact match
+        if (s1 === s2) return 1;
+        
+        // One contains the other
+        if (s1.includes(s2) || s2.includes(s1)) return 0.9;
+        
+        // Calculate word-based similarity
+        const words1 = s1.split(' ').filter(w => w.length > 0);
+        const words2 = s2.split(' ').filter(w => w.length > 0);
+        
+        let matchedWords = 0;
+        for (const word1 of words1) {
+            for (const word2 of words2) {
+                // Check exact word match
+                if (word1 === word2) {
+                    matchedWords++;
+                    break;
+                }
+                // Check if words are similar (handle י/ה endings, etc.)
+                if (areWordsSimilar(word1, word2)) {
+                    matchedWords += 0.8;
+                    break;
+                }
+            }
+        }
+        
+        const totalWords = Math.max(words1.length, words2.length);
+        return totalWords > 0 ? matchedWords / totalWords : 0;
+    };
+
+    // Helper function to check if two Hebrew words are similar
+    const areWordsSimilar = (word1, word2) => {
+        // Handle common Hebrew variations
+        const variations = [
+            // י/ה endings
+            [word1, word2],
+            [word1 + 'ה', word2],
+            [word1, word2 + 'ה'],
+            [word1 + 'י', word2],
+            [word1, word2 + 'י'],
+            [word1.replace(/ה$/, ''), word2.replace(/ה$/, '')],
+            [word1.replace(/י$/, ''), word2.replace(/י$/, '')],
+            // Common letter substitutions
+            [word1.replace(/י/g, 'ו'), word2],
+            [word1, word2.replace(/י/g, 'ו')],
+            [word1.replace(/ו/g, 'י'), word2],
+            [word1, word2.replace(/ו/g, 'י')],
+            // פינחס vs פנחס (common name variations)
+            [word1.replace(/ינ/g, 'נ'), word2],
+            [word1, word2.replace(/ינ/g, 'נ')],
+            // יצחק vs יצהק
+            [word1.replace(/חק/g, 'הק'), word2],
+            [word1, word2.replace(/חק/g, 'הק')],
+            // שלום vs שלם
+            [word1.replace(/ום$/g, 'ם'), word2],
+            [word1, word2.replace(/ום$/g, 'ם')],
+            // Double letters
+            [word1.replace(/(.)\1/g, '$1'), word2],
+            [word1, word2.replace(/(.)\1/g, '$1')]
+        ];
+        
+        for (const [v1, v2] of variations) {
+            if (v1 === v2) return true;
+        }
+        
+        // Check if words are very similar (differ by 1 character)
+        if (Math.abs(word1.length - word2.length) <= 1) {
+            let differences = 0;
+            const longer = word1.length > word2.length ? word1 : word2;
+            const shorter = word1.length > word2.length ? word2 : word1;
+            
+            let j = 0;
+            for (let i = 0; i < longer.length && differences <= 1; i++) {
+                if (j < shorter.length && longer[i] === shorter[j]) {
+                    j++;
+                } else {
+                    differences++;
+                }
+            }
+            
+            if (differences <= 1) return true;
+        }
+        
+        return false;
+    };
+
     try {
         // Build the address string for geocoding - keep it in Hebrew
         let address = city;
@@ -189,53 +293,34 @@ export default async function handler(req, res) {
             console.log('[API] Found components - City:', cityComponent?.long_name, 'Street:', streetComponent?.long_name, 'Number:', streetNumberComponent?.long_name);
             console.log('[API] User input - City:', city, 'Street:', street, 'House:', house);
             
-            // Check if the components match what the user entered (simplified for Hebrew)
-            const cityMatches = cityComponent && (
-                // Direct Hebrew match
-                cityComponent.long_name === city ||
-                cityComponent.long_name.includes(city) ||
-                city.includes(cityComponent.long_name) ||
-                // Also check short_name
-                cityComponent.short_name === city ||
-                cityComponent.short_name.includes(city) ||
-                city.includes(cityComponent.short_name)
-            );
+            // Check if the components match what the user entered (with similarity threshold)
+            const SIMILARITY_THRESHOLD = 0.8; // 80% similarity required
+            
+            // Calculate city similarity
+            const citySimilarity = cityComponent ? Math.max(
+                calculateSimilarity(city, cityComponent.long_name),
+                calculateSimilarity(city, cityComponent.short_name)
+            ) : 0;
+            
+            const cityMatches = citySimilarity >= SIMILARITY_THRESHOLD;
             
             console.log('[API] City comparison:');
             console.log('  - User city:', city);
             console.log('  - Component long_name:', cityComponent?.long_name);
             console.log('  - Component short_name:', cityComponent?.short_name);
+            console.log('  - Similarity score:', citySimilarity);
             console.log('  - cityMatches:', cityMatches);
             
-            // More flexible street matching - handle Hebrew street names
-            const streetMatches = !street || (streetComponent && (() => {
-                const streetLower = street.toLowerCase();
-                const componentLower = streetComponent.long_name.toLowerCase();
-                
-                // Direct comparison
-                if (streetLower === componentLower) return true;
-                
-                // Check if one contains the other
-                if (componentLower.includes(streetLower) || streetLower.includes(componentLower)) return true;
-                
-                // Check if all words from user input exist in component
-                const userWords = street.split(' ').filter(w => w.length > 1);
-                const componentWords = streetComponent.long_name.split(' ');
-                
-                // Check if all user words appear in component
-                const allWordsFound = userWords.every(userWord => 
-                    componentWords.some(compWord => 
-                        compWord.toLowerCase().includes(userWord.toLowerCase()) ||
-                        userWord.toLowerCase().includes(compWord.toLowerCase())
-                    )
-                );
-                
-                return allWordsFound;
-            })());
+            // More flexible street matching with similarity
+            const streetSimilarity = streetComponent && street ? 
+                calculateSimilarity(street, streetComponent.long_name) : 1; // If no street provided, consider it a match
+            
+            const streetMatches = !street || streetSimilarity >= SIMILARITY_THRESHOLD;
             
             console.log('[API] Street comparison:');
             console.log('  - User street:', street);
             console.log('  - Component street:', streetComponent?.long_name);
+            console.log('  - Similarity score:', streetSimilarity);
             console.log('  - streetMatches:', streetMatches);
             
             const houseMatches = !house || (streetNumberComponent && 
@@ -266,6 +351,9 @@ export default async function handler(req, res) {
                     cityComponent: cityComponent?.long_name || 'not found',
                     streetComponent: streetComponent?.long_name || 'not found', 
                     numberComponent: streetNumberComponent?.long_name || 'not found',
+                    citySimilarity: citySimilarity,
+                    streetSimilarity: streetSimilarity,
+                    similarityThreshold: SIMILARITY_THRESHOLD,
                     cityMatches: cityMatches,
                     streetMatches: streetMatches,
                     houseMatches: houseMatches,
