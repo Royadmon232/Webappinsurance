@@ -1,7 +1,5 @@
 {
   "buildCommand": "node build.js",
-  "functions": {
-  },
   "headers": [
     {
       "source": "/script.js",
