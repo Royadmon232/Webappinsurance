@@ -13,6 +13,34 @@ export default async function handler(req, res) {
         });
     }
 
+    // Hebrew to English city mapping for common cities
+    const cityMapping = {
+        'פתח תקווה': 'Petah Tikva',
+        'תל אביב': 'Tel Aviv',
+        'ירושלים': 'Jerusalem',
+        'חיפה': 'Haifa',
+        'באר שבע': 'Beer Sheva',
+        'ראשון לציון': 'Rishon LeZion',
+        'אשדוד': 'Ashdod',
+        'נתניה': 'Netanya',
+        'בני ברק': 'Bnei Brak',
+        'חולון': 'Holon',
+        'רמת גן': 'Ramat Gan',
+        'אשקלון': 'Ashkelon',
+        'רחובות': 'Rehovot',
+        'בת ים': 'Bat Yam',
+        'כפר סבא': 'Kfar Saba',
+        'הרצליה': 'Herzliya',
+        'חדרה': 'Hadera',
+        'מודיעין': 'Modiin',
+        'רעננה': 'Raanana',
+        'רמת השרון': 'Ramat Hasharon',
+        'לוד': 'Lod',
+        'רמלה': 'Ramla',
+        'נהריה': 'Nahariya',
+        'עפולה': 'Afula'
+    };
+
     const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_KEY;
     
     if (!GOOGLE_API_KEY) {
@@ -161,23 +189,58 @@ export default async function handler(req, res) {
             console.log('[API] Found components - City:', cityComponent?.long_name, 'Street:', streetComponent?.long_name, 'Number:', streetNumberComponent?.long_name);
             console.log('[API] User input - City:', city, 'Street:', street, 'House:', house);
             
+            // Get English version of city if available
+            const cityEnglish = cityMapping[city] || city;
+            console.log('[API] City mapping:', city, '->', cityEnglish);
+            
             // Check if the components match what the user entered
             const cityMatches = cityComponent && (
+                // Direct Hebrew match
                 cityComponent.long_name.toLowerCase().includes(city.toLowerCase()) ||
                 city.toLowerCase().includes(cityComponent.long_name.toLowerCase()) ||
+                // English translation match
+                cityComponent.long_name.toLowerCase() === cityEnglish.toLowerCase() ||
+                cityComponent.long_name.toLowerCase().includes(cityEnglish.toLowerCase()) ||
+                cityEnglish.toLowerCase().includes(cityComponent.long_name.toLowerCase()) ||
                 // Also check short_name
                 cityComponent.short_name.toLowerCase().includes(city.toLowerCase()) ||
-                city.toLowerCase().includes(cityComponent.short_name.toLowerCase())
+                city.toLowerCase().includes(cityComponent.short_name.toLowerCase()) ||
+                cityComponent.short_name.toLowerCase() === cityEnglish.toLowerCase()
             );
             
+            console.log('[API] City comparison details:');
+            console.log('  - cityComponent.long_name:', cityComponent?.long_name);
+            console.log('  - cityEnglish:', cityEnglish);
+            console.log('  - Direct match:', cityComponent?.long_name.toLowerCase() === cityEnglish.toLowerCase());
+            console.log('  - cityMatches result:', cityMatches);
+            
             // More flexible street matching - handle Hebrew street names
-            const streetMatches = !street || (streetComponent && (
-                streetComponent.long_name.toLowerCase().includes(street.toLowerCase()) ||
-                street.toLowerCase().includes(streetComponent.long_name.toLowerCase()) ||
-                // Check if both contain the same words (order might be different)
-                street.split(' ').some(word => streetComponent.long_name.toLowerCase().includes(word.toLowerCase())) ||
-                streetComponent.long_name.split(' ').some(word => street.toLowerCase().includes(word.toLowerCase()))
-            ));
+            const streetMatches = !street || (streetComponent && (() => {
+                // Normalize street names by removing common suffixes
+                const normalizeStreet = (str) => {
+                    return str.toLowerCase()
+                        .replace(/\bstreet\b/gi, '')
+                        .replace(/\bst\b/gi, '')
+                        .replace(/\bרחוב\b/gi, '')
+                        .replace(/\bרח\b/gi, '')
+                        .trim();
+                };
+                
+                const streetNorm = normalizeStreet(street);
+                const componentNorm = normalizeStreet(streetComponent.long_name);
+                
+                return (
+                    // Direct comparison after normalization
+                    streetNorm === componentNorm ||
+                    // Partial matches
+                    componentNorm.includes(streetNorm) ||
+                    streetNorm.includes(componentNorm) ||
+                    // Check if all words from user input are in component (order might differ)
+                    streetNorm.split(' ').filter(w => w).every(word => 
+                        componentNorm.includes(word)
+                    )
+                );
+            })());
             
             const houseMatches = !house || (streetNumberComponent && 
                 streetNumberComponent.long_name === house.toString()
@@ -207,9 +270,15 @@ export default async function handler(req, res) {
                     cityComponent: cityComponent?.long_name || 'not found',
                     streetComponent: streetComponent?.long_name || 'not found', 
                     numberComponent: streetNumberComponent?.long_name || 'not found',
+                    cityEnglish: cityEnglish,
                     cityMatches: cityMatches,
                     streetMatches: streetMatches,
                     houseMatches: houseMatches,
+                    userInput: {
+                        city: city,
+                        street: street,
+                        house: house
+                    },
                     allComponents: result.address_components.map(c => ({
                         types: c.types,
                         long_name: c.long_name
