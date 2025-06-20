@@ -327,6 +327,9 @@ export default async function handler(req, res) {
                 streetNumberComponent.long_name === house.toString()
             );
             
+            // REMOVED DANGEROUS FALLBACK - Do not accept postal codes without Google validation
+            // Even if address matches, we cannot verify postal code without official data
+            /*
             if (cityMatches && streetMatches && houseMatches) {
                 console.log('[API] Address components match user input, accepting postal code as valid');
                 
@@ -339,6 +342,7 @@ export default async function handler(req, res) {
                     note: 'Address verified, postal code accepted based on address match'
                 });
             }
+            */
             
             return res.status(200).json({
                 valid: false,
@@ -346,6 +350,7 @@ export default async function handler(req, res) {
                 userZip: zipCode,
                 address: result.formatted_address,
                 error: 'No postal code found for this address',
+                note: 'Google Geocoding API often does not return postal codes for Israeli addresses. Consider using a local Israeli postal code database.',
                 debug: {
                     triedWithZip: true,
                     cityComponent: cityComponent?.long_name || 'not found',
