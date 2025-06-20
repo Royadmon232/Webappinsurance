@@ -1331,10 +1331,43 @@ async function handleZipBlur() {
     zipCodeInput.style.borderColor = '#f39c12'; // Orange for loading
 
     try {
-        // Since this is a static site, we'll always use local validation
-        console.log('[ZIP] Using local zip verification (static site) - Version 20250620-2');
-        console.log('[ZIP] NO API CALLS - This is a static site using mock validation only');
-        const result = await mockZipVerification(city, street, house, userZip);
+        // Try to use real API first, fallback to mock if API fails
+        console.log('[ZIP] Attempting to use real API verification');
+        let result;
+        
+        try {
+            // Check if we're running on Vercel (production/preview) or have API available
+            const isProduction = window.location.hostname.includes('vercel.app') || 
+                                window.location.hostname.includes('webappinsurance');
+            
+            if (isProduction) {
+                // Call the real API
+                const response = await fetch('/api/verifyZip', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        city: city,
+                        street: street || '',
+                        house: house || '',
+                        zipCode: userZip
+                    })
+                });
+
+                if (response.ok) {
+                    result = await response.json();
+                    console.log('[ZIP] API call successful:', result);
+                } else {
+                    throw new Error(`API returned ${response.status}`);
+                }
+            } else {
+                throw new Error('Development mode - using mock');
+            }
+        } catch (apiError) {
+            console.log('[ZIP] API call failed or not available, falling back to mock:', apiError.message);
+            result = await mockZipVerification(city, street, house, userZip);
+        }
 
         console.log('[ZIP] Result:', result);
 
