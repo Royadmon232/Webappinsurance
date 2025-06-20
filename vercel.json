@@ -1,6 +1,6 @@
 {
   "functions": {
-    "pages/api/verifyZip.js": {
+    "api/verifyZip.js": {
       "runtime": "nodejs18.x"
     }
   },
