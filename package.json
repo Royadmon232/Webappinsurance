@@ -1,0 +1,27 @@
+{
+  "name": "website",
+  "version": "1.0.0",
+  "main": "script.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Royadmon232/Webappinsurance.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Royadmon232/Webappinsurance/issues"
+  },
+  "homepage": "https://github.com/Royadmon232/Webappinsurance#readme",
+  "description": "",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "node-mocks-http": "^1.14.1"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  }
+}
