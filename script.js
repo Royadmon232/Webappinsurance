@@ -1311,6 +1311,7 @@ async function handleZipBlur() {
 
     // Don't validate if empty
     if (!userZip) {
+        console.log('[ZIP] Empty zip code, skipping validation');
         return;
     }
 
@@ -1318,8 +1319,11 @@ async function handleZipBlur() {
     const street = document.getElementById('street').value.trim();
     const house = document.getElementById('houseNumber').value.trim();
 
+    console.log(`[ZIP] Validating zip: ${userZip}, City: ${city}, Street: ${street}, House: ${house}`);
+
     // We need at least a city to validate
     if (!city) {
+        console.log('[ZIP] No city selected, skipping validation');
         return;
     }
 
@@ -1330,6 +1334,8 @@ async function handleZipBlur() {
         // Check if running locally (http-server doesn't support API routes)
         const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
         
+        console.log(`[ZIP] Environment: ${isLocal ? 'LOCAL' : 'PRODUCTION'}`);
+        
         let result;
         
         if (isLocal) {
@@ -1338,6 +1344,7 @@ async function handleZipBlur() {
             result = await mockZipVerification(city, street, house, userZip);
         } else {
             // Real API call for production (Vercel)
+            console.log('[PRODUCTION] Calling real API');
             const response = await fetch('/api/verifyZip', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1350,6 +1357,8 @@ async function handleZipBlur() {
 
             result = await response.json();
         }
+
+        console.log('[ZIP] Result:', result);
 
         // Reset border color
         zipCodeInput.style.borderColor = '';
@@ -1371,6 +1380,7 @@ async function handleZipBlur() {
         } else {
             // Zip is valid, clear any previous error
             clearFormError(zipCodeInput);
+            console.log('[ZIP] Zip code is valid!');
         }
 
     } catch (error) {
@@ -1416,11 +1426,15 @@ async function mockZipVerification(city, street, house, userZip) {
     // Check if user's zip matches (first 5 digits)
     const userZipDigits = userZip.replace(/\D/g, '');
     const officialZipDigits = officialZip.replace(/\D/g, '');
-    const isValid = userZipDigits.startsWith(officialZipDigits.substring(0, 5));
+    
+    // For mock, we'll be more lenient - check if user's zip starts with the first 3 digits
+    const isValid = userZipDigits.startsWith(officialZipDigits.substring(0, 3));
+    
+    console.log(`[MOCK] City: ${city}, User Zip: ${userZipDigits}, Official: ${officialZipDigits}, Valid: ${isValid}`);
     
     return {
         valid: isValid,
-        official: officialZip.substring(0, 5) // Return 5-digit zip
+        official: officialZipDigits.substring(0, 5) // Return 5-digit zip
     };
 }
 
