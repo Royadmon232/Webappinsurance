@@ -3038,3 +3038,31 @@ function clearFormError(field) {
         }
      }
 }
+
+// Garden checkbox functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const propertyTypeSelect = document.getElementById('propertyType');
+    const gardenCheckboxContainer = document.getElementById('garden-checkbox-container');
+    const gardenCheckbox = document.getElementById('garden-checkbox');
+    
+    if (propertyTypeSelect && gardenCheckboxContainer && gardenCheckbox) {
+        // Add event listener to property type select
+        propertyTypeSelect.addEventListener('change', function() {
+            const selectedValue = this.value;
+            toggleGardenCheckbox(selectedValue === 'משותף קומת קרקע');
+        });
+    }
+    
+    /**
+     * Toggle garden checkbox visibility and reset state
+     * @param {boolean} show - Whether to show the garden checkbox
+     */
+    function toggleGardenCheckbox(show) {
+        if (show) {
+            gardenCheckboxContainer.style.display = 'block';
+        } else {
+            gardenCheckboxContainer.style.display = 'none';
+            gardenCheckbox.checked = false;
+        }
+    }
+});
