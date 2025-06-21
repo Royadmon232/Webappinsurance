@@ -1668,16 +1668,194 @@ input:disabled {
 }
 
 .modal-centered {
+    display: flex;
     justify-content: center;
+    padding: 0 24px;
 }
 
 .modal-centered .modal-form-section {
     max-width: 600px;
     width: 100%;
+    margin: 0 auto;
 }
 
 .modal-centered .modal-sections-container {
-    max-width: 600px;
+    max-width: 400px;
     width: 100%;
     margin: 0 auto;
+    padding: 32px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.modal-centered .modal-sections-container h3 {
+    text-align: center;
+    font-size: 1.4rem;
+    margin-bottom: 24px;
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.modal-centered .product-sections {
+    display: flex;
+    justify-content: center;
+}
+
+.modal-centered .section-item {
+    max-width: 280px;
+    background: white;
+    border: 2px solid #e5e7eb;
+    padding: 16px 24px;
+    transition: all 0.2s ease;
+}
+
+.modal-centered .section-item:hover:not(.disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+}
+
+/* Override modal footer for better button styling */
+.modal-footer {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 20px 32px;
+    border-top: 1px solid #e5e7eb;
+    background-color: #fcfcfd;
+}
+
+.modal-footer .btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+    letter-spacing: 0.3px;
+    text-transform: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+    min-width: 100px;
+}
+
+.modal-footer .btn-primary {
+    background: #2563eb;
+    color: white;
+}
+
+.modal-footer .btn-primary::after {
+    content: "→";
+    font-size: 1.1rem;
+    margin-left: 4px;
+    transition: transform 0.2s ease;
+}
+
+.modal-footer .btn-primary:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.modal-footer .btn-primary:hover::after {
+    transform: translateX(2px);
+}
+
+.modal-footer .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.15);
+}
+
+.modal-footer .btn-secondary {
+    background-color: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+}
+
+.modal-footer .btn-secondary:hover {
+    background-color: #e5e7eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.modal-footer .btn-prev {
+    order: -1;
+}
+
+.modal-footer .btn-prev::before {
+    content: "→";
+    font-size: 1.1rem;
+    margin-right: 4px;
+    transform: rotate(180deg);
+    display: inline-block;
+}
+
+/* Improve form spacing in wizard */
+#step-general .form-field-group {
+    background: white;
+    padding: 24px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+#step-general .form-field-group h4 {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    color: #374151;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Better modal body padding for wizard */
+.wizard-step.active .modal-body {
+    padding: 32px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .modal-centered {
+        padding: 0 16px;
+    }
+    
+    .modal-footer {
+        padding: 16px 20px;
+        flex-wrap: wrap;
+    }
+    
+    .modal-footer .btn {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .modal-centered .modal-sections-container {
+        padding: 24px;
+    }
+    
+    #step-general .form-field-group {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+    }
+    
+    .modal-footer .btn-prev {
+        order: 0;
+    }
 } 
