@@ -1364,6 +1364,8 @@ async function handleAddressBlur() {
             console.log('  - House number found by Google:', result.validation.houseNumberFound);
             console.log('  - User entered:', result.validation.userHouseNumber);
             console.log('  - Google returned:', result.validation.googleHouseNumber);
+            console.log('  - Location type:', result.locationType);
+            console.log('  - Precise location:', result.validation.preciseLocation);
         }
 
         // Reset border color
@@ -1389,6 +1391,12 @@ async function handleAddressBlur() {
                         break;
                     case 'House number not found by Google':
                         errorMessage = `מספר הבית ${house} לא נמצא ברחוב ${street}. אנא בדוק שמספר הבית קיים.`;
+                        break;
+                    case 'Google could not find the exact house number - it may not exist':
+                        errorMessage = `מספר הבית ${house} לא נמצא במדויק ברחוב ${street}. ייתכן שהמספר לא קיים.`;
+                        break;
+                    case 'Address not found with sufficient precision':
+                        errorMessage = `מספר הבית ${house} לא נמצא במדויק. Google לא יכול לאמת את קיומו.`;
                         break;
                     case 'City not recognized':
                         errorMessage = 'העיר שנבחרה אינה מוכרת במערכת.';

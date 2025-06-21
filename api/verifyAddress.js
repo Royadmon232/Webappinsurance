@@ -47,6 +47,26 @@ export default async function handler(req, res) {
         const result = data.results[0];
         
         console.log('[API] Address found:', result.formatted_address);
+        console.log('[API] Location type:', result.geometry.location_type);
+        console.log('[API] Geometry:', result.geometry);
+        
+        // Check if this is a precise address (not interpolated)
+        const locationType = result.geometry.location_type;
+        const isPreciseLocation = locationType === 'ROOFTOP';
+        
+        console.log(`[API] Location precision: ${locationType} (${isPreciseLocation ? 'PRECISE' : 'ESTIMATED/INTERPOLATED'})`);
+        
+        // For house number validation, we need precise location data
+        if (!isPreciseLocation) {
+            console.log('[API] Rejecting address: Google returned interpolated/estimated location, not precise address');
+            return res.status(200).json({
+                valid: false,
+                address: result.formatted_address,
+                error: 'Address not found with sufficient precision',
+                locationType: locationType,
+                reason: 'Google could not find the exact house number - it may not exist'
+            });
+        }
         
         // Extract components to verify they match user input
         const cityComponent = result.address_components.find(c => 
@@ -105,6 +125,7 @@ export default async function handler(req, res) {
         return res.status(200).json({
             valid: isValidAddress,
             address: result.formatted_address,
+            locationType: locationType,
             similarity: {
                 city: citySimilarity,
                 street: streetSimilarity,
@@ -121,7 +142,8 @@ export default async function handler(req, res) {
                 houseMatches: houseMatches,
                 houseNumberFound: !!streetNumberComponent,
                 userHouseNumber: house,
-                googleHouseNumber: streetNumberComponent?.long_name || null
+                googleHouseNumber: streetNumberComponent?.long_name || null,
+                preciseLocation: isPreciseLocation
             },
             ...((!isValidAddress) && {
                 reason: !cityMatches ? 'City does not match' : 
