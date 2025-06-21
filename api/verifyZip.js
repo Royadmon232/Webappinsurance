@@ -167,8 +167,16 @@ export default async function handler(req, res) {
 
         console.log(`[API] Geocoding address (Hebrew): ${address}`);
 
+        // Strategy for finding Israeli postal codes:
+        // 1. Google Geocoding with region=IL and components=country:IL
+        // 2. Google Geocoding with postal code in query
+        // 3. Google Places Text Search API + Place Details
+        // 4. Israeli Government data.gov.il API
+        // 5. Google Geocoding with English address
+        // 6. Google Reverse Geocoding from coordinates
+        
         // First try: Regular geocoding with Hebrew address and language parameter
-        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&language=he&key=${GOOGLE_API_KEY}`;
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&language=he&region=IL&components=country:IL&key=${GOOGLE_API_KEY}`;
         
         const response = await fetch(geocodeUrl);
         const data = await response.json();
@@ -202,7 +210,7 @@ export default async function handler(req, res) {
             const addressWithZip = `${address}, ${zipCode}`;
             console.log(`[API] Geocoding with postal code (Hebrew): ${addressWithZip}`);
             
-            const geocodeWithZipUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressWithZip)}&language=he&key=${GOOGLE_API_KEY}`;
+            const geocodeWithZipUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressWithZip)}&language=he&region=IL&components=country:IL&key=${GOOGLE_API_KEY}`;
             const responseWithZip = await fetch(geocodeWithZipUrl);
             const dataWithZip = await responseWithZip.json();
             
@@ -223,6 +231,132 @@ export default async function handler(req, res) {
             }
         }
 
+        // If still no postal code, try Places Text Search API as last resort
+        if (!postalCodeComponent) {
+            console.log('[API] Trying Places Text Search API...');
+            
+            const placesSearchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(address + ' ' + zipCode)}&region=IL&language=he&key=${GOOGLE_API_KEY}`;
+            
+            try {
+                const placesResponse = await fetch(placesSearchUrl);
+                const placesData = await placesResponse.json();
+                
+                if (placesData.status === 'OK' && placesData.results && placesData.results.length > 0) {
+                    console.log('[API] Places API returned results, checking first result...');
+                    const placeId = placesData.results[0].place_id;
+                    
+                    // Get place details which might include postal code
+                    const placeDetailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=address_components,formatted_address&language=he&key=${GOOGLE_API_KEY}`;
+                    const detailsResponse = await fetch(placeDetailsUrl);
+                    const detailsData = await detailsResponse.json();
+                    
+                    if (detailsData.status === 'OK' && detailsData.result) {
+                        console.log('[API] Place details components:', JSON.stringify(detailsData.result.address_components, null, 2));
+                        
+                        postalCodeComponent = detailsData.result.address_components?.find(
+                            component => component.types.includes('postal_code')
+                        );
+                        
+                        if (postalCodeComponent) {
+                            console.log('[API] Found postal code via Places API:', postalCodeComponent.long_name);
+                            result.address_components = detailsData.result.address_components;
+                            result.formatted_address = detailsData.result.formatted_address;
+                        }
+                    }
+                }
+            } catch (placesError) {
+                console.error('[API] Places API error:', placesError);
+            }
+        }
+
+        // Try Israeli government API as alternative
+        if (!postalCodeComponent) {
+            console.log('[API] Trying Israeli government address API...');
+            
+            try {
+                // Search in data.gov.il streets database
+                const govApiUrl = `https://data.gov.il/api/3/action/datastore_search?resource_id=a7296d1a-f8c9-4b70-96c2-6ebb4352f8e3&q=${encodeURIComponent(city + ' ' + street)}&limit=10`;
+                const govResponse = await fetch(govApiUrl);
+                const govData = await govResponse.json();
+                
+                if (govData.success && govData.result && govData.result.records) {
+                    console.log('[API] Government API returned', govData.result.records.length, 'records');
+                    
+                    // Look for matching street in the city
+                    for (const record of govData.result.records) {
+                        if (record['שם_ישוב'] && record['שם_רחוב'] && record['מיקוד']) {
+                            const recordCity = record['שם_ישוב'].trim();
+                            const recordStreet = record['שם_רחוב'].trim();
+                            const recordZip = record['מיקוד'];
+                            
+                            console.log(`[API] Checking record - City: ${recordCity}, Street: ${recordStreet}, Zip: ${recordZip}`);
+                            
+                            // Check if this record matches our search
+                            const cityMatch = calculateSimilarity(city, recordCity) >= 0.8;
+                            const streetMatch = !street || calculateSimilarity(street, recordStreet) >= 0.8;
+                            
+                            if (cityMatch && streetMatch && recordZip) {
+                                console.log('[API] Found matching record with postal code:', recordZip);
+                                
+                                // Create a synthetic postal code component
+                                postalCodeComponent = {
+                                    long_name: recordZip.toString(),
+                                    short_name: recordZip.toString(),
+                                    types: ['postal_code']
+                                };
+                                
+                                // Add to result components if not already there
+                                if (!result.address_components.find(c => c.types.includes('postal_code'))) {
+                                    result.address_components.push(postalCodeComponent);
+                                }
+                                
+                                break;
+                            }
+                        }
+                    }
+                }
+            } catch (govApiError) {
+                console.error('[API] Government API error:', govApiError);
+            }
+        }
+
+        // Try with English address if Hebrew didn't return postal code
+        if (!postalCodeComponent && cityMapping[city]) {
+            console.log('[API] Trying with English address...');
+            
+            let englishAddress = cityMapping[city];
+            if (street) {
+                englishAddress = `${street}, ${englishAddress}`;
+                if (house) {
+                    englishAddress = `${house} ${street}, ${cityMapping[city]}`;
+                }
+            }
+            englishAddress += ', Israel';
+            
+            const englishGeocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(englishAddress)}&region=IL&components=country:IL&key=${GOOGLE_API_KEY}`;
+            
+            try {
+                const englishResponse = await fetch(englishGeocodeUrl);
+                const englishData = await englishResponse.json();
+                
+                if (englishData.status === 'OK' && englishData.results && englishData.results.length > 0) {
+                    const englishResult = englishData.results[0];
+                    console.log('[API] English geocoding components:', JSON.stringify(englishResult.address_components, null, 2));
+                    
+                    postalCodeComponent = englishResult.address_components.find(
+                        component => component.types.includes('postal_code')
+                    );
+                    
+                    if (postalCodeComponent) {
+                        console.log('[API] Found postal code via English address:', postalCodeComponent.long_name);
+                        result.address_components = englishResult.address_components;
+                    }
+                }
+            } catch (englishError) {
+                console.error('[API] English geocoding error:', englishError);
+            }
+        }
+
         if (!postalCodeComponent) {
             console.log('[API] No postal code found in geocoding result');
             console.log('[API] Available component types:', result.address_components.map(c => c.types).flat());
@@ -232,7 +366,7 @@ export default async function handler(req, res) {
                 const { lat, lng } = result.geometry.location;
                 console.log(`[API] Trying reverse geocoding with coordinates: ${lat}, ${lng}`);
                 
-                const reverseGeocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&language=he&key=${GOOGLE_API_KEY}`;
+                const reverseGeocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&language=he&region=IL&key=${GOOGLE_API_KEY}`;
                 const reverseResponse = await fetch(reverseGeocodeUrl);
                 const reverseData = await reverseResponse.json();
                 
