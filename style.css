@@ -1273,10 +1273,24 @@ button:focus {
     border: 1px solid transparent;
 }
 
-.modal-footer .btn-primary::after {
+/* Arrow for the 'Next' button */
+.modal-footer .btn-next::after {
     content: "←"; /* Left-pointing arrow */
     font-size: 1.1rem;
     transition: transform 0.2s ease;
+}
+
+/* Arrow for the 'Previous' button */
+.modal-footer .btn-prev::before {
+    content: "→"; /* Right-pointing arrow */
+    font-size: 1.1rem;
+    margin-right: 4px;
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.modal-footer .btn-primary::after {
+    content: "";
 }
 
 .modal-footer .btn-primary:hover {
@@ -1287,6 +1301,18 @@ button:focus {
 
 .modal-footer .btn-primary:hover::after {
     transform: translateX(-3px);
+}
+
+.modal-footer .btn-prev:hover {
+    background-color: #e0e0e0;
+}
+
+.modal-footer .btn-prev:hover::before {
+    transform: translateX(3px);
+}
+
+.modal-footer .btn-prev:hover::before {
+    transform: translateX(3px);
 }
 
 .modal-footer .btn-secondary {
