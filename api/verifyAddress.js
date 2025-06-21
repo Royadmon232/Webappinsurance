@@ -64,17 +64,42 @@ export default async function handler(req, res) {
         // Calculate similarity scores
         const citySimilarity = cityComponent ? calculateSimilarity(city, cityComponent.long_name) : 0;
         const streetSimilarity = streetComponent ? calculateSimilarity(street, streetComponent.long_name) : 0;
-        const houseSimilarity = streetNumberComponent ? (streetNumberComponent.long_name === house ? 1 : 0) : 0;
+        
+        // More sophisticated house number matching
+        let houseSimilarity = 0;
+        if (streetNumberComponent) {
+            const googleHouseNumber = streetNumberComponent.long_name;
+            const userHouseNumber = house;
+            
+            // Exact match
+            if (googleHouseNumber === userHouseNumber) {
+                houseSimilarity = 1;
+            }
+            // Match numbers, ignoring Hebrew letters (e.g., "6" matches "6א")
+            else {
+                const googleNum = googleHouseNumber.replace(/[א-ת]/g, '');
+                const userNum = userHouseNumber.replace(/[א-ת]/g, '');
+                if (googleNum === userNum && googleNum.length > 0) {
+                    houseSimilarity = 0.9; // Very high but not perfect if letters differ
+                }
+            }
+        }
         
         const SIMILARITY_THRESHOLD = 0.7; // 70% similarity required
+        const HOUSE_SIMILARITY_THRESHOLD = 0.8; // 80% similarity required for house numbers
         
         const cityMatches = citySimilarity >= SIMILARITY_THRESHOLD;
         const streetMatches = streetSimilarity >= SIMILARITY_THRESHOLD;
-        const houseMatches = houseSimilarity >= 0.8 || !streetNumberComponent; // Be more lenient with house numbers
+        
+        // STRICT: House number must be found by Google AND match the user's input
+        const houseMatches = streetNumberComponent && houseSimilarity >= HOUSE_SIMILARITY_THRESHOLD;
         
         const isValidAddress = cityMatches && streetMatches && houseMatches;
         
         console.log(`[API] Similarity scores - City: ${citySimilarity}, Street: ${streetSimilarity}, House: ${houseSimilarity}`);
+        console.log(`[API] Google returned house number:`, streetNumberComponent?.long_name || 'NOT FOUND');
+        console.log(`[API] User entered house number:`, house);
+        console.log(`[API] House matches: ${houseMatches} (requires Google to find the exact house number)`);
         console.log(`[API] Address valid: ${isValidAddress}`);
 
         return res.status(200).json({
@@ -89,7 +114,21 @@ export default async function handler(req, res) {
                 city: cityComponent?.long_name || null,
                 street: streetComponent?.long_name || null,
                 house: streetNumberComponent?.long_name || null
-            }
+            },
+            validation: {
+                cityMatches: cityMatches,
+                streetMatches: streetMatches,
+                houseMatches: houseMatches,
+                houseNumberFound: !!streetNumberComponent,
+                userHouseNumber: house,
+                googleHouseNumber: streetNumberComponent?.long_name || null
+            },
+            ...((!isValidAddress) && {
+                reason: !cityMatches ? 'City does not match' : 
+                        !streetMatches ? 'Street does not match' : 
+                        !houseMatches ? (streetNumberComponent ? 'House number does not match' : 'House number not found by Google') : 
+                        'Unknown validation error'
+            })
         });
 
     } catch (error) {

@@ -1354,6 +1354,17 @@ async function handleAddressBlur() {
         }
 
         console.log('[ADDRESS] Result:', result);
+        
+        // Log detailed validation information
+        if (result.validation) {
+            console.log('[ADDRESS] Detailed validation:');
+            console.log('  - City matches:', result.validation.cityMatches);
+            console.log('  - Street matches:', result.validation.streetMatches);
+            console.log('  - House matches:', result.validation.houseMatches);
+            console.log('  - House number found by Google:', result.validation.houseNumberFound);
+            console.log('  - User entered:', result.validation.userHouseNumber);
+            console.log('  - Google returned:', result.validation.googleHouseNumber);
+        }
 
         // Reset border color
         houseNumberInput.style.borderColor = '';
@@ -1361,11 +1372,49 @@ async function handleAddressBlur() {
         if (!result.valid) {
             // Clear existing errors for this field before showing a new one
             clearFormError(houseNumberInput);
-            showFormError(houseNumberInput, 'הכתובת שהוזנה אינה תקינה או לא נמצאה.');
+            
+            // Show specific error message based on what failed
+            let errorMessage = 'הכתובת שהוזנה אינה תקינה.';
+            
+            if (result.reason) {
+                switch (result.reason) {
+                    case 'City does not match':
+                        errorMessage = 'העיר שנבחרה אינה תואמת לתוצאות החיפוש.';
+                        break;
+                    case 'Street does not match':
+                        errorMessage = 'שם הרחוב אינו תואם לתוצאות החיפוש.';
+                        break;
+                    case 'House number does not match':
+                        errorMessage = `מספר הבית ${house} אינו תואם למספר שנמצא בגוגל: ${result.validation?.googleHouseNumber || 'לא נמצא'}.`;
+                        break;
+                    case 'House number not found by Google':
+                        errorMessage = `מספר הבית ${house} לא נמצא ברחוב ${street}. אנא בדוק שמספר הבית קיים.`;
+                        break;
+                    case 'City not recognized':
+                        errorMessage = 'העיר שנבחרה אינה מוכרת במערכת.';
+                        break;
+                    case 'Street name too short':
+                        errorMessage = 'שם הרחוב קצר מדי או לא תקין.';
+                        break;
+                    case 'Invalid house number format or range':
+                        errorMessage = 'מספר הבית אינו תקין. השתמש במספרים בין 1-999.';
+                        break;
+                    default:
+                        errorMessage = result.reason;
+                }
+            }
+            
+            showFormError(houseNumberInput, errorMessage);
         } else {
             // Address is valid, clear any previous error
             clearFormError(houseNumberInput);
             console.log('[ADDRESS] Address is valid!');
+            
+            // Show success feedback briefly
+            houseNumberInput.style.borderColor = '#28a745'; // Green for success
+            setTimeout(() => {
+                houseNumberInput.style.borderColor = '';
+            }, 2000);
         }
 
     } catch (error) {
@@ -1400,18 +1449,24 @@ async function mockAddressVerification(city, street, house) {
         'הרצליה', 'כפר סבא', 'רעננה', 'הוד השרון', 'רחובות', 'מודיעין'
     ];
     
-    // Basic validation rules
+    // Basic validation rules - MORE STRICT
     const isCityValid = knownCities.some(knownCity => 
         knownCity.includes(normalizedCity) || normalizedCity.includes(knownCity)
     );
     
     const isStreetValid = normalizedStreet.length >= 2; // At least 2 characters
-    const isHouseValid = /^\d+[א-ת]?$/.test(normalizedHouse); // Number optionally followed by Hebrew letter
     
+    // STRICT house number validation - must be valid format AND reasonable range
+    const isHouseValid = /^\d+[א-ת]?$/.test(normalizedHouse) && 
+                        parseInt(normalizedHouse) >= 1 && 
+                        parseInt(normalizedHouse) <= 999;
+    
+    // ALL components must be valid for address to be valid
     const isValid = isCityValid && isStreetValid && isHouseValid;
     
     console.log(`[MOCK] Address validation - City: ${normalizedCity} (${isCityValid}), Street: ${normalizedStreet} (${isStreetValid}), House: ${normalizedHouse} (${isHouseValid}), Valid: ${isValid}`);
     
+    // Mock detailed response similar to real API
     return {
         valid: isValid,
         address: isValid ? `${normalizedStreet} ${normalizedHouse}, ${normalizedCity}, ישראל` : null,
@@ -1419,7 +1474,26 @@ async function mockAddressVerification(city, street, house) {
             city: isCityValid ? 1 : 0,
             street: isStreetValid ? 1 : 0,
             house: isHouseValid ? 1 : 0
-        }
+        },
+        components: {
+            city: isCityValid ? normalizedCity : null,
+            street: isStreetValid ? normalizedStreet : null,
+            house: isHouseValid ? normalizedHouse : null
+        },
+        validation: {
+            cityMatches: isCityValid,
+            streetMatches: isStreetValid,
+            houseMatches: isHouseValid,
+            houseNumberFound: isHouseValid,
+            userHouseNumber: normalizedHouse,
+            googleHouseNumber: isHouseValid ? normalizedHouse : null
+        },
+        ...((!isValid) && {
+            reason: !isCityValid ? 'City not recognized' : 
+                    !isStreetValid ? 'Street name too short' : 
+                    !isHouseValid ? 'Invalid house number format or range' : 
+                    'Unknown validation error'
+        })
     };
 }
 
