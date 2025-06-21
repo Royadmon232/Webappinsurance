@@ -310,6 +310,12 @@ function validateHouseNumber(houseNumber) {
     return houseRegex.test(houseNumber);
 }
 
+function validatePostalCode(postalCode) {
+    // Postal code: 5-7 digits only
+    const postalRegex = /^\d{5,7}$/;
+    return postalRegex.test(postalCode);
+}
+
 function validateYearBuilt(year) {
     const currentYear = new Date().getFullYear();
     const minYear = 1900;
@@ -1028,6 +1034,7 @@ function collectFormData() {
     const city = document.getElementById('city').value;
     const street = document.getElementById('street').value.trim();
     const houseNumber = document.getElementById('houseNumber').value;
+    const postalCode = document.getElementById('postalCode').value;
     
     // Collect selected product sections
     const selectedProducts = [];
@@ -1062,6 +1069,7 @@ function collectFormData() {
         city: city,
         street: street,
         houseNumber: parseInt(houseNumber, 10),
+        postalCode: postalCode,
         
         // Selected Insurance Products
         selectedProducts: selectedProducts
@@ -1178,6 +1186,16 @@ function validateGeneralDetailsForm() {
         isValid = false;
     }
     
+    // Validate Postal Code
+    const postalCode = document.getElementById('postalCode');
+    if (postalCode && !postalCode.value) {
+        showFormError(postalCode, 'שדה חובה');
+        isValid = false;
+    } else if (postalCode && postalCode.value && !validatePostalCode(postalCode.value)) {
+        showFormError(postalCode, 'מיקוד חייב להכיל 5-7 ספרות בלבד');
+        isValid = false;
+    }
+    
 
     
     return isValid;
@@ -1262,6 +1280,20 @@ function addFormInputListeners() {
         });
 
         houseNumber.addEventListener('blur', handleAddressBlur);
+    }
+    
+    // Postal Code - allow only digits
+    const postalCode = document.getElementById('postalCode');
+    if (postalCode) {
+        postalCode.addEventListener('input', function(e) {
+            // Remove non-digits
+            this.value = this.value.replace(/\D/g, '');
+            
+            // Limit to 7 digits
+            if (this.value.length > 7) {
+                this.value = this.value.slice(0, 7);
+            }
+        });
     }
     
     // Clear errors on change for select fields
@@ -1506,16 +1538,18 @@ async function mockAddressVerification(city, street, house) {
 }
 
 // Add modal functions to the global app object
-window.HomeInsuranceApp.openGeneralDetailsModal = openGeneralDetailsModal;
-window.HomeInsuranceApp.closeGeneralDetailsModal = closeGeneralDetailsModal;
-window.HomeInsuranceApp.submitGeneralDetails = submitGeneralDetails;
-window.HomeInsuranceApp.initializeConditionalFields = initializeConditionalFields;
-window.HomeInsuranceApp.validateGeneralDetailsForm = validateGeneralDetailsForm;
-window.HomeInsuranceApp.clearFormErrors = clearFormErrors;
-window.HomeInsuranceApp.updateProductSections = updateProductSections;
-window.HomeInsuranceApp.initializeProductSections = initializeProductSections;
-window.HomeInsuranceApp.collectFormData = collectFormData;
-window.HomeInsuranceApp.submitFormData = submitFormData;
+window.HomeInsuranceApp = {
+    openGeneralDetailsModal,
+    closeGeneralDetailsModal,
+    submitGeneralDetails,
+    initializeConditionalFields,
+    validateGeneralDetailsForm,
+    clearFormErrors,
+    updateProductSections,
+    initializeProductSections,
+    collectFormData,
+    submitFormData
+};
 
 /**
  * Smooth scroll functionality
