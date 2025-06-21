@@ -304,10 +304,10 @@ function validatePhone(phone) {
     return phoneRegex.test(phone);
 }
 
-function validateZipCode(zipCode) {
-    // Israeli ZIP code format: 5 or 7 digits
-    const zipRegex = /^\d{5}(\d{2})?$/;
-    return zipRegex.test(zipCode);
+function validateHouseNumber(houseNumber) {
+    // House number: digits optionally followed by Hebrew letter
+    const houseRegex = /^\d+[א-ת]?$/;
+    return houseRegex.test(houseNumber);
 }
 
 function validateYearBuilt(year) {
@@ -326,10 +326,10 @@ function validateStep(step) {
         1: {
             'propertyAddress': { required: true, message: 'אנא הזן את כתובת הנכס' },
             'city': { required: true, message: 'אנא הזן את העיר' },
-            'zipCode': { 
+            'houseNumber': { 
                 required: true, 
-                validate: validateZipCode,
-                message: 'אנא הזן מיקוד תקין (5 או 7 ספרות)'
+                validate: validateHouseNumber,
+                message: 'אנא הזן מספר בית תקין'
             },
             'propertyType': { required: true, message: 'אנא בחר את סוג הנכס' },
             'yearBuilt': { 
@@ -1028,7 +1028,6 @@ function collectFormData() {
     const city = document.getElementById('city').value;
     const street = document.getElementById('street').value.trim();
     const houseNumber = document.getElementById('houseNumber').value;
-    const zipCode = document.getElementById('zipCode').value.trim();
     
     // Collect selected product sections
     const selectedProducts = [];
@@ -1063,7 +1062,6 @@ function collectFormData() {
         city: city,
         street: street,
         houseNumber: parseInt(houseNumber, 10),
-        zipCode: zipCode,
         
         // Selected Insurance Products
         selectedProducts: selectedProducts
@@ -1180,18 +1178,7 @@ function validateGeneralDetailsForm() {
         isValid = false;
     }
     
-    // Validate ZIP Code
-    const zipCode = document.getElementById('zipCode');
-    if (zipCode) {
-        const zipValue = zipCode.value.trim();
-        if (!zipValue) {
-            showFormError(zipCode, 'שדה חובה');
-            isValid = false;
-        } else if (!/^\d+$/.test(zipValue)) {
-            showFormError(zipCode, 'מיקוד חייב להכיל ספרות בלבד');
-            isValid = false;
-        }
-    }
+
     
     return isValid;
 }
@@ -1266,15 +1253,15 @@ function addFormInputListeners() {
         });
     }
     
-    // ZIP Code - allow only digits
-    const zipCode = document.getElementById('zipCode');
-    if (zipCode) {
-        zipCode.addEventListener('input', function(e) {
+    // House Number - allow only digits
+    const houseNumber = document.getElementById('houseNumber');
+    if (houseNumber) {
+        houseNumber.addEventListener('input', function(e) {
             // Remove non-digits
             this.value = this.value.replace(/\D/g, '');
         });
 
-        zipCode.addEventListener('blur', handleZipBlur);
+        houseNumber.addEventListener('blur', handleAddressBlur);
     }
     
     // Clear errors on change for select fields
@@ -1303,36 +1290,34 @@ function addFormInputListeners() {
 }
 
 /**
- * Handle blur event on the zip code field to verify it.
+ * Handle blur event on the house number field to verify the complete address.
  */
-async function handleZipBlur() {
-    const zipCodeInput = document.getElementById('zipCode');
-    const userZip = zipCodeInput.value.trim();
+async function handleAddressBlur() {
+    const houseNumberInput = document.getElementById('houseNumber');
+    const house = houseNumberInput.value.trim();
 
     // Don't validate if empty
-    if (!userZip) {
-        console.log('[ZIP] Empty zip code, skipping validation');
+    if (!house) {
+        console.log('[ADDRESS] Empty house number, skipping validation');
         return;
     }
 
     const city = document.getElementById('city').value;
     const street = document.getElementById('street').value.trim();
-    const house = document.getElementById('houseNumber').value.trim();
 
-    console.log(`[ZIP] Validating zip: ${userZip}, City: ${city}, Street: ${street}, House: ${house}`);
+    console.log(`[ADDRESS] Validating address: ${street} ${house}, ${city}`);
 
-    // We need at least a city to validate
-    if (!city) {
-        console.log('[ZIP] No city selected, skipping validation');
+    // We need all three components to validate
+    if (!city || !street) {
+        console.log('[ADDRESS] Missing city or street, skipping validation');
         return;
     }
 
     // Show some loading feedback
-    zipCodeInput.style.borderColor = '#f39c12'; // Orange for loading
+    houseNumberInput.style.borderColor = '#f39c12'; // Orange for loading
 
     try {
-        // Try to use real API first, fallback to mock if API fails
-        console.log('[ZIP] Attempting to use real API verification');
+        console.log('[ADDRESS] Attempting to verify address with API');
         let result;
         
         try {
@@ -1342,22 +1327,21 @@ async function handleZipBlur() {
             
             if (isProduction) {
                 // Call the real API
-                const response = await fetch('/api/verifyZip', {
+                const response = await fetch('/api/verifyAddress', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
                         city: city,
-                        street: street || '',
-                        house: house || '',
-                        zipCode: userZip
+                        street: street,
+                        house: house
                     })
                 });
 
                 if (response.ok) {
                     result = await response.json();
-                    console.log('[ZIP] API call successful:', result);
+                    console.log('[ADDRESS] API call successful:', result);
                 } else {
                     throw new Error(`API returned ${response.status}`);
                 }
@@ -1365,135 +1349,77 @@ async function handleZipBlur() {
                 throw new Error('Development mode - using mock');
             }
         } catch (apiError) {
-            console.log('[ZIP] API call failed or not available, falling back to mock:', apiError.message);
-            result = await mockZipVerification(city, street, house, userZip);
+            console.log('[ADDRESS] API call failed or not available, falling back to mock:', apiError.message);
+            result = await mockAddressVerification(city, street, house);
         }
 
-        console.log('[ZIP] Result:', result);
+        console.log('[ADDRESS] Result:', result);
 
         // Reset border color
-        zipCodeInput.style.borderColor = '';
+        houseNumberInput.style.borderColor = '';
 
-        if (!result.valid && result.official) {
+        if (!result.valid) {
             // Clear existing errors for this field before showing a new one
-            clearFormError(zipCodeInput);
-            const message = `המיקוד אינו תואם לכתובת. המיקוד הרשמי הוא: ${result.official}`;
-            showFormError(zipCodeInput, message);
-            
-            // Optional: Ask user to auto-correct
-            if (confirm(message + '\nהאם תרצה לתקן אוטומטית?')) {
-                zipCodeInput.value = result.official;
-                clearFormError(zipCodeInput);
-            }
-        } else if (!result.valid) {
-             clearFormError(zipCodeInput);
-             showFormError(zipCodeInput, 'המיקוד שהוזן אינו תקין.');
+            clearFormError(houseNumberInput);
+            showFormError(houseNumberInput, 'הכתובת שהוזנה אינה תקינה או לא נמצאה.');
         } else {
-            // Zip is valid, clear any previous error
-            clearFormError(zipCodeInput);
-            console.log('[ZIP] Zip code is valid!');
+            // Address is valid, clear any previous error
+            clearFormError(houseNumberInput);
+            console.log('[ADDRESS] Address is valid!');
         }
 
     } catch (error) {
-        console.error('Error verifying zip code:', error);
+        console.error('Error verifying address:', error);
         // Reset border color on error
-        zipCodeInput.style.borderColor = '';
+        houseNumberInput.style.borderColor = '';
         // Show a generic error message
-        showFormError(zipCodeInput, 'שגיאה באימות המיקוד.');
+        showFormError(houseNumberInput, 'שגיאה באימות הכתובת.');
     }
 }
 
 /**
- * Mock zip verification for static site
+ * Mock address verification for static site
  * @param {string} city - The city name
  * @param {string} street - The street name
  * @param {string} house - The house number
- * @param {string} userZip - The user's zip code
  * @returns {Promise<Object>} - Mock response
  */
-async function mockZipVerification(city, street, house, userZip) {
+async function mockAddressVerification(city, street, house) {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    // Extended mock data for Israeli cities and settlements
-    const mockZipCodes = {
-        // Major cities
-        'תל אביב': '6100000',
-        'תל אביב - יפו': '6100000',
-        'תל אביב יפו': '6100000',
-        'ירושלים': '9100000',
-        'חיפה': '3100000',
-        'באר שבע': '8400000',
-        'פתח תקווה': '4900000',
-        'ראשון לציון': '7500000',
-        'אשדוד': '7700000',
-        'נתניה': '4200000',
-        'רמת גן': '5200000',
-        'בני ברק': '5100000',
-        'הרצליה': '4600000',
-        'כפר סבא': '4400000',
-        'רעננה': '4300000',
-        'הוד השרון': '4500000',
-        'רחובות': '7600000',
-        'מודיעין': '7170000',
-        'אילת': '8800000',
-        'צפת': '1300000',
-        'טבריה': '1420000',
-        'עכו': '2410000',
-        'נהריה': '2270000',
-        'קריית שמונה': '1101000',
-        'אשקלון': '7810000',
-        'קריית גת': '8220000',
-        'דימונה': '8610000',
-        'ערד': '8910000',
-        'מעלות תרשיחא': '2417000',
-        'יקנעם': '2066000',
-        
-        // Kibbutzim and Moshavim (examples)
-        'קיבוץ דגניה א': '1511000',
-        'קיבוץ גבעת ברנר': '7080000',
-        'קיבוץ מעגן מיכאל': '3782000',
-        'מושב נהלל': '1692000',
-        'מושב כפר מלל': '4069500',
-        
-        // Regional councils areas
-        'מועצה אזורית עמק יזרעל': '1990000',
-        'מועצה אזורית גליל עליון': '1320000',
-        'מועצה אזורית שפלת יהודה': '9910000'
-    };
-    
-    // Normalize city name for lookup
+    // Basic mock validation - check if we have reasonable inputs
     const normalizedCity = city.trim();
-    let officialZip = mockZipCodes[normalizedCity];
+    const normalizedStreet = street.trim();
+    const normalizedHouse = house.trim();
     
-    // If no exact match, try to find partial matches
-    if (!officialZip) {
-        for (const [cityName, zipCode] of Object.entries(mockZipCodes)) {
-            if (cityName.includes(normalizedCity) || normalizedCity.includes(cityName)) {
-                officialZip = zipCode;
-                break;
-            }
-        }
-    }
+    // List of known Israeli cities for basic validation
+    const knownCities = [
+        'תל אביב', 'תל אביב - יפו', 'תל אביב יפו', 'ירושלים', 'חיפה', 'באר שבע',
+        'פתח תקווה', 'ראשון לציון', 'אשדוד', 'נתניה', 'רמת גן', 'בני ברק',
+        'הרצליה', 'כפר סבא', 'רעננה', 'הוד השרון', 'רחובות', 'מודיעין'
+    ];
     
-    // Default zip if no match found
-    if (!officialZip) {
-        officialZip = '1234567';
-    }
+    // Basic validation rules
+    const isCityValid = knownCities.some(knownCity => 
+        knownCity.includes(normalizedCity) || normalizedCity.includes(knownCity)
+    );
     
-    // Check if user's zip matches
-    const userZipDigits = userZip.replace(/\D/g, '');
-    const officialZipDigits = officialZip.replace(/\D/g, '');
+    const isStreetValid = normalizedStreet.length >= 2; // At least 2 characters
+    const isHouseValid = /^\d+[א-ת]?$/.test(normalizedHouse); // Number optionally followed by Hebrew letter
     
-    // For validation: check if user's zip starts with the first 5 digits of official zip
-    const isValid = userZipDigits.length >= 5 && 
-                   userZipDigits.substring(0, 5) === officialZipDigits.substring(0, 5);
+    const isValid = isCityValid && isStreetValid && isHouseValid;
     
-    console.log(`[MOCK] City: ${normalizedCity}, User Zip: ${userZipDigits}, Official: ${officialZipDigits}, Valid: ${isValid}`);
+    console.log(`[MOCK] Address validation - City: ${normalizedCity} (${isCityValid}), Street: ${normalizedStreet} (${isStreetValid}), House: ${normalizedHouse} (${isHouseValid}), Valid: ${isValid}`);
     
     return {
         valid: isValid,
-        official: officialZipDigits.substring(0, 7) // Return 7-digit zip as is common in Israel
+        address: isValid ? `${normalizedStreet} ${normalizedHouse}, ${normalizedCity}, ישראל` : null,
+        similarity: {
+            city: isCityValid ? 1 : 0,
+            street: isStreetValid ? 1 : 0,
+            house: isHouseValid ? 1 : 0
+        }
     };
 }
 
