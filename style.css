@@ -1240,72 +1240,66 @@ button:focus {
     font-size: 1rem;
 }
 
-/* Modal Footer - Enhanced */
+/* Modal Footer - Vertical Layout */
 .modal-footer {
     display: flex;
-    justify-content: flex-end;
-    gap: 16px;
+    flex-direction: column-reverse; /* Stack buttons vertically, reverse DOM order */
+    gap: 12px;
     padding: 24px 32px;
-    border-top: 2px solid #e5e7eb;
-    background-color: #f9fafb;
-    border-radius: 0 0 16px 16px;
+    border-top: 1px solid #e5e7eb;
+    background-color: #f8f9fa;
 }
 
-/* Modal Button Styles - Enhanced */
 .modal-footer .btn {
-    padding: 14px 32px;
-    border: none;
-    border-radius: 10px;
-    font-size: 1.1rem;
-    font-weight: 700;
+    width: 100%;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s ease;
     text-decoration: none;
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     text-align: center;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .modal-footer .btn-primary {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    background: #2563eb;
     color: white;
-    min-width: 120px;
+    border: 1px solid transparent;
 }
 
 .modal-footer .btn-primary::after {
-    content: "←";
-    font-size: 1.2rem;
-    transition: transform 0.3s ease;
+    content: "←"; /* Left-pointing arrow */
+    font-size: 1.1rem;
+    transition: transform 0.2s ease;
 }
 
 .modal-footer .btn-primary:hover {
-    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    background: #1d4ed8;
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.25);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
 }
 
 .modal-footer .btn-primary:hover::after {
-    transform: translateX(-4px);
-}
-
-.modal-footer .btn-primary:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    transform: translateX(-3px);
 }
 
 .modal-footer .btn-secondary {
-    background-color: #6b7280;
-    color: white;
+    background-color: #f8f9fa;
+    color: #4b5563;
+    border: 1px solid #d1d5db;
 }
 
 .modal-footer .btn-secondary:hover {
-    background-color: #4b5563;
+    background-color: #e9ecef;
+    border-color: #adb5bd;
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(107, 114, 128, 0.2);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
 /* Product Sections Container - Enhanced */
