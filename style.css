@@ -1055,37 +1055,40 @@ button:focus {
     }
 }
 
+/* Modal Header - Enhanced */
 .modal-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Pushes items to ends */
     align-items: center;
     padding: 24px 32px;
-    border-bottom: 2px solid #e5e7eb;
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    background: linear-gradient(135deg, #1e40af, #2563eb);
     color: white;
     border-radius: 16px 16px 0 0;
+    border-bottom: none;
+    direction: rtl; /* Ensure RTL direction */
 }
 
 .modal-header h2 {
+    order: 2; /* Title on the right */
     margin: 0;
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    letter-spacing: -0.5px;
 }
 
 .close {
-    color: white;
-    font-size: 32px;
+    order: 1; /* Close button on the left */
+    font-size: 2.5rem;
     font-weight: 300;
+    color: white;
     cursor: pointer;
-    transition: all 0.2s ease;
-    line-height: 1;
     opacity: 0.8;
+    transition: opacity 0.2s, transform 0.2s;
+    line-height: 1;
 }
 
 .close:hover {
     opacity: 1;
-    transform: rotate(90deg);
+    transform: scale(1.1);
 }
 
 .modal-body {
@@ -1141,21 +1144,23 @@ button:focus {
     overflow: hidden;
 }
 
+/* Form Group and Label Alignment */
 .modal-body .form-group label {
-    display: block;
+    display: block; /* Make label a block to fill width */
+    text-align: right; /* Align text to the right */
+    width: 100%;
     margin-bottom: 8px;
-    font-weight: 600;
     color: #374151;
     font-size: 0.95rem;
-    position: relative;
+    font-weight: 600;
+    direction: rtl;
 }
 
-/* Required field indicator */
-.modal-body .form-group label::after {
-    content: attr(data-required);
+.modal-body .form-group label[data-required]::after {
+    content: " *";
     color: #ef4444;
-    margin-left: 4px;
     font-weight: 700;
+    margin-right: 2px;
 }
 
 .modal-body .form-group input,
