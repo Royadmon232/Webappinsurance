@@ -1346,9 +1346,9 @@ function validateGeneralDetailsForm() {
     }
     
     // Validate City
-    const city = document.getElementById('city');
-    if (city && !city.value) {
-        showFormError(city, 'שדה חובה');
+    const cityInput = document.getElementById('city-autocomplete');
+    if (cityInput && !cityInput.value.trim()) {
+        showFormError(cityInput, 'שדה חובה');
         isValid = false;
     }
     
