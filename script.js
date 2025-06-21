@@ -1321,8 +1321,11 @@ function validateGeneralDetailsForm() {
     // Validate Coverage Type (only if visible)
     const coverageType = document.getElementById('coverageType');
     const coverageTypeField = coverageType ? coverageType.closest('.form-group') : null;
-    if (coverageType && coverageTypeField && !coverageTypeField.classList.contains('hidden')) {
-        if (!coverageType.value) {
+    if (coverageTypeField && coverageTypeField.classList.contains('hidden')) {
+        // If the field is hidden, skip validation for it
+    } else {
+        // If the field is visible, validate it
+        if (coverageType && !coverageType.value) {
             showFormError(coverageType, 'שדה חובה');
             isValid = false;
         }
