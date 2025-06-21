@@ -969,13 +969,14 @@ function initializeConditionalFields() {
             
             if (coverageTypeField && coverageTypeSelect) {
                 if (selectedValue === 'מבנה בלבד' || selectedValue === 'מבנה בלבד משועבד') {
-                    // Hide coverage type field with animation
+                    // Hide coverage type field
                     coverageTypeField.classList.add('hidden');
-                    // Clear the value when hiding
                     coverageTypeSelect.value = '';
+                    coverageTypeSelect.required = false; // <-- התיקון
                 } else {
-                    // Show coverage type field with animation
+                    // Show coverage type field
                     coverageTypeField.classList.remove('hidden');
+                    coverageTypeSelect.required = true; // <-- התיקון
                 }
             }
             
@@ -991,13 +992,14 @@ function initializeConditionalFields() {
             
             if (floorCountField && floorCountSelect) {
                 if (selectedValue === 'פרטי') {
-                    // Hide floor count field with animation
+                    // Hide floor count field
                     floorCountField.classList.add('hidden');
-                    // Clear the value when hiding
                     floorCountSelect.value = '';
+                    floorCountSelect.required = false; // <-- תיקון נוסף לעקביות
                 } else {
-                    // Show floor count field with animation
+                    // Show floor count field
                     floorCountField.classList.remove('hidden');
+                    floorCountSelect.required = true; // <-- תיקון נוסף לעקביות
                 }
             }
         });
