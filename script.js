@@ -1190,10 +1190,10 @@ function validateGeneralDetailsForm() {
     const postalCode = document.getElementById('postalCode');
     if (postalCode && !postalCode.value) {
         showFormError(postalCode, 'שדה חובה');
-        isValid = false;
+            isValid = false;
     } else if (postalCode && postalCode.value && !validatePostalCode(postalCode.value)) {
         showFormError(postalCode, 'מיקוד חייב להכיל 5-7 ספרות בלבד');
-        isValid = false;
+            isValid = false;
     }
     
 
