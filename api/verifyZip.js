@@ -253,6 +253,8 @@ export default async function handler(req, res) {
         // 4. Israeli Government data.gov.il API
         // 5. Google Geocoding with English address
         // 6. Google Reverse Geocoding from coordinates
+        // 7. Advanced: Component filtering with postal_code
+        // 8. Advanced: Address Validation API fallback
         
         // First try: Regular geocoding with Hebrew address and language parameter
         const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&language=he&region=IL&components=country:IL&key=${GOOGLE_API_KEY}`;
@@ -282,6 +284,37 @@ export default async function handler(req, res) {
             component => component.types.includes('postal_code')
         );
 
+        // Advanced technique: Component filtering with postal_code
+        if (!postalCodeComponent) {
+            console.log('[API] Trying component filtering with postal_code...');
+            
+            // Try with components filter that includes postal_code
+            const componentFilterUrl = `https://maps.googleapis.com/maps/api/geocode/json?components=locality:${encodeURIComponent(city)}|postal_code:${zipCode}|country:IL&language=he&region=IL&key=${GOOGLE_API_KEY}`;
+            
+            try {
+                const componentResponse = await fetch(componentFilterUrl);
+                const componentData = await componentResponse.json();
+                
+                if (componentData.status === 'OK' && componentData.results && componentData.results.length > 0) {
+                    console.log('[API] Component filtering returned results');
+                    const componentResult = componentData.results[0];
+                    
+                    postalCodeComponent = componentResult.address_components.find(
+                        component => component.types.includes('postal_code')
+                    );
+                    
+                    if (postalCodeComponent) {
+                        console.log('[API] Found postal code via component filtering:', postalCodeComponent.long_name);
+                        // Use this result instead
+                        result.address_components = componentResult.address_components;
+                        result.formatted_address = componentResult.formatted_address;
+                    }
+                }
+            } catch (componentError) {
+                console.error('[API] Component filtering error:', componentError);
+            }
+        }
+
         // If no postal code found, try geocoding WITH the postal code included
         if (!postalCodeComponent) {
             console.log('[API] No postal code in first attempt, trying with postal code in query...');
@@ -307,6 +340,52 @@ export default async function handler(req, res) {
                     result.address_components = resultWithZip.address_components;
                     result.formatted_address = resultWithZip.formatted_address;
                 }
+            }
+        }
+
+        // Advanced: Try Address Validation API as fallback (if enabled)
+        if (!postalCodeComponent) {
+            console.log('[API] Trying Address Validation API...');
+            
+            try {
+                const addressValidationUrl = `https://addressvalidation.googleapis.com/v1:validateAddress?key=${GOOGLE_API_KEY}`;
+                const addressValidationBody = {
+                    address: {
+                        regionCode: 'IL',
+                        languageCode: 'he',
+                        addressLines: [street && house ? `${street} ${house}` : address],
+                        locality: city,
+                        postalCode: zipCode
+                    }
+                };
+                
+                const validationResponse = await fetch(addressValidationUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(addressValidationBody)
+                });
+                
+                if (validationResponse.ok) {
+                    const validationData = await validationResponse.json();
+                    console.log('[API] Address Validation response:', JSON.stringify(validationData, null, 2));
+                    
+                    if (validationData.result && validationData.result.address && validationData.result.address.postalCode) {
+                        console.log('[API] Found postal code via Address Validation API:', validationData.result.address.postalCode.text);
+                        
+                        // Create synthetic postal code component
+                        postalCodeComponent = {
+                            long_name: validationData.result.address.postalCode.text,
+                            short_name: validationData.result.address.postalCode.text,
+                            types: ['postal_code']
+                        };
+                        
+                        result.address_components.push(postalCodeComponent);
+                    }
+                }
+            } catch (validationError) {
+                console.error('[API] Address Validation API error (this is expected if not supported in Israel):', validationError);
             }
         }
 
