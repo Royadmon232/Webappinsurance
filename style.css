@@ -1784,21 +1784,10 @@ input:disabled {
     color: white;
 }
 
-.modal-footer .btn-primary::after {
-    content: "→";
-    font-size: 1.1rem;
-    margin-left: 4px;
-    transition: transform 0.2s ease;
-}
-
 .modal-footer .btn-primary:hover {
     background: #1d4ed8;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-}
-
-.modal-footer .btn-primary:hover::after {
-    transform: translateX(2px);
 }
 
 .modal-footer .btn-primary:active {
@@ -1820,14 +1809,6 @@ input:disabled {
 
 .modal-footer .btn-prev {
     order: -1;
-}
-
-.modal-footer .btn-prev::after {
-    content: "→";
-    font-size: 1.1rem;
-    margin-right: 4px;
-    transform: rotate(180deg);
-    display: inline-block;
 }
 
 /* Improve form spacing in wizard */
