@@ -1565,6 +1565,94 @@ button:focus {
 
 /* Style for disabled inputs */
 input:disabled {
-    background-color: #f5f5f5;
+    opacity: 0.6;
     cursor: not-allowed;
+}
+
+/* Modern Garden Checkbox Styling */
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    cursor: pointer;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+    /* Hide the default checkbox */
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.checkbox-wrapper label {
+    position: relative;
+    padding-left: 35px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-dark);
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+.checkbox-wrapper label::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+    background-color: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.checkbox-wrapper input[type="checkbox"]:checked + label::before {
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+.checkbox-wrapper input[type="checkbox"]:checked + label::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    width: 6px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transition: all 0.2s ease;
+}
+
+.checkbox-wrapper:hover label::before {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.1);
+}
+
+.checkbox-wrapper input[type="checkbox"]:focus + label::before {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.2);
+}
+
+/* Garden checkbox specific styling */
+#garden-checkbox-container {
+    margin-top: 8px;
+    padding: 12px 16px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+
+#garden-checkbox-container:hover {
+    background-color: #f1f3f4;
+    border-color: #dee2e6;
 } 
