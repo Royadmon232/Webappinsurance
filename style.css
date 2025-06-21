@@ -1243,86 +1243,69 @@ button:focus {
 /* Modal Footer - Vertical Layout */
 .modal-footer {
     display: flex;
-    flex-direction: column-reverse; /* Stack buttons vertically, reverse DOM order */
-    gap: 12px;
-    padding: 24px 32px;
+    flex-direction: column-reverse; /* Stacks buttons vertically, primary on top */
+    padding: 1rem 1.5rem;
     border-top: 1px solid #e5e7eb;
-    background-color: #f8f9fa;
+    background-color: #f8fafc;
+    gap: 0.75rem; /* Adds space between stacked buttons */
 }
 
 .modal-footer .btn {
     width: 100%;
-    padding: 14px 28px;
-    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
     font-size: 1rem;
     font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid transparent;
     cursor: pointer;
     transition: all 0.2s ease;
-    text-decoration: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
     text-align: center;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.modal-footer .btn-primary {
-    background: #2563eb;
+/* Remove all potentially conflicting pseudo-elements */
+.modal-footer .btn::before,
+.modal-footer .btn::after {
+    content: none;
+}
+
+.modal-footer .btn-primary,
+.modal-footer .btn-next {
+    background-color: #2563eb;
     color: white;
-    border: 1px solid transparent;
+    border-color: #2563eb;
+}
+.modal-footer .btn-primary:hover,
+.modal-footer .btn-next:hover {
+    background-color: #1d4ed8;
 }
 
-/* === Button Arrow Logic === */
-
-/* Default: No arrows on buttons */
-.modal-footer .btn-primary::after,
-.modal-footer .btn-secondary::after,
-.modal-footer .btn-primary::before,
-.modal-footer .btn-secondary::before {
-    content: "";
-    display: none;
+.modal-footer .btn-secondary,
+.modal-footer .btn-prev {
+    background-color: #f1f5f9;
+    color: #334155;
+    border-color: #e2e8f0;
+}
+.modal-footer .btn-secondary:hover,
+.modal-footer .btn-prev:hover {
+    background-color: #e2e8f0;
 }
 
-/* Arrow for the 'Next' button */
-.modal-footer .btn-next::after {
-    content: "←";
-    display: inline-block;
-    font-size: 1.1rem;
-    margin-left: 8px; /* For RTL spacing */
-    transition: transform 0.2s ease;
+/* Correct Arrows for RTL */
+.btn-next::before {
+    content: '←';
+    margin-right: 8px; /* Swapped to margin-right for correct spacing */
 }
 
-/* Arrow for the 'Previous' button */
-.modal-footer .btn-prev::before {
-    content: "→";
-    display: inline-block;
-    font-size: 1.1rem;
-    margin-right: 8px; /* For RTL spacing */
-    transition: transform 0.2s ease;
-}
-
-/* Hover effects for arrows */
-.modal-footer .btn-next:hover::after {
-    transform: translateX(-3px);
-}
-
-.modal-footer .btn-prev:hover::before {
-    transform: translateX(3px);
-}
-
-.modal-footer .btn-primary::after {
-    content: "";
-}
-
-.modal-footer .btn-primary:hover {
-    background: #1d4ed8;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+.btn-prev::after {
+    content: '→';
+    margin-left: 8px; /* This is correct for an element after text */
 }
 
 .modal-footer .btn-primary:hover::after {
-    transform: translateX(-3px);
+    right: 15px;
 }
 
 .modal-footer .btn-prev:hover {
@@ -1354,11 +1337,12 @@ button:focus {
 .modal-sections-container {
     background: white;
     border-radius: 12px;
-    padding: 24px;
+    padding: 1.5rem;
     border: 1px solid #e5e7eb;
     position: sticky;
     top: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border-left: 1px solid #e5e7eb;
 }
 
 .modal-sections-container h3 {
@@ -1818,8 +1802,8 @@ input:disabled {
 }
 
 .modal-footer .btn-primary:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.15);
+    transform: translateY(1px);
+    box-shadow: none;
 }
 
 .modal-footer .btn-secondary {
@@ -1838,7 +1822,7 @@ input:disabled {
     order: -1;
 }
 
-.modal-footer .btn-prev::before {
+.modal-footer .btn-prev::after {
     content: "→";
     font-size: 1.1rem;
     margin-right: 4px;
@@ -1849,10 +1833,10 @@ input:disabled {
 /* Improve form spacing in wizard */
 #step-general .form-field-group {
     background: white;
-    padding: 24px;
+    padding: 0; /* Remove padding from direct children */
+    border: none; /* No border for the main group */
     margin-bottom: 20px;
     border-radius: 10px;
-    border: 1px solid #e5e7eb;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
