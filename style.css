@@ -1026,8 +1026,9 @@ button:focus {
     top: 0;
     width: 100%;
     height: 100%;
+    overflow: auto;
     background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(4px);
 }
 
 .modal-content {
@@ -1655,4 +1656,28 @@ input:disabled {
 #garden-checkbox-container:hover {
     background-color: #f1f3f4;
     border-color: #dee2e6;
+} 
+
+/* Wizard Steps */
+.wizard-step {
+    display: none;
+}
+
+.wizard-step.active {
+    display: block;
+}
+
+.modal-centered {
+    justify-content: center;
+}
+
+.modal-centered .modal-form-section {
+    max-width: 600px;
+    width: 100%;
+}
+
+.modal-centered .modal-sections-container {
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
 } 

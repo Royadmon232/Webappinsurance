@@ -1,6 +1,10 @@
 // Home Insurance Landing Page JavaScript
 // Initialized and ready for development
 
+// Wizard state
+let currentWizardStep = 0;
+let wizardSteps = [];
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Home Insurance Landing Page loaded successfully! - Version 20250620-2 (Static site mode)');
     
@@ -20,6 +24,9 @@ document.addEventListener('DOMContentLoaded', function() {
             addFormInputListeners();
             setupModalCloseHandlers();
             
+            // Initialize wizard
+            initStepWizard();
+            
             // Set min date
             const startDateInput = document.getElementById('startDate');
             if (startDateInput) {
@@ -37,6 +44,172 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+/**
+ * Initialize Step Wizard
+ */
+function initStepWizard() {
+    // Reset wizard to first step
+    currentWizardStep = 0;
+    
+    // Build steps array based on product type
+    buildWizardSteps();
+    
+    // Show first step
+    showWizardStep(0);
+    
+    // Update navigation buttons
+    updateWizardNavigation();
+}
+
+/**
+ * Build wizard steps array based on product type
+ */
+function buildWizardSteps() {
+    const productType = document.getElementById('productType').value;
+    
+    // Always start with general details
+    wizardSteps = ['step-general'];
+    
+    // Define cover steps in order
+    const coverSteps = [
+        { id: 'step-cover-structure', name: 'מבנה' },
+        { id: 'step-cover-contents', name: 'תכולה' },
+        { id: 'step-cover-business', name: 'פעילות עסקית' },
+        { id: 'step-cover-third-party', name: 'צד שלישי' },
+        { id: 'step-cover-cyber', name: 'סייבר למשפחה' },
+        { id: 'step-cover-terror', name: 'טרור' }
+    ];
+    
+    // Add steps based on product type rules
+    switch(productType) {
+        case 'מבנה בלבד':
+            // Skip תכולה
+            wizardSteps.push('step-cover-structure');
+            wizardSteps.push('step-cover-business');
+            wizardSteps.push('step-cover-third-party');
+            wizardSteps.push('step-cover-cyber');
+            wizardSteps.push('step-cover-terror');
+            break;
+            
+        case 'תכולה בלבד':
+            // Skip מבנה
+            wizardSteps.push('step-cover-contents');
+            wizardSteps.push('step-cover-business');
+            wizardSteps.push('step-cover-third-party');
+            wizardSteps.push('step-cover-cyber');
+            wizardSteps.push('step-cover-terror');
+            break;
+            
+        case 'מבנה בלבד משועבד':
+            // Only מבנה and צד שלישי
+            wizardSteps.push('step-cover-structure');
+            wizardSteps.push('step-cover-third-party');
+            break;
+            
+        default:
+            // מבנה ותכולה or empty - show all steps
+            coverSteps.forEach(step => {
+                wizardSteps.push(step.id);
+            });
+            break;
+    }
+}
+
+/**
+ * Show specific wizard step
+ */
+function showWizardStep(stepIndex) {
+    // Hide all steps
+    const allSteps = document.querySelectorAll('.wizard-step');
+    allSteps.forEach(step => {
+        step.classList.remove('active');
+    });
+    
+    // Show current step
+    if (stepIndex >= 0 && stepIndex < wizardSteps.length) {
+        const currentStepElement = document.getElementById(wizardSteps[stepIndex]);
+        if (currentStepElement) {
+            currentStepElement.classList.add('active');
+        }
+        currentWizardStep = stepIndex;
+    }
+    
+    // Update navigation
+    updateWizardNavigation();
+}
+
+/**
+ * Update wizard navigation buttons
+ */
+function updateWizardNavigation() {
+    const prevBtn = document.querySelector('.btn-prev');
+    const nextBtn = document.querySelector('.btn-next');
+    
+    // Show/hide previous button
+    if (prevBtn) {
+        prevBtn.style.display = currentWizardStep > 0 ? 'inline-block' : 'none';
+    }
+    
+    // Update next button text
+    if (nextBtn) {
+        if (currentWizardStep === wizardSteps.length - 1) {
+            nextBtn.textContent = 'סיום';
+        } else {
+            nextBtn.textContent = 'הבא';
+        }
+    }
+}
+
+/**
+ * Navigate to next wizard step
+ */
+function wizardNext() {
+    // If on general details step, validate form first
+    if (currentWizardStep === 0) {
+        const form = document.getElementById('generalDetailsForm');
+        if (form) {
+            // Clear all previous errors
+            clearFormErrors();
+            
+            // Perform custom validation
+            const isValid = validateGeneralDetailsForm();
+            
+            if (!isValid || !form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Rebuild steps based on selected product type
+            buildWizardSteps();
+        }
+    }
+    
+    // If on last step, submit form
+    if (currentWizardStep === wizardSteps.length - 1) {
+        window.HomeInsuranceApp.submitGeneralDetails();
+        return;
+    }
+    
+    // Move to next step
+    if (currentWizardStep < wizardSteps.length - 1) {
+        showWizardStep(currentWizardStep + 1);
+    }
+}
+
+/**
+ * Navigate to previous wizard step
+ */
+function wizardPrev() {
+    if (currentWizardStep > 0) {
+        showWizardStep(currentWizardStep - 1);
+    }
+}
+
+// Expose wizard functions to global scope for onclick handlers
+window.HomeInsuranceApp = window.HomeInsuranceApp || {};
+window.HomeInsuranceApp.wizardNext = wizardNext;
+window.HomeInsuranceApp.wizardPrev = wizardPrev;
 
 /**
  * Initialize page functionality
@@ -726,7 +899,11 @@ function debounce(func, wait) {
 window.HomeInsuranceApp = {
     openGeneralDetailsModal,
     collectFormData,
-    submitFormData
+    submitFormData,
+    closeGeneralDetailsModal,
+    submitGeneralDetails,
+    wizardNext,
+    wizardPrev
 };
 
 /**
@@ -758,6 +935,9 @@ function openGeneralDetailsModal() {
         
         // Add event listeners for closing the modal
         setupModalCloseHandlers();
+        
+        // Initialize wizard
+        initStepWizard();
         
         // Focus on the modal for accessibility
         const modalContent = modal.querySelector('.modal-content');
@@ -1537,19 +1717,7 @@ async function mockAddressVerification(city, street, house) {
     };
 }
 
-// Add modal functions to the global app object
-window.HomeInsuranceApp = {
-    openGeneralDetailsModal,
-    closeGeneralDetailsModal,
-    submitGeneralDetails,
-    initializeConditionalFields,
-    validateGeneralDetailsForm,
-    clearFormErrors,
-    updateProductSections,
-    initializeProductSections,
-    collectFormData,
-    submitFormData
-};
+// Add modal functions to the global app object (merged with main declaration above)
 
 /**
  * Smooth scroll functionality
