@@ -1273,20 +1273,42 @@ button:focus {
     border: 1px solid transparent;
 }
 
+/* === Button Arrow Logic === */
+
+/* Default: No arrows on buttons */
+.modal-footer .btn-primary::after,
+.modal-footer .btn-secondary::after,
+.modal-footer .btn-primary::before,
+.modal-footer .btn-secondary::before {
+    content: "";
+    display: none;
+}
+
 /* Arrow for the 'Next' button */
 .modal-footer .btn-next::after {
-    content: "←"; /* Left-pointing arrow */
+    content: "←";
+    display: inline-block;
     font-size: 1.1rem;
+    margin-left: 8px; /* For RTL spacing */
     transition: transform 0.2s ease;
 }
 
 /* Arrow for the 'Previous' button */
 .modal-footer .btn-prev::before {
-    content: "→"; /* Right-pointing arrow */
-    font-size: 1.1rem;
-    margin-right: 4px;
+    content: "→";
     display: inline-block;
+    font-size: 1.1rem;
+    margin-right: 8px; /* For RTL spacing */
     transition: transform 0.2s ease;
+}
+
+/* Hover effects for arrows */
+.modal-footer .btn-next:hover::after {
+    transform: translateX(-3px);
+}
+
+.modal-footer .btn-prev:hover::before {
+    transform: translateX(3px);
 }
 
 .modal-footer .btn-primary::after {
