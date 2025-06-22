@@ -4718,12 +4718,8 @@ function addAdditionalCoverageFormListeners() {
                     clearAdditionalCoverageFormError(field);
                 }
                 
-                // Add success state for non-empty fields
-                if (field.value.trim() !== '') {
-                    field.parentNode.classList.add('success-state');
-                } else {
-                    field.parentNode.classList.remove('success-state');
-                }
+                // Remove success state classes for additional coverage fields
+                field.parentNode.classList.remove('success-state');
             });
         });
     });

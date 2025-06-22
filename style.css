@@ -4029,17 +4029,7 @@ input:disabled {
     position: relative;
 }
 
-.building-form-group.success-state::after {
-    content: '✓';
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--primary-green);
-    font-weight: bold;
-    font-size: 1.1rem;
-    pointer-events: none;
-}
+/* Removed automatic success checkmark for additional coverage fields */
 
 .building-form-group.error-state {
     animation: shake 0.5s ease-in-out;
