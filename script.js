@@ -290,33 +290,45 @@ window.HomeInsuranceApp.sendVerificationCode = async function() {
     sendBtn.querySelector('.btn-text').style.display = 'none';
     sendBtn.querySelector('.btn-loader').style.display = 'inline-block';
     
-    // Generate random 6-digit code
-    verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // In production, you would send SMS here
-    console.log('Verification code:', verificationCode);
-    
-    // Show code section
-    document.getElementById('phone-section').style.display = 'none';
-    document.getElementById('code-section').style.display = 'block';
-    document.getElementById('phone-display').textContent = phoneNumber;
-    
-    // Reset button state
-    sendBtn.disabled = false;
-    sendBtn.querySelector('.btn-text').style.display = 'inline';
-    sendBtn.querySelector('.btn-loader').style.display = 'none';
-    
-    // Start resend timer
-    startResendTimer();
-    
-    // Focus first code input
-    document.querySelector('.code-digit').focus();
-    
-    // Setup code inputs
-    setupCodeInputs();
+    try {
+        // Call backend API
+        const response = await fetch('http://localhost:3000/api/send-verification', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ phoneNumber })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to send verification code');
+        }
+        
+        // Show code section
+        document.getElementById('phone-section').style.display = 'none';
+        document.getElementById('code-section').style.display = 'block';
+        document.getElementById('phone-display').textContent = phoneNumber;
+        
+        // Start resend timer
+        startResendTimer();
+        
+        // Focus first code input
+        document.querySelector('.code-digit').focus();
+        
+        // Setup code inputs
+        setupCodeInputs();
+        
+    } catch (error) {
+        console.error('Error sending verification code:', error);
+        alert('שגיאה בשליחת קוד אימות. אנא נסה שוב.');
+    } finally {
+        // Reset button state
+        sendBtn.disabled = false;
+        sendBtn.querySelector('.btn-text').style.display = 'inline';
+        sendBtn.querySelector('.btn-loader').style.display = 'none';
+    }
 };
 
 /**
@@ -376,23 +388,50 @@ function setupCodeInputs() {
 /**
  * Verify entered code
  */
-function verifyCode(enteredCode) {
+async function verifyCode(enteredCode) {
     const codeInputs = document.querySelectorAll('.code-digit');
     
-    if (enteredCode === verificationCode) {
-        // Success!
-        codeInputs.forEach(input => input.classList.add('filled'));
+    try {
+        // Call backend API
+        const response = await fetch('http://localhost:3000/api/verify-code', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                phoneNumber,
+                code: enteredCode 
+            })
+        });
         
-        // Show success section
-        setTimeout(() => {
-            document.getElementById('code-section').style.display = 'none';
-            document.getElementById('success-section').style.display = 'block';
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            // Store token for form submission
+            window.authToken = data.token;
             
-            // Submit form data
-            submitFinalForm();
-        }, 500);
-    } else {
-        // Error
+            // Success!
+            codeInputs.forEach(input => input.classList.add('filled'));
+            
+            // Show success section
+            setTimeout(() => {
+                document.getElementById('code-section').style.display = 'none';
+                document.getElementById('success-section').style.display = 'block';
+                
+                // Submit form data
+                submitFinalForm();
+            }, 500);
+        } else {
+            // Error
+            codeInputs.forEach(input => input.classList.add('error'));
+            document.getElementById('verification-error').style.display = 'flex';
+            
+            if (response.status === 429) {
+                document.querySelector('.error-text').textContent = 'יותר מדי ניסיונות. אנא בקש קוד חדש.';
+            }
+        }
+    } catch (error) {
+        console.error('Error verifying code:', error);
         codeInputs.forEach(input => input.classList.add('error'));
         document.getElementById('verification-error').style.display = 'flex';
     }
@@ -429,52 +468,88 @@ function startResendTimer() {
 /**
  * Resend verification code
  */
-window.HomeInsuranceApp.resendCode = function() {
-    // Generate new code
-    verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log('New verification code:', verificationCode);
-    
-    // Clear inputs
-    document.querySelectorAll('.code-digit').forEach(input => {
-        input.value = '';
-        input.classList.remove('error', 'filled');
-    });
-    
-    // Hide error
-    document.getElementById('verification-error').style.display = 'none';
-    
-    // Start timer again
-    startResendTimer();
-    
-    // Focus first input
-    document.querySelector('.code-digit').focus();
+window.HomeInsuranceApp.resendCode = async function() {
+    try {
+        // Call backend API
+        const response = await fetch('http://localhost:3000/api/send-verification', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ phoneNumber })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to send verification code');
+        }
+        
+        // Clear inputs
+        document.querySelectorAll('.code-digit').forEach(input => {
+            input.value = '';
+            input.classList.remove('error', 'filled');
+        });
+        
+        // Hide error
+        document.getElementById('verification-error').style.display = 'none';
+        
+        // Start timer again
+        startResendTimer();
+        
+        // Focus first input
+        document.querySelector('.code-digit').focus();
+        
+    } catch (error) {
+        console.error('Error resending code:', error);
+        alert('שגיאה בשליחת קוד חדש. אנא נסה שוב.');
+    }
 };
 
 /**
  * Submit final form with all collected data
  */
 async function submitFinalForm() {
-    // Collect all form data
-    const formData = collectAllFormData();
-    
-    // Add phone number
-    formData.phoneNumber = phoneNumber;
-    
-    // Format email content
-    const emailContent = formatEmailContent(formData);
-    
-    // In production, you would send this to your backend
-    console.log('Sending email to royadmon23@gmail.com');
-    console.log('Email content:', emailContent);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Show final success message
-    const submitBtn = document.querySelector('.btn-submit-final');
-    if (submitBtn) {
-        submitBtn.textContent = 'הפרטים נשלחו בהצלחה!';
-        submitBtn.disabled = true;
+    try {
+        // Collect all form data
+        const formData = collectAllFormData();
+        
+        // Add phone number
+        formData.phoneNumber = phoneNumber;
+        
+        // Send to backend
+        const response = await fetch('http://localhost:3000/api/submit-form', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${window.authToken}`
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to submit form');
+        }
+        
+        // Store form ID for tracking
+        if (data.formId) {
+            localStorage.setItem('lastFormId', data.formId);
+        }
+        
+        // Show final success message
+        const submitBtn = document.querySelector('.btn-submit-final');
+        if (submitBtn) {
+            submitBtn.textContent = 'הפרטים נשלחו בהצלחה!';
+            submitBtn.disabled = true;
+        }
+        
+        console.log('Form submitted successfully:', data);
+        
+    } catch (error) {
+        console.error('Error submitting form:', error);
+        alert('שגיאה בשליחת הטופס. אנא נסה שוב מאוחר יותר.');
     }
 }
 
