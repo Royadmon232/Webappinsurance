@@ -295,12 +295,164 @@
                     <!-- Step 2: מבנה -->
                     <section id="step-cover-structure" class="wizard-step">
                         <div class="modal-body-grid modal-centered">
-                            <div class="modal-sections-container">
-                                <h3>מבנה</h3>
-                                <div class="product-sections">
-                                    <div class="section-item" data-section="מבנה">
-                                        <input type="checkbox" id="section-structure" name="sections[]" value="מבנה">
-                                        <label for="section-structure">מבנה</label>
+                            <div class="building-sections-container">
+                                <h2 class="building-main-title">מבנה</h2>
+                                
+                                <!-- Section 1: מבנה -->
+                                <div class="building-section">
+                                    <h3 class="building-section-title">מבנה</h3>
+                                    <div class="building-section-form">
+                                        <div class="building-form-grid">
+                                            <div class="building-form-group">
+                                                <label for="insurance-amount" data-required="*">סכום ביטוח מבנה (₪)</label>
+                                                <input type="number" id="insurance-amount" name="insurance-amount" min="0" step="1000" placeholder="הכנס סכום ביטוח" required>
+                                            </div>
+                                            
+                                            <div class="building-form-group">
+                                                <label for="building-age" data-required="*">גיל המבנה</label>
+                                                <input type="number" id="building-age" name="building-age" min="0" max="200" placeholder="הכנס גיל המבנה" required>
+                                            </div>
+                                            
+                                            <div class="building-form-group">
+                                                <label for="building-area" data-required="*">שטח מבנה (מ״ר)</label>
+                                                <input type="number" id="building-area" name="building-area" min="0" step="0.1" placeholder="הכנס שטח המבנה" required>
+                                            </div>
+                                            
+                                            <div class="building-form-group">
+                                                <label for="construction-type" data-required="*">סוג בניה</label>
+                                                <select id="construction-type" name="construction-type" required>
+                                                    <option value="">בחר סוג בניה</option>
+                                                    <option value="בלוקים ובטון">בלוקים ובטון</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="building-form-group">
+                                                <label for="construction-standard" data-required="*">סטנדרט בניה</label>
+                                                <select id="construction-standard" name="construction-standard" required>
+                                                    <option value="">בחר סטנדרט בניה</option>
+                                                    <option value="רגיל">רגיל</option>
+                                                    <option value="גבוה">גבוה</option>
+                                                    <option value="גבוה מאד">גבוה מאד</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="building-form-group building-checkbox-group">
+                                                <div class="building-checkbox-wrapper">
+                                                    <input type="checkbox" id="mortgaged-property" name="mortgaged-property" value="משועבד/מוטב">
+                                                    <label for="mortgaged-property">משועבד/מוטב</label>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="building-form-group" id="renewals-group" style="display: none;">
+                                                <label for="renewals" data-required="*">חידושים</label>
+                                                <select id="renewals" name="renewals">
+                                                    <option value="">בחר סוג חידוש</option>
+                                                    <option value="אין חידושים אוטומטיים">אין חידושים אוטומטיים</option>
+                                                    <option value="חידוש אוטומטי בהסכמת המבוטח">חידוש אוטומטי בהסכמת המבוטח</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Section 2: כיסויים נוספים למבנה -->
+                                <div class="building-section">
+                                    <h3 class="building-section-title">כיסויים נוספים למבנה</h3>
+                                    <div class="building-section-form">
+                                        <div class="building-form-grid">
+                                            <div class="building-form-group">
+                                                <label for="water-damage-type" data-required="*">נזקי מים</label>
+                                                <select id="water-damage-type" name="water-damage-type" required>
+                                                    <option value="">בחר סוג כיסוי נזקי מים</option>
+                                                    <option value="ללא נזקי מים">ללא נזקי מים</option>
+                                                    <option value="שרברב שבהסדר">שרברב שבהסדר</option>
+                                                    <option value="שרברב פרטי">שרברב פרטי</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="building-form-group" id="water-deductible-group" style="display: none;">
+                                                <label for="water-deductible" data-required="*">השתתפות עצמית לנזקי מים</label>
+                                                <select id="water-deductible" name="water-deductible">
+                                                    <option value="">בחר השתתפות עצמית</option>
+                                                    <option value="600 ש״ח">600 ש״ח</option>
+                                                    <option value="850 ש״ח">850 ש״ח</option>
+                                                    <option value="1750 ש״ח">1750 ש״ח</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="building-form-group" id="mortgage-water-damage-group" style="display: none;">
+                                                <label for="mortgage-water-damage" data-required="*">נזקי מים משכנתא</label>
+                                                <select id="mortgage-water-damage" name="mortgage-water-damage" disabled>
+                                                    <option value="השתתפות עצמית 850 ש״ח - שרברב שבהסדר" selected>השתתפות עצמית 850 ש״ח - שרברב שבהסדר</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="building-form-group building-checkbox-group">
+                                                <div class="building-checkbox-wrapper">
+                                                    <input type="checkbox" id="burglary-building" name="burglary-building" value="פריצה (מבנה)">
+                                                    <label for="burglary-building">פריצה (מבנה)</label>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="building-form-group">
+                                                <label for="earthquake-coverage" data-required="*">רעידת אדמה</label>
+                                                <select id="earthquake-coverage" name="earthquake-coverage" required>
+                                                    <option value="">בחר כיסוי רעידת אדמה</option>
+                                                    <option value="לא">לא</option>
+                                                    <option value="כן">כן</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="building-form-group" id="earthquake-deductible-group" style="display: none;">
+                                                <label for="earthquake-deductible" data-required="*">השתתפות עצמית רעידת אדמה (מבנה)</label>
+                                                <select id="earthquake-deductible" name="earthquake-deductible">
+                                                    <option value="">בחר השתתפות עצמית</option>
+                                                    <option value="2%">2%</option>
+                                                    <option value="4.2%">4.2%</option>
+                                                    <option value="10%">10%</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="building-form-group">
+                                                <label for="additional-shared-insurance">סכום ביטוח נוסף בבית משותף (₪)</label>
+                                                <input type="number" id="additional-shared-insurance" name="additional-shared-insurance" min="0" step="1000" placeholder="הכנס סכום ביטוח נוסף">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Section 3: הרחבות נוספות למבנה -->
+                                <div class="building-section">
+                                    <h3 class="building-section-title">הרחבות נוספות למבנה</h3>
+                                    <div class="building-section-form">
+                                        <div class="building-form-grid">
+                                            <div class="building-form-group">
+                                                <label for="building-contents-insurance">כהס מבנה (₪)</label>
+                                                <input type="number" id="building-contents-insurance" name="building-contents-insurance" min="0" step="1000" placeholder="הכנס סכום כהס מבנה">
+                                            </div>
+                                            
+                                            <div class="building-form-group" id="storage-group" style="display: none;">
+                                                <label for="storage-insurance">מחסן (₪)</label>
+                                                <input type="number" id="storage-insurance" name="storage-insurance" min="0" step="1000" placeholder="הכנס סכום מחסן">
+                                            </div>
+                                            
+                                            <div class="building-form-group">
+                                                <label for="swimming-pool-insurance">בריכת שחיה</label>
+                                                <input type="number" id="swimming-pool-insurance" name="swimming-pool-insurance" min="0" step="1000" placeholder="הכנס סכום בריכת שחיה">
+                                            </div>
+                                            
+                                            <div class="building-form-group">
+                                                <label for="glass-breakage-insurance">שבר שמשות</label>
+                                                <input type="number" id="glass-breakage-insurance" name="glass-breakage-insurance" min="0" step="1000" placeholder="הכנס סכום שבר שמשות">
+                                            </div>
+                                            
+                                            <div class="building-form-group building-checkbox-group" id="boilers-group">
+                                                <div class="building-checkbox-wrapper">
+                                                    <input type="checkbox" id="boilers-coverage" name="boilers-coverage" value="דוודים">
+                                                    <label for="boilers-coverage">דוודים</label>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -24,6 +24,21 @@ document.addEventListener('DOMContentLoaded', function() {
             addFormInputListeners();
             setupModalCloseHandlers();
             
+            // Initialize building fields based on current product type
+            const productType = document.getElementById('productType');
+            const propertyType = document.getElementById('propertyType');
+            if (productType && productType.value) {
+                updateBuildingFields(productType.value);
+                updateAdditionalCoverages(productType.value);
+                updateBuildingExtensionsForProduct(productType.value);
+            }
+            if (propertyType && propertyType.value) {
+                updateBuildingExtensions(propertyType.value);
+            }
+            
+            // Log initialization summary
+            logInitializationSummary();
+            
             // Initialize wizard
             initStepWizard();
             
@@ -982,6 +997,15 @@ function initializeConditionalFields() {
             
             // Update product sections based on selection
             updateProductSections(selectedValue);
+            
+            // Update building section fields based on selection
+            updateBuildingFields(selectedValue);
+            
+            // Update additional coverages section based on selection
+            updateAdditionalCoverages(selectedValue);
+            
+            // Update building extensions section based on selection
+            updateBuildingExtensionsForProduct(selectedValue);
         });
     }
     
@@ -1002,6 +1026,30 @@ function initializeConditionalFields() {
                     floorCountSelect.required = true; // <-- תיקון נוסף לעקביות
                 }
             }
+        });
+    }
+    
+    // Additional Coverages conditional fields
+    const waterDamageSelect = document.getElementById('water-damage-type');
+    const earthquakeSelect = document.getElementById('earthquake-coverage');
+    
+    if (waterDamageSelect) {
+        waterDamageSelect.addEventListener('change', function() {
+            updateWaterDamageFields(this.value);
+        });
+    }
+    
+    if (earthquakeSelect) {
+        earthquakeSelect.addEventListener('change', function() {
+            updateEarthquakeFields(this.value);
+        });
+    }
+    
+    // Add property type handler for building extensions (avoid duplicate handlers)
+    if (propertyTypeSelect && !propertyTypeSelect.hasAttribute('data-extensions-handler')) {
+        propertyTypeSelect.setAttribute('data-extensions-handler', 'true');
+        propertyTypeSelect.addEventListener('change', function() {
+            updateBuildingExtensions(this.value);
         });
     }
 }
@@ -1066,6 +1114,288 @@ function updateProductSections(productType) {
 }
 
 /**
+ * Update building section fields based on product type selection
+ * @param {string} productType - The selected product type
+ */
+function updateBuildingFields(productType) {
+    const buildingAgeField = document.getElementById('building-age');
+    const buildingAgeGroup = buildingAgeField ? buildingAgeField.closest('.building-form-group') : null;
+    const mortgagedCheckbox = document.getElementById('mortgaged-property');
+    const renewalsGroup = document.getElementById('renewals-group');
+    const renewalsSelect = document.getElementById('renewals');
+    
+    if (productType === 'מבנה בלבד משועבד') {
+        // Hide building age field
+        if (buildingAgeGroup) {
+            buildingAgeGroup.style.display = 'none';
+            if (buildingAgeField) {
+                buildingAgeField.required = false;
+                buildingAgeField.value = '';
+            }
+        }
+        
+        // Automatically check and disable mortgaged checkbox
+        if (mortgagedCheckbox) {
+            mortgagedCheckbox.checked = true;
+            mortgagedCheckbox.disabled = true;
+            
+            // Update the visual state of the wrapper
+            const wrapper = mortgagedCheckbox.closest('.building-checkbox-wrapper');
+            if (wrapper) {
+                wrapper.style.opacity = '0.7';
+                wrapper.style.cursor = 'not-allowed';
+            }
+        }
+        
+        // Show renewals dropdown
+        if (renewalsGroup) {
+            renewalsGroup.style.display = 'block';
+            if (renewalsSelect) {
+                renewalsSelect.required = true;
+            }
+        }
+    } else {
+        // Show building age field
+        if (buildingAgeGroup) {
+            buildingAgeGroup.style.display = 'block';
+            if (buildingAgeField) {
+                buildingAgeField.required = true;
+            }
+        }
+        
+        // Enable mortgaged checkbox
+        if (mortgagedCheckbox) {
+            mortgagedCheckbox.disabled = false;
+            mortgagedCheckbox.checked = false;
+            
+            // Restore the visual state of the wrapper
+            const wrapper = mortgagedCheckbox.closest('.building-checkbox-wrapper');
+            if (wrapper) {
+                wrapper.style.opacity = '';
+                wrapper.style.cursor = '';
+            }
+        }
+        
+        // Hide renewals dropdown
+        if (renewalsGroup) {
+            renewalsGroup.style.display = 'none';
+            if (renewalsSelect) {
+                renewalsSelect.required = false;
+                renewalsSelect.value = '';
+            }
+        }
+    }
+}
+
+/**
+ * Update additional coverages fields based on product type selection
+ * @param {string} productType - The selected product type
+ */
+function updateAdditionalCoverages(productType) {
+    const waterDamageSelect = document.getElementById('water-damage-type');
+    const burglaryCheckbox = document.getElementById('burglary-building');
+    const earthquakeSelect = document.getElementById('earthquake-coverage');
+    const waterDeductibleGroup = document.getElementById('water-deductible-group');
+    const mortgageWaterDamageGroup = document.getElementById('mortgage-water-damage-group');
+    const mortgageWaterDamageSelect = document.getElementById('mortgage-water-damage');
+    
+    if (productType === 'מבנה בלבד משועבד') {
+        // Auto-select and disable water damage dropdown
+        if (waterDamageSelect) {
+            waterDamageSelect.value = 'שרברב שבהסדר';
+            waterDamageSelect.disabled = true;
+        }
+        
+        // Hide regular water deductible field
+        if (waterDeductibleGroup) {
+            waterDeductibleGroup.style.display = 'none';
+            const waterDeductibleSelect = document.getElementById('water-deductible');
+            if (waterDeductibleSelect) {
+                waterDeductibleSelect.required = false;
+                waterDeductibleSelect.value = '';
+            }
+        }
+        
+        // Show and auto-select mortgage water damage dropdown
+        if (mortgageWaterDamageGroup) {
+            mortgageWaterDamageGroup.style.display = 'block';
+            if (mortgageWaterDamageSelect) {
+                mortgageWaterDamageSelect.value = 'השתתפות עצמית 850 ש״ח - שרברב שבהסדר';
+                mortgageWaterDamageSelect.required = true;
+                mortgageWaterDamageSelect.disabled = true;
+            }
+        }
+        
+        // Auto-check and disable burglary checkbox
+        if (burglaryCheckbox) {
+            burglaryCheckbox.checked = true;
+            burglaryCheckbox.disabled = true;
+            
+            // Update visual state
+            const wrapper = burglaryCheckbox.closest('.building-checkbox-wrapper');
+            if (wrapper) {
+                wrapper.style.opacity = '0.7';
+                wrapper.style.cursor = 'not-allowed';
+            }
+        }
+        
+        // Auto-select and disable earthquake dropdown
+        if (earthquakeSelect) {
+            earthquakeSelect.value = 'כן';
+            earthquakeSelect.disabled = true;
+            
+            // Show earthquake deductible field
+            updateEarthquakeFields('כן');
+        }
+    } else {
+        // Enable water damage dropdown
+        if (waterDamageSelect) {
+            waterDamageSelect.disabled = false;
+            waterDamageSelect.value = '';
+            
+            // Update water damage fields based on current selection
+            updateWaterDamageFields(waterDamageSelect.value);
+        }
+        
+        // Hide mortgage water damage dropdown
+        if (mortgageWaterDamageGroup) {
+            mortgageWaterDamageGroup.style.display = 'none';
+            if (mortgageWaterDamageSelect) {
+                mortgageWaterDamageSelect.required = false;
+                mortgageWaterDamageSelect.value = '';
+            }
+        }
+        
+        // Enable burglary checkbox
+        if (burglaryCheckbox) {
+            burglaryCheckbox.disabled = false;
+            burglaryCheckbox.checked = false;
+            
+            // Restore visual state
+            const wrapper = burglaryCheckbox.closest('.building-checkbox-wrapper');
+            if (wrapper) {
+                wrapper.style.opacity = '';
+                wrapper.style.cursor = '';
+            }
+        }
+        
+        // Enable earthquake dropdown
+        if (earthquakeSelect) {
+            earthquakeSelect.disabled = false;
+            earthquakeSelect.value = '';
+            
+            // Update earthquake fields based on current selection
+            updateEarthquakeFields(earthquakeSelect.value);
+        }
+    }
+}
+
+/**
+ * Update water damage related fields based on selection
+ * @param {string} waterDamageType - The selected water damage type
+ */
+function updateWaterDamageFields(waterDamageType) {
+    const waterDeductibleGroup = document.getElementById('water-deductible-group');
+    const waterDeductibleSelect = document.getElementById('water-deductible');
+    
+    if (waterDamageType === 'ללא נזקי מים' || !waterDamageType) {
+        // Hide water deductible field
+        if (waterDeductibleGroup) {
+            waterDeductibleGroup.style.display = 'none';
+            if (waterDeductibleSelect) {
+                waterDeductibleSelect.required = false;
+                waterDeductibleSelect.value = '';
+            }
+        }
+    } else {
+        // Show water deductible field
+        if (waterDeductibleGroup) {
+            waterDeductibleGroup.style.display = 'block';
+            if (waterDeductibleSelect) {
+                waterDeductibleSelect.required = true;
+            }
+        }
+    }
+}
+
+/**
+ * Update earthquake related fields based on selection
+ * @param {string} earthquakeCoverage - The selected earthquake coverage
+ */
+function updateEarthquakeFields(earthquakeCoverage) {
+    const earthquakeDeductibleGroup = document.getElementById('earthquake-deductible-group');
+    const earthquakeDeductibleSelect = document.getElementById('earthquake-deductible');
+    
+    if (earthquakeCoverage === 'כן') {
+        // Show earthquake deductible field
+        if (earthquakeDeductibleGroup) {
+            earthquakeDeductibleGroup.style.display = 'block';
+            if (earthquakeDeductibleSelect) {
+                earthquakeDeductibleSelect.required = true;
+            }
+        }
+    } else {
+        // Hide earthquake deductible field
+        if (earthquakeDeductibleGroup) {
+            earthquakeDeductibleGroup.style.display = 'none';
+            if (earthquakeDeductibleSelect) {
+                earthquakeDeductibleSelect.required = false;
+                earthquakeDeductibleSelect.value = '';
+            }
+        }
+    }
+}
+
+/**
+ * Update building extensions fields based on property type selection
+ * @param {string} propertyType - The selected property type
+ */
+function updateBuildingExtensions(propertyType) {
+    const storageGroup = document.getElementById('storage-group');
+    const storageInput = document.getElementById('storage-insurance');
+    
+    if (propertyType === 'פרטי') {
+        // Show storage field for private properties
+        if (storageGroup) {
+            storageGroup.style.display = 'block';
+        }
+    } else {
+        // Hide storage field for non-private properties
+        if (storageGroup) {
+            storageGroup.style.display = 'none';
+            if (storageInput) {
+                storageInput.value = '';
+            }
+        }
+    }
+}
+
+/**
+ * Update building extensions fields based on product type selection
+ * @param {string} productType - The selected product type
+ */
+function updateBuildingExtensionsForProduct(productType) {
+    const boilersGroup = document.getElementById('boilers-group');
+    const boilersCheckbox = document.getElementById('boilers-coverage');
+    
+    if (productType === 'מבנה בלבד משועבד') {
+        // Hide boilers checkbox completely
+        if (boilersGroup) {
+            boilersGroup.style.display = 'none';
+            if (boilersCheckbox) {
+                boilersCheckbox.checked = false;
+                boilersCheckbox.value = '';
+            }
+        }
+    } else {
+        // Show boilers checkbox
+        if (boilersGroup) {
+            boilersGroup.style.display = 'block';
+        }
+    }
+}
+
+/**
  * Disable a product section
  * @param {HTMLElement} section - The section element to disable
  */
@@ -1122,8 +1452,15 @@ function initializeProductSections() {
     
     // Initialize based on current product type selection
     const productTypeSelect = document.getElementById('productType');
+    const propertyTypeSelect = document.getElementById('propertyType');
     if (productTypeSelect && productTypeSelect.value) {
         updateProductSections(productTypeSelect.value);
+        updateBuildingFields(productTypeSelect.value);
+        updateAdditionalCoverages(productTypeSelect.value);
+        updateBuildingExtensionsForProduct(productTypeSelect.value);
+    }
+    if (propertyTypeSelect && propertyTypeSelect.value) {
+        updateBuildingExtensions(propertyTypeSelect.value);
     }
 }
 
@@ -3239,3 +3576,186 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+/**
+ * Comprehensive test function to validate all conditional logic
+ * This function can be called from browser console for testing
+ */
+function testConditionalLogic() {
+    console.log('=== Testing Conditional Logic ===');
+    
+    const productTypeSelect = document.getElementById('productType');
+    const propertyTypeSelect = document.getElementById('propertyType');
+    
+    if (!productTypeSelect || !propertyTypeSelect) {
+        console.error('Cannot find required select elements');
+        return;
+    }
+    
+    // Test מבנה בלבד משועבד
+    console.log('\n--- Testing מבנה בלבד משועבד ---');
+    productTypeSelect.value = 'מבנה בלבד משועבד';
+    productTypeSelect.dispatchEvent(new Event('change'));
+    
+    setTimeout(() => {
+        const tests = [
+            // Building section tests
+            { 
+                element: document.getElementById('building-age').closest('.building-form-group'), 
+                expected: 'none',
+                description: 'Building age field should be hidden'
+            },
+            { 
+                element: document.getElementById('mortgaged-property'), 
+                expected: true,
+                property: 'checked',
+                description: 'Mortgaged checkbox should be checked'
+            },
+            { 
+                element: document.getElementById('mortgaged-property'), 
+                expected: true,
+                property: 'disabled',
+                description: 'Mortgaged checkbox should be disabled'
+            },
+            { 
+                element: document.getElementById('renewals-group'), 
+                expected: 'block',
+                description: 'Renewals dropdown should be visible'
+            },
+            
+            // Additional coverages tests
+            { 
+                element: document.getElementById('water-damage-type'), 
+                expected: 'שרברב שבהסדר',
+                property: 'value',
+                description: 'Water damage should be auto-selected'
+            },
+            { 
+                element: document.getElementById('water-damage-type'), 
+                expected: true,
+                property: 'disabled',
+                description: 'Water damage dropdown should be disabled'
+            },
+            { 
+                element: document.getElementById('water-deductible-group'), 
+                expected: 'none',
+                description: 'Water deductible field should be hidden'
+            },
+            { 
+                element: document.getElementById('mortgage-water-damage-group'), 
+                expected: 'block',
+                description: 'Mortgage water damage field should be visible'
+            },
+            { 
+                element: document.getElementById('mortgage-water-damage'), 
+                expected: true,
+                property: 'disabled',
+                description: 'Mortgage water damage should be disabled'
+            },
+            { 
+                element: document.getElementById('burglary-building'), 
+                expected: true,
+                property: 'checked',
+                description: 'Burglary checkbox should be checked'
+            },
+            { 
+                element: document.getElementById('burglary-building'), 
+                expected: true,
+                property: 'disabled',
+                description: 'Burglary checkbox should be disabled'
+            },
+            { 
+                element: document.getElementById('earthquake-coverage'), 
+                expected: 'כן',
+                property: 'value',
+                description: 'Earthquake coverage should be auto-selected'
+            },
+            { 
+                element: document.getElementById('earthquake-coverage'), 
+                expected: true,
+                property: 'disabled',
+                description: 'Earthquake dropdown should be disabled'
+            },
+            
+            // Building extensions tests
+            { 
+                element: document.getElementById('boilers-group'), 
+                expected: 'none',
+                description: 'Boilers checkbox should be completely hidden'
+            }
+        ];
+        
+        let passed = 0;
+        let failed = 0;
+        
+        tests.forEach(test => {
+            if (!test.element) {
+                console.error(`❌ ${test.description}: Element not found`);
+                failed++;
+                return;
+            }
+            
+            let actual;
+            if (test.property) {
+                actual = test.element[test.property];
+            } else {
+                actual = window.getComputedStyle(test.element).display;
+            }
+            
+            if (actual === test.expected) {
+                console.log(`✅ ${test.description}: PASS`);
+                passed++;
+            } else {
+                console.error(`❌ ${test.description}: FAIL - Expected: ${test.expected}, Actual: ${actual}`);
+                failed++;
+            }
+        });
+        
+        console.log(`\n--- Test Results ---`);
+        console.log(`✅ Passed: ${passed}`);
+        console.log(`❌ Failed: ${failed}`);
+        console.log(`Total: ${passed + failed}`);
+        
+        if (failed === 0) {
+            console.log('🎉 All tests passed!');
+        } else {
+            console.log('⚠️ Some tests failed. Please check the implementation.');
+        }
+    }, 500); // Wait for all updates to complete
+}
+
+// Make test function available globally for console access
+window.testConditionalLogic = testConditionalLogic;
+
+/**
+ * Log initialization summary to console
+ */
+function logInitializationSummary() {
+    const productType = document.getElementById('productType')?.value || 'None';
+    const propertyType = document.getElementById('propertyType')?.value || 'None';
+    
+    console.log('=== Building Form Initialization Summary ===');
+    console.log(`Product Type: ${productType}`);
+    console.log(`Property Type: ${propertyType}`);
+    
+    if (productType === 'מבנה בלבד משועבד') {
+        console.log('🔒 Special conditions active for "מבנה בלבד משועבד":');
+        console.log('  - Building age field: HIDDEN');
+        console.log('  - Mortgaged checkbox: AUTO-CHECKED & DISABLED');
+        console.log('  - Renewals dropdown: VISIBLE');
+        console.log('  - Water damage: AUTO-SELECTED & DISABLED');
+        console.log('  - Regular water deductible: HIDDEN');
+        console.log('  - Mortgage water damage: VISIBLE & DISABLED');
+        console.log('  - Burglary checkbox: AUTO-CHECKED & DISABLED');
+        console.log('  - Earthquake coverage: AUTO-SELECTED & DISABLED');
+        console.log('  - Boilers checkbox: COMPLETELY HIDDEN');
+    }
+    
+    if (propertyType === 'פרטי') {
+        console.log('🏠 Storage field visible for private property');
+    } else if (propertyType && propertyType !== 'פרטי') {
+        console.log('🏢 Storage field hidden for non-private property');
+    }
+    
+    console.log('Use window.testConditionalLogic() to run comprehensive tests');
+}
