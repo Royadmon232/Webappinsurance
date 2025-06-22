@@ -96,10 +96,7 @@ function buildWizardSteps() {
     const coverSteps = [
         { id: 'step-cover-structure', name: 'מבנה' },
         { id: 'step-cover-contents', name: 'תכולה' },
-        { id: 'step-cover-business', name: 'פעילות עסקית' },
-        { id: 'step-cover-third-party', name: 'צד שלישי' },
-        { id: 'step-cover-cyber', name: 'סייבר למשפחה' },
-        { id: 'step-cover-terror', name: 'טרור' }
+        { id: 'step-cover-additional', name: 'כיסויים נוספים' }
     ];
     
     // Add steps based on product type rules
@@ -107,25 +104,19 @@ function buildWizardSteps() {
         case 'מבנה בלבד':
             // Skip תכולה
             wizardSteps.push('step-cover-structure');
-            wizardSteps.push('step-cover-business');
-            wizardSteps.push('step-cover-third-party');
-            wizardSteps.push('step-cover-cyber');
-            wizardSteps.push('step-cover-terror');
+            wizardSteps.push('step-cover-additional');
             break;
             
         case 'תכולה בלבד':
             // Skip מבנה
             wizardSteps.push('step-cover-contents');
-            wizardSteps.push('step-cover-business');
-            wizardSteps.push('step-cover-third-party');
-            wizardSteps.push('step-cover-cyber');
-            wizardSteps.push('step-cover-terror');
+            wizardSteps.push('step-cover-additional');
             break;
             
         case 'מבנה בלבד משועבד':
-            // Only מבנה and צד שלישי
+            // Only מבנה and כיסויים נוספים
             wizardSteps.push('step-cover-structure');
-            wizardSteps.push('step-cover-third-party');
+            wizardSteps.push('step-cover-additional');
             break;
             
         default:
@@ -186,25 +177,25 @@ function updateWizardNavigation() {
  * Navigate to next wizard step
  */
 function wizardNext() {
-                // If on general details step, validate form first
-            if (currentWizardStep === 0) {
-                const form = document.getElementById('generalDetailsForm');
-                if (form) {
-                    // Clear all previous errors
-                    clearFormErrors();
-                    
-                    // Perform custom validation
-                    const isValid = validateGeneralDetailsForm();
-                    
-                    if (!isValid || !form.checkValidity()) {
-                        form.reportValidity();
-                        return;
-                    }
-                    
-                    // Rebuild steps based on selected product type
-                    buildWizardSteps();
-                }
+    // If on general details step, validate form first
+    if (currentWizardStep === 0) {
+        const form = document.getElementById('generalDetailsForm');
+        if (form) {
+            // Clear all previous errors
+            clearFormErrors();
+            
+            // Perform custom validation
+            const isValid = validateGeneralDetailsForm();
+            
+            if (!isValid || !form.checkValidity()) {
+                form.reportValidity();
+                return;
             }
+            
+            // Rebuild steps based on selected product type
+            buildWizardSteps();
+        }
+    }
             
             // If on building section step, validate building fields
             if (wizardSteps[currentWizardStep] === 'step-cover-structure') {
@@ -226,6 +217,19 @@ function wizardNext() {
                 
                 // Perform contents section validation
                 const isValid = validateContentsSection();
+                
+                if (!isValid) {
+                    return;
+                }
+            }
+            
+            // If on additional coverage section step, validate additional fields
+            if (wizardSteps[currentWizardStep] === 'step-cover-additional') {
+                // Clear all previous errors
+                clearAdditionalCoverageFormErrors();
+                
+                // Perform additional coverage section validation
+                const isValid = validateAdditionalCoverageSection();
                 
                 if (!isValid) {
                     return;
@@ -4456,6 +4460,7 @@ document.addEventListener('DOMContentLoaded', function() {
             initializeProductSections();
             addFormInputListeners();
             setupModalCloseHandlers();
+            addAdditionalCoverageFormListeners();
             
             // Set min date
             const startDateInput = document.getElementById('startDate');
@@ -4629,4 +4634,99 @@ function initializeScrollAnimations() {
         element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
         observer.observe(element);
     });
+}
+
+// Additional Coverage Section Functions
+function validateAdditionalCoverageSection() {
+    let isValid = true;
+    
+    // No mandatory fields in additional coverage section - all are optional
+    console.log('Additional coverage section validation passed');
+    
+    return isValid;
+}
+
+function showAdditionalCoverageFormError(field, message) {
+    // Remove any existing error
+    clearAdditionalCoverageFormError(field);
+    
+    // Add error class to field
+    field.classList.add('error');
+    field.setAttribute('aria-describedby', field.id + '-error');
+    
+    // Create and add error message
+    const errorElement = document.createElement('div');
+    errorElement.className = 'form-error-message';
+    errorElement.id = field.id + '-error';
+    errorElement.textContent = message;
+    errorElement.setAttribute('role', 'alert');
+    
+    // Insert error message after the field
+    field.parentNode.insertBefore(errorElement, field.nextSibling);
+    
+    // Add validation state classes for visual feedback
+    field.parentNode.classList.add('error-state');
+    field.parentNode.classList.remove('success-state');
+    
+    // Focus the field
+    field.focus();
+    
+    // Scroll to field if needed
+    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function clearAdditionalCoverageFormError(field) {
+    // Remove error class and attributes
+    field.classList.remove('error');
+    field.removeAttribute('aria-describedby');
+    
+    // Remove error message
+    const errorMessage = document.getElementById(field.id + '-error');
+    if (errorMessage) {
+        errorMessage.remove();
+    }
+    
+    // Remove validation state classes
+    field.parentNode.classList.remove('error-state');
+}
+
+function clearAdditionalCoverageFormErrors() {
+    const additionalCoverageSection = document.getElementById('step-cover-additional');
+    if (!additionalCoverageSection) return;
+    
+    // Clear all field errors
+    const fields = additionalCoverageSection.querySelectorAll('input, select, textarea');
+    fields.forEach(field => {
+        clearAdditionalCoverageFormError(field);
+    });
+    
+    console.log('Additional coverage form errors cleared');
+}
+
+function addAdditionalCoverageFormListeners() {
+    const additionalCoverageSection = document.getElementById('step-cover-additional');
+    if (!additionalCoverageSection) return;
+    
+    // Add change/input listeners to all form fields
+    const fields = additionalCoverageSection.querySelectorAll('input, select, textarea');
+    fields.forEach(field => {
+        // Add both input and change events for different field types
+        ['input', 'change', 'blur'].forEach(eventType => {
+            field.addEventListener(eventType, () => {
+                // Clear error state when user starts typing/changing
+                if (field.classList.contains('error')) {
+                    clearAdditionalCoverageFormError(field);
+                }
+                
+                // Add success state for non-empty fields
+                if (field.value.trim() !== '') {
+                    field.parentNode.classList.add('success-state');
+                } else {
+                    field.parentNode.classList.remove('success-state');
+                }
+            });
+        });
+    });
+    
+    console.log('Additional coverage form listeners added');
 }

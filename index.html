@@ -32,7 +32,7 @@
         <nav>
             <div class="container">
                 <div class="nav-wrapper">
-                    <div class="logo">
+                <div class="logo">
                         <h1>אדמון סוכנות לביטוח</h1>
                     </div>
                     
@@ -194,7 +194,7 @@
                     <span class="section-tag">איך זה עובד</span>
                     <h2 class="section-title">תהליך קבלת ביטוח פשוט ומהיר</h2>
                     <p class="section-subtitle">4 צעדים פשוטים להגנה מושלמת על הבית שלך</p>
-                </div>
+                    </div>
                 
                 <div class="process-timeline">
                     <div class="process-step">
@@ -203,7 +203,7 @@
                             <h3>מלאו טופס קצר</h3>
                             <p>הזינו פרטים בסיסיים על הנכס שלכם בטופס המהיר שלנו</p>
                         </div>
-                    </div>
+                        </div>
                     
                     <div class="process-connector"></div>
                     
@@ -534,190 +534,190 @@
         </div>
     </footer>
 
-    <!-- Modal Dialog -->
-    <div id="generalDetailsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>פרטים כלליים</h2>
-                <span class="close" onclick="window.HomeInsuranceApp.closeGeneralDetailsModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <!-- Step 1: General Details (centered) -->
-                <section id="step-general" class="wizard-step active">
-                    <div class="modal-body-grid modal-centered">
-                        <!-- Left Column - Form -->
-                        <div class="modal-form-section">
-                            <form id="generalDetailsForm">
-                                <!-- General Details Group -->
-                                <div class="form-field-group">
-                                    <h4>פרטים כלליים</h4>
-                                    <div class="form-group">
-                                        <label for="idNumber" data-required="*">תעודת זהות</label>
-                                        <input type="text" id="idNumber" name="idNumber" maxlength="9" placeholder="123456789" pattern="[0-9]{9}" required>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="startDate" data-required="*">תאריך תחילה</label>
-                                        <input type="date" id="startDate" name="startDate" required>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="productType" data-required="*">סוג מוצר</label>
-                                        <select id="productType" name="productType" required>
-                                            <option value="">בחר סוג מוצר</option>
-                                            <option value="מבנה ותכולה">מבנה ותכולה</option>
-                                            <option value="מבנה בלבד">מבנה בלבד</option>
-                                            <option value="תכולה בלבד">תכולה בלבד</option>
-                                            <option value="מבנה בלבד משועבד">מבנה בלבד משועבד</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="coverageType" data-required="*">סוג כיסוי</label>
-                                        <select id="coverageType" name="coverageType" required>
-                                            <option value="">בחר סוג כיסוי</option>
-                                            <option value="תכולה מקיף בלבד">תכולה מקיף בלבד</option>
-                                            <option value="חלק מהתכולה בכה״ס">חלק מהתכולה בכה״ס</option>
-                                            <option value="כל התכולה בכה״ס">כל התכולה בכה״ס</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                
-                                <!-- Property Details Group -->
-                                <div class="form-field-group">
-                                    <h4>פרטי נכס</h4>
-                                    <div class="form-group">
-                                        <label for="propertyType" data-required="*">סוג נכס</label>
-                                        <select id="propertyType" name="propertyType" required>
-                                            <option value="">בחר סוג נכס</option>
-                                            <option value="פרטי">פרטי</option>
-                                            <option value="משותף קומת קרקע">משותף קומת קרקע</option>
-                                            <option value="משותף קומה ראשונה">משותף קומה ראשונה</option>
-                                            <option value="משותף קומת ביניים">משותף קומת ביניים</option>
-                                            <option value="משותף קומה אחרונה">משותף קומה אחרונה</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="floorCount" data-required="*">מס קומות</label>
-                                        <select id="floorCount" name="floorCount" required>
-                                            <option value="">בחר מספר קומות</option>
-                                            <option value="1">1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4</option>
-                                            <option value="5">5</option>
-                                            <option value="6">6</option>
-                                            <option value="7">7</option>
-                                            <option value="8">8</option>
-                                            <option value="9">9</option>
-                                            <option value="10">10</option>
-                                            <option value="11">11</option>
-                                            <option value="12">12</option>
-                                            <option value="13">13</option>
-                                            <option value="14">14</option>
-                                            <option value="15">15</option>
-                                            <option value="16">16</option>
-                                            <option value="17">17</option>
-                                            <option value="18">18</option>
-                                            <option value="19">19</option>
-                                            <option value="20">20</option>
-                                            <option value="21">21</option>
-                                            <option value="22">22</option>
-                                            <option value="23">23</option>
-                                            <option value="24">24</option>
-                                            <option value="25">25</option>
-                                            <option value="26">26</option>
-                                            <option value="27">27</option>
-                                            <option value="28">28</option>
-                                            <option value="29">29</option>
-                                            <option value="30">30</option>
-                                            <option value="31">31</option>
-                                            <option value="32">32</option>
-                                            <option value="33">33</option>
-                                            <option value="34">34</option>
-                                            <option value="35">35</option>
-                                            <option value="36">36</option>
-                                            <option value="37">37</option>
-                                            <option value="38">38</option>
-                                            <option value="39">39</option>
-                                            <option value="40">40</option>
-                                            <option value="41">41</option>
-                                            <option value="42">42</option>
-                                            <option value="43">43</option>
-                                            <option value="44">44</option>
-                                            <option value="45">45</option>
-                                            <option value="46">46</option>
-                                            <option value="47">47</option>
-                                            <option value="48">48</option>
-                                            <option value="49">49</option>
-                                            <option value="50">50</option>
-                                            <option value="51">51</option>
-                                            <option value="52">52</option>
-                                            <option value="53">53</option>
-                                            <option value="54">54</option>
-                                            <option value="55">55</option>
-                                            <option value="56">56</option>
-                                            <option value="57">57</option>
-                                            <option value="58">58</option>
-                                            <option value="59">59</option>
-                                            <option value="60">60</option>
-                                            <option value="61">61</option>
-                                            <option value="62">62</option>
-                                            <option value="63">63</option>
-                                            <option value="64">64</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <!-- Garden checkbox -->
-                                    <div class="form-group" id="garden-checkbox-container" style="display: none;">
-                                        <div class="checkbox-wrapper">
-                                            <input type="checkbox" id="garden-checkbox" name="garden">
-                                            <label for="garden-checkbox">קיום גינה</label>
+        <!-- Modal Dialog -->
+        <div id="generalDetailsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>פרטים כלליים</h2>
+                    <span class="close" onclick="window.HomeInsuranceApp.closeGeneralDetailsModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <!-- Step 1: General Details (centered) -->
+                    <section id="step-general" class="wizard-step active">
+                        <div class="modal-body-grid modal-centered">
+                            <!-- Left Column - Form -->
+                            <div class="modal-form-section">
+                                <form id="generalDetailsForm">
+                                    <!-- General Details Group -->
+                                    <div class="form-field-group">
+                                        <h4>פרטים כלליים</h4>
+                                        <div class="form-group">
+                                            <label for="idNumber" data-required="*">תעודת זהות</label>
+                                            <input type="text" id="idNumber" name="idNumber" maxlength="9" placeholder="123456789" pattern="[0-9]{9}" required>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="startDate" data-required="*">תאריך תחילה</label>
+                                            <input type="date" id="startDate" name="startDate" required>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="productType" data-required="*">סוג מוצר</label>
+                                            <select id="productType" name="productType" required>
+                                                <option value="">בחר סוג מוצר</option>
+                                                <option value="מבנה ותכולה">מבנה ותכולה</option>
+                                                <option value="מבנה בלבד">מבנה בלבד</option>
+                                                <option value="תכולה בלבד">תכולה בלבד</option>
+                                                <option value="מבנה בלבד משועבד">מבנה בלבד משועבד</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="coverageType" data-required="*">סוג כיסוי</label>
+                                            <select id="coverageType" name="coverageType" required>
+                                                <option value="">בחר סוג כיסוי</option>
+                                                <option value="תכולה מקיף בלבד">תכולה מקיף בלבד</option>
+                                                <option value="חלק מהתכולה בכה״ס">חלק מהתכולה בכה״ס</option>
+                                                <option value="כל התכולה בכה״ס">כל התכולה בכה״ס</option>
+                                            </select>
                                         </div>
                                     </div>
-                                </div>
-                                
-                                <!-- Address Details Group -->
-                                <div class="form-field-group">
-                                    <h4>כתובת</h4>
-                                    <div class="form-group">
-                                        <label for="city" data-required="*">ישוב</label>
-                                        <select id="city" name="city" required>
-                                            <option value="">בחר ישוב</option>
-                                            <!-- Will be populated by API -->
-                                        </select>
+                                    
+                                    <!-- Property Details Group -->
+                                    <div class="form-field-group">
+                                        <h4>פרטי נכס</h4>
+                                        <div class="form-group">
+                                            <label for="propertyType" data-required="*">סוג נכס</label>
+                                            <select id="propertyType" name="propertyType" required>
+                                                <option value="">בחר סוג נכס</option>
+                                                <option value="פרטי">פרטי</option>
+                                                <option value="משותף קומת קרקע">משותף קומת קרקע</option>
+                                                <option value="משותף קומה ראשונה">משותף קומה ראשונה</option>
+                                                <option value="משותף קומת ביניים">משותף קומת ביניים</option>
+                                                <option value="משותף קומה אחרונה">משותף קומה אחרונה</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="floorCount" data-required="*">מס קומות</label>
+                                            <select id="floorCount" name="floorCount" required>
+                                                <option value="">בחר מספר קומות</option>
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                                <option value="4">4</option>
+                                                <option value="5">5</option>
+                                                <option value="6">6</option>
+                                                <option value="7">7</option>
+                                                <option value="8">8</option>
+                                                <option value="9">9</option>
+                                                <option value="10">10</option>
+                                                <option value="11">11</option>
+                                                <option value="12">12</option>
+                                                <option value="13">13</option>
+                                                <option value="14">14</option>
+                                                <option value="15">15</option>
+                                                <option value="16">16</option>
+                                                <option value="17">17</option>
+                                                <option value="18">18</option>
+                                                <option value="19">19</option>
+                                                <option value="20">20</option>
+                                                <option value="21">21</option>
+                                                <option value="22">22</option>
+                                                <option value="23">23</option>
+                                                <option value="24">24</option>
+                                                <option value="25">25</option>
+                                                <option value="26">26</option>
+                                                <option value="27">27</option>
+                                                <option value="28">28</option>
+                                                <option value="29">29</option>
+                                                <option value="30">30</option>
+                                                <option value="31">31</option>
+                                                <option value="32">32</option>
+                                                <option value="33">33</option>
+                                                <option value="34">34</option>
+                                                <option value="35">35</option>
+                                                <option value="36">36</option>
+                                                <option value="37">37</option>
+                                                <option value="38">38</option>
+                                                <option value="39">39</option>
+                                                <option value="40">40</option>
+                                                <option value="41">41</option>
+                                                <option value="42">42</option>
+                                                <option value="43">43</option>
+                                                <option value="44">44</option>
+                                                <option value="45">45</option>
+                                                <option value="46">46</option>
+                                                <option value="47">47</option>
+                                                <option value="48">48</option>
+                                                <option value="49">49</option>
+                                                <option value="50">50</option>
+                                                <option value="51">51</option>
+                                                <option value="52">52</option>
+                                                <option value="53">53</option>
+                                                <option value="54">54</option>
+                                                <option value="55">55</option>
+                                                <option value="56">56</option>
+                                                <option value="57">57</option>
+                                                <option value="58">58</option>
+                                                <option value="59">59</option>
+                                                <option value="60">60</option>
+                                                <option value="61">61</option>
+                                                <option value="62">62</option>
+                                                <option value="63">63</option>
+                                                <option value="64">64</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Garden checkbox -->
+                                        <div class="form-group" id="garden-checkbox-container" style="display: none;">
+                                            <div class="checkbox-wrapper">
+                                                <input type="checkbox" id="garden-checkbox" name="garden">
+                                                <label for="garden-checkbox">קיום גינה</label>
+                                            </div>
+                                        </div>
                                     </div>
                                     
-                                    <div class="form-group">
-                                        <label for="street" data-required="*">שם הרחוב</label>
-                                        <input type="text" id="street" name="street" placeholder="בחר ישוב תחילה" disabled required>
-                                        <div id="street-error" class="error-message" style="display: none;"></div>
-                                        <div id="streetAutocomplete" class="autocomplete-container"></div>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="houseNumber" data-required="*">מספר בית</label>
-                                        <input type="text" id="houseNumber" name="houseNumber" pattern="[0-9]+" maxlength="10" placeholder="הכנס מספר בית" required>
-                                        <div id="houseNumber-error" class="error-message" style="display: none;"></div>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="postalCode" data-required="*">מיקוד</label>
-                                        <input type="text" id="postalCode" name="postalCode" pattern="[0-9]+" maxlength="7" placeholder="הכנס מיקוד" required>
-                                        <div id="postalCode-error" class="error-message" style="display: none;"></div>
-                                    </div>
-                                    
+                                    <!-- Address Details Group -->
+                                    <div class="form-field-group">
+                                        <h4>כתובת</h4>
+                                        <div class="form-group">
+                                            <label for="city" data-required="*">ישוב</label>
+                                            <select id="city" name="city" required>
+                                                <option value="">בחר ישוב</option>
+                                                <!-- Will be populated by API -->
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="street" data-required="*">שם הרחוב</label>
+                                            <input type="text" id="street" name="street" placeholder="בחר ישוב תחילה" disabled required>
+                                            <div id="street-error" class="error-message" style="display: none;"></div>
+                                            <div id="streetAutocomplete" class="autocomplete-container"></div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="houseNumber" data-required="*">מספר בית</label>
+                                            <input type="text" id="houseNumber" name="houseNumber" pattern="[0-9]+" maxlength="10" placeholder="הכנס מספר בית" required>
+                                            <div id="houseNumber-error" class="error-message" style="display: none;"></div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="postalCode" data-required="*">מיקוד</label>
+                                            <input type="text" id="postalCode" name="postalCode" pattern="[0-9]+" maxlength="7" placeholder="הכנס מיקוד" required>
+                                            <div id="postalCode-error" class="error-message" style="display: none;"></div>
+                                        </div>
+                                        
 
-                                </div>
-                            </form>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                    </div>
-                </section>
-                
-                <!-- Step 2: מבנה -->
-                <section id="step-cover-structure" class="wizard-step">
-                    <div class="modal-body-grid modal-centered">
+                    </section>
+                    
+                    <!-- Step 2: מבנה -->
+                    <section id="step-cover-structure" class="wizard-step">
+                        <div class="modal-body-grid modal-centered">
                         <div class="building-sections-container">
                             <h2 class="building-main-title">מבנה</h2>
                             
@@ -733,7 +733,7 @@
                                             </label>
                                             <input type="number" id="insurance-amount" name="insurance-amount" min="0" step="1000" placeholder="הכנס סכום ביטוח" required>
                                             <small class="form-helper-text">סכום הביטוח צריך לכסות את עלות בניית הדירה מחדש</small>
-                                        </div>
+                                    </div>
                                         
                                         <div class="building-form-group">
                                             <label for="building-age" data-required="*">
@@ -742,7 +742,7 @@
                                             </label>
                                             <input type="number" id="building-age" name="building-age" min="0" max="200" placeholder="הכנס גיל המבנה בשנים" required>
                                             <small class="form-helper-text">מספר השנים מאז בניית הנכס</small>
-                                        </div>
+                                </div>
                                         
                                         <div class="building-form-group">
                                             <label for="building-area" data-required="*">
@@ -945,13 +945,13 @@
                                     </div>
                                 </div>
                             </div>
+                            </div>
                         </div>
-                    </div>
-                </section>
-                
-                <!-- Step 3: תכולה -->
-                <section id="step-cover-contents" class="wizard-step">
-                    <div class="modal-body-grid modal-centered">
+                    </section>
+                    
+                    <!-- Step 3: תכולה -->
+                    <section id="step-cover-contents" class="wizard-step">
+                        <div class="modal-body-grid modal-centered">
                         <div class="building-sections-container">
                             <h2 class="building-main-title">תכולה</h2>
                             
@@ -967,7 +967,7 @@
                                             </label>
                                             <input type="number" id="contents-insurance-amount" name="contents-insurance-amount" min="0" step="1000" placeholder="הכנס סכום ביטוח" required>
                                             <small class="form-helper-text">סכום הביטוח צריך לכסות את ערך התכולה של הדירה</small>
-                                        </div>
+                                    </div>
                                         
                                         <div class="building-form-group" id="contents-building-age-group" style="display: none;">
                                             <label for="contents-building-age" data-required="*">
@@ -976,7 +976,7 @@
                                             </label>
                                             <input type="number" id="contents-building-age" name="contents-building-age" min="0" max="200" placeholder="הכנס גיל המבנה בשנים">
                                             <small class="form-helper-text">מספר השנים מאז בניית הנכס</small>
-                                        </div>
+                                </div>
                                         
                                         <div class="building-form-group">
                                             <label for="jewelry-amount">
@@ -1119,110 +1119,181 @@
                                     </div>
                                 </div>
                             </div>
+                            </div>
                         </div>
-                    </div>
-                </section>
-                
-                <!-- Step 4: פעילות עסקית -->
-                <section id="step-cover-business" class="wizard-step">
-                    <div class="modal-body-grid modal-centered">
-                        <div class="modal-sections-container">
-                            <h3>פעילות עסקית</h3>
-                            <div class="product-sections">
-                                <div class="section-item" data-section="פעילות עסקית">
-                                    <input type="checkbox" id="section-business" name="sections[]" value="פעילות עסקית">
-                                    <label for="section-business">פעילות עסקית</label>
+                    </section>
+                    
+                    <!-- Step 4: כיסויים נוספים לדירה שלכם -->
+                    <section id="step-cover-additional" class="wizard-step">
+                        <div class="modal-body-grid modal-centered">
+                            <div class="building-window">
+                                <div class="building-window-header">
+                                    <h2 class="building-window-title">כיסויים נוספים לדירה שלכם</h2>
+                                    <p class="building-window-subtitle">בחרו מבין הכיסויים הנוספים המומלצים לביטוח הדירה שלכם</p>
+                                </div>
+                                
+                                <!-- Section 1: פעילות עסקית -->
+                                <div class="building-section">
+                                    <h3 class="building-section-title">💼 פעילות עסקית</h3>
+                                    <div class="building-section-form">
+                                        <div class="building-form-grid">
+                                            <div class="building-form-group">
+                                                <label for="business-contents-amount">
+                                                    <span>סכום ביטוח תכולה עסקית (₪)</span>
+                                                    <span class="form-icon">💰</span>
+                                                </label>
+                                                <input type="number" id="business-contents-amount" name="business-contents-amount" min="0" step="1000" placeholder="הכנס סכום תכולה עסקית">
+                                                <small class="form-helper-text">סכום הביטוח עבור התכולה העסקית שבבית</small>
+                                            </div>
+                                            
+                                            <div class="building-form-group building-checkbox-group">
+                                                <div class="building-checkbox-wrapper">
+                                                    <input type="checkbox" id="business-employers" name="business-employers" value="פעילות עסקית(מעבידים)">
+                                                    <label for="business-employers">פעילות עסקית (מעבידים)</label>
+                                                </div>
+                                                <small class="form-helper-text">כיסוי זה יכול לחסות עד 750,000 ש"ח</small>
+                                            </div>
+                                            
+                                            <div class="building-form-group building-checkbox-group">
+                                                <div class="building-checkbox-wrapper">
+                                                    <input type="checkbox" id="business-third-party" name="business-third-party" value="תכולה עסקית(צד ג)">
+                                                    <label for="business-third-party">תכולה עסקית (צד ג)</label>
+                                                </div>
+                                                <small class="form-helper-text">כיסוי זה יכול לחסות עד 750,000 ש"ח</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Section 2: כיסוי צד שלישי -->
+                                <div class="building-section">
+                                    <h3 class="building-section-title">⚖️ כיסוי צד שלישי</h3>
+                                    <div class="building-section-form">
+                                        <div class="coverage-explanation">
+                                            <p><strong>מה זה ביטוח צד שלישי בביטוח דירה?</strong></p>
+                                            <p>כיסוי חבות כלפי צד שלישי מגן עליכם במקרה שתגרמו נזק לאחרים או לרכושם. הכיסוי כולל פיצויים עבור נזקי גוף או רכוש שנגרמו בשל מעשה או מחדל מצדכם, כולל נזקים הנגרמים מחיות מחמד או מפעילות יומיומית בבית.</p>
+                                        </div>
+                                        <div class="building-form-grid">
+                                            <div class="building-form-group building-checkbox-group">
+                                                <div class="building-checkbox-wrapper">
+                                                    <input type="checkbox" id="third-party-coverage" name="third-party-coverage" value="כיסוי צד שלישי">
+                                                    <label for="third-party-coverage">האם מעוניין לרכוש כיסוי זה?</label>
+                                                </div>
+                                                <small class="form-helper-text">מומלץ בחום לכל בעלי דירה</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Section 3: מעבידים -->
+                                <div class="building-section">
+                                    <h3 class="building-section-title">👥 חבות מעבידים</h3>
+                                    <div class="building-section-form">
+                                        <div class="coverage-explanation">
+                                            <p><strong>מה זה כיסוי חבות מעבידים?</strong></p>
+                                            <p>כיסוי זה מגן עליכם כמעסיקים של עובדי משק בית (מנקות, גננים, מטפלות וכו'). הביטוח מכסה נזקי גוף שעלולים להיגרם לעובדים במהלך עבודתם אצלכם. הכיסוי מוגבל ל-3 עובדי משק בית בלבד.</p>
+                                        </div>
+                                        <div class="building-form-grid">
+                                            <div class="building-form-group building-checkbox-group">
+                                                <div class="building-checkbox-wrapper">  
+                                                    <input type="checkbox" id="employers-liability" name="employers-liability" value="חבות מעבידים">
+                                                    <label for="employers-liability">האם מעוניין לרכוש כיסוי זה?</label>
+                                                </div>
+                                                <small class="form-helper-text">חיוני למי שמעסיק עובדי משק בית</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Section 4: כיסוי סייבר למשפחה -->
+                                <div class="building-section">
+                                    <h3 class="building-section-title">🔒 כיסוי סייבר למשפחה</h3>
+                                    <div class="building-section-form">
+                                        <div class="coverage-explanation">
+                                            <p><strong>מה זה ביטוח סייבר בדירה?</strong></p>
+                                            <p>ביטוח המגן על המשפחה (עד 7 נפשות) מפני סיכונים דיגיטליים. הכיסוי כולל:</p>
+                                            <ul class="coverage-list">
+                                                <li><strong>הוצאות שחזור מידע מבוטח</strong> - עלויות שחזור מידע שאבד עקב תקיפה סייברנטית</li>
+                                                <li><strong>בריונות ברשת או השמצה</strong> - סיוע משפטי ופסיכולוגי במקרי הטרדה ברשת</li>
+                                                <li><strong>גניבה מקוונת של כספים אישיים</strong> - פיצוי עבור כספים שנגנבו בהונאות אינטרנט</li>
+                                                <li><strong>הנדסה חברתית וגניבת זהות</strong> - כיסוי עבור נזקים מזיוף זהות וגניבת מידע אישי</li>
+                                            </ul>
+                                        </div>
+                                        <div class="building-form-grid">
+                                            <div class="building-form-group building-checkbox-group">
+                                                <div class="building-checkbox-wrapper">
+                                                    <input type="checkbox" id="cyber-coverage" name="cyber-coverage" value="כיסוי סייבר למשפחה">
+                                                    <label for="cyber-coverage">האם מעוניין לרכוש כיסוי זה?</label>
+                                                </div>
+                                                <small class="form-helper-text">הגנה חיונית בעידן הדיגיטלי</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Section 5: כיסוי לטרור -->
+                                <div class="building-section">
+                                    <h3 class="building-section-title">🛡️ כיסוי לטרור</h3>
+                                    <div class="building-section-form">
+                                        <div class="coverage-explanation">
+                                            <p><strong>מה זה כיסוי לטרור בביטוח דירה?</strong></p>
+                                            <p>כיסוי המגן על הדירה מפני נזקים הנגרמים כתוצאה מפעולות טרור או פעילות עוינת. הכיסוי כולל נזקי אש, פיצוץ, התמוטטות ונזקי מים הנגרמים בעקבות פעולות טרור. גבול האחריות זהה לסכום ביטוח המבנה ועד מקסימום של 500,000 שקלים.</p>
+                                        </div>
+                                        <div class="building-form-grid">
+                                            <div class="building-form-group building-checkbox-group">
+                                                <div class="building-checkbox-wrapper">
+                                                    <input type="checkbox" id="terror-coverage" name="terror-coverage" value="כיסוי לטרור">
+                                                    <label for="terror-coverage">האם מעוניין לרכוש כיסוי זה?</label>
+                                                </div>
+                                                <small class="form-helper-text">הגנה חשובה במציאות הישראלית</small>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </section>
-                
-                <!-- Step 5: צד שלישי -->
-                <section id="step-cover-third-party" class="wizard-step">
-                    <div class="modal-body-grid modal-centered">
-                        <div class="modal-sections-container">
-                            <h3>צד שלישי</h3>
-                            <div class="product-sections">
-                                <div class="section-item" data-section="צד שלישי">
-                                    <input type="checkbox" id="section-third-party" name="sections[]" value="צד שלישי">
-                                    <label for="section-third-party">צד שלישי</label>
-                                </div>
+                    </section>
+                    
+                    <!-- Right Column - Product Sections (hidden - kept for compatibility) -->
+                    <div class="modal-sections-container" style="display: none;">
+                        <h3>פרקים לבחירתך</h3>
+                        <div class="product-sections">
+                            <div class="section-item" data-section="מעבידים">
+                                <input type="checkbox" id="section-employers" name="sections[]" value="מעבידים">
+                                <label for="section-employers">מעבידים</label>
                             </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- Step 6: סייבר למשפחה -->
-                <section id="step-cover-cyber" class="wizard-step">
-                    <div class="modal-body-grid modal-centered">
-                        <div class="modal-sections-container">
-                            <h3>סייבר למשפחה</h3>
-                            <div class="product-sections">
-                                <div class="section-item" data-section="סייבר למשפחה">
-                                    <input type="checkbox" id="section-cyber" name="sections[]" value="סייבר למשפחה">
-                                    <label for="section-cyber">סייבר למשפחה</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- Step 7: טרור -->
-                <section id="step-cover-terror" class="wizard-step">
-                    <div class="modal-body-grid modal-centered">
-                        <div class="modal-sections-container">
-                            <h3>טרור</h3>
-                            <div class="product-sections">
-                                <div class="section-item" data-section="טרור">
-                                    <input type="checkbox" id="section-terror" name="sections[]" value="טרור">
-                                    <label for="section-terror">טרור</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- Right Column - Product Sections (hidden - kept for compatibility) -->
-                <div class="modal-sections-container" style="display: none;">
-                    <h3>פרקים לבחירתך</h3>
-                    <div class="product-sections">
-                        <div class="section-item" data-section="מעבידים">
-                            <input type="checkbox" id="section-employers" name="sections[]" value="מעבידים">
-                            <label for="section-employers">מעבידים</label>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-prev" onclick="window.HomeInsuranceApp.wizardPrev()" style="display: none;">חזור</button>
-                <button type="button" class="btn btn-secondary" onclick="window.HomeInsuranceApp.closeGeneralDetailsModal()">ביטול</button>
-                <button type="button" class="btn btn-primary btn-next" onclick="window.HomeInsuranceApp.wizardNext()">הבא</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-prev" onclick="window.HomeInsuranceApp.wizardPrev()" style="display: none;">חזור</button>
+                    <button type="button" class="btn btn-secondary" onclick="window.HomeInsuranceApp.closeGeneralDetailsModal()">ביטול</button>
+                    <button type="button" class="btn btn-primary btn-next" onclick="window.HomeInsuranceApp.wizardNext()">הבא</button>
+                </div>
             </div>
         </div>
-    </div>
     </main>
 
-<!-- JavaScript -->
-<script src="script.js"></script>
-<script>
-    // Initialize Feather Icons
-    document.addEventListener('DOMContentLoaded', function() {
-        feather.replace();
-    });
-    
-    // Register Service Worker for cache management
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-                .then((registration) => {
-                    console.log('[SW] Service Worker registered successfully:', registration.scope);
-                })
-                .catch((error) => {
-                    console.log('[SW] Service Worker registration failed:', error);
-                });
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+    <script>
+        // Initialize Feather Icons
+        document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
         });
-    }
-</script>
+        
+        // Register Service Worker for cache management
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('[SW] Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('[SW] Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html> 
