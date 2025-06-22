@@ -361,15 +361,20 @@
                                                     <input type="checkbox" id="mortgaged-property" name="mortgaged-property" value="משועבד/מוטב">
                                                     <label for="mortgaged-property">משועבד/מוטב</label>
                                                 </div>
+                                                <small class="form-helper-text">סמן אם הנכס משועבד לבנק או גוף פיננסי</small>
                                             </div>
                                             
                                             <div class="building-form-group" id="renewals-group" style="display: none;">
-                                                <label for="renewals" data-required="*">חידושים</label>
+                                                <label for="renewals" data-required="*">
+                                                    <span>חידושים</span>
+                                                    <span class="form-icon">🔄</span>
+                                                </label>
                                                 <select id="renewals" name="renewals">
                                                     <option value="">בחר סוג חידוש</option>
                                                     <option value="אין חידושים אוטומטיים">אין חידושים אוטומטיים</option>
                                                     <option value="חידוש אוטומטי בהסכמת המבוטח">חידוש אוטומטי בהסכמת המבוטח</option>
                                                 </select>
+                                                <small class="form-helper-text">בחר האם הביטוח יתחדש אוטומטית בתום התקופה</small>
                                             </div>
                                         </div>
                                     </div>
@@ -395,20 +400,28 @@
                                             </div>
                                             
                                             <div class="building-form-group" id="water-deductible-group" style="display: none;">
-                                                <label for="water-deductible" data-required="*">השתתפות עצמית לנזקי מים</label>
+                                                <label for="water-deductible" data-required="*">
+                                                    <span>השתתפות עצמית לנזקי מים</span>
+                                                    <span class="form-icon">💸</span>
+                                                </label>
                                                 <select id="water-deductible" name="water-deductible">
                                                     <option value="">בחר השתתפות עצמית</option>
                                                     <option value="600 ש״ח">600 ש״ח</option>
                                                     <option value="850 ש״ח">850 ש״ח</option>
                                                     <option value="1750 ש״ח">1750 ש״ח</option>
                                                 </select>
+                                                <small class="form-helper-text">הסכום שתשלם מכיסך בעת תביעה לנזקי מים</small>
                                             </div>
                                             
                                             <div class="building-form-group" id="mortgage-water-damage-group" style="display: none;">
-                                                <label for="mortgage-water-damage" data-required="*">נזקי מים משכנתא</label>
+                                                <label for="mortgage-water-damage" data-required="*">
+                                                    <span>נזקי מים משכנתא</span>
+                                                    <span class="form-icon">🏦</span>
+                                                </label>
                                                 <select id="mortgage-water-damage" name="mortgage-water-damage" disabled>
                                                     <option value="השתתפות עצמית 850 ש״ח - שרברב שבהסדר" selected>השתתפות עצמית 850 ש״ח - שרברב שבהסדר</option>
                                                 </select>
+                                                <small class="form-helper-text">תנאי כיסוי מיוחד לנכס ממושכן</small>
                                             </div>
                                             
                                             <div class="building-form-group building-checkbox-group">
@@ -416,6 +429,7 @@
                                                     <input type="checkbox" id="burglary-building" name="burglary-building" value="פריצה (מבנה)">
                                                     <label for="burglary-building">פריצה (מבנה)</label>
                                                 </div>
+                                                <small class="form-helper-text">כיסוי לנזקים שנגרמו למבנה בעת פריצה או ניסיון פריצה</small>
                                             </div>
                                             
                                             <div class="building-form-group">
@@ -432,18 +446,26 @@
                                             </div>
                                             
                                             <div class="building-form-group" id="earthquake-deductible-group" style="display: none;">
-                                                <label for="earthquake-deductible" data-required="*">השתתפות עצמית רעידת אדמה (מבנה)</label>
+                                                <label for="earthquake-deductible" data-required="*">
+                                                    <span>השתתפות עצמית רעידת אדמה (מבנה)</span>
+                                                    <span class="form-icon">💵</span>
+                                                </label>
                                                 <select id="earthquake-deductible" name="earthquake-deductible">
                                                     <option value="">בחר השתתפות עצמית</option>
                                                     <option value="2%">2%</option>
                                                     <option value="4.2%">4.2%</option>
                                                     <option value="10%">10%</option>
                                                 </select>
+                                                <small class="form-helper-text">אחוז מסכום הנזק שתשלם בעת תביעה לרעידת אדמה</small>
                                             </div>
                                             
                                             <div class="building-form-group">
-                                                <label for="additional-shared-insurance">סכום ביטוח נוסף בבית משותף (₪)</label>
+                                                <label for="additional-shared-insurance">
+                                                    <span>סכום ביטוח נוסף בבית משותף (₪)</span>
+                                                    <span class="form-icon">🏢</span>
+                                                </label>
                                                 <input type="number" id="additional-shared-insurance" name="additional-shared-insurance" min="0" step="1000" placeholder="הכנס סכום ביטוח נוסף">
+                                                <small class="form-helper-text">סכום ביטוח נוסף עבור רכוש משותף בבניין (אופציונלי)</small>
                                             </div>
                                         </div>
                                     </div>
@@ -455,23 +477,39 @@
                                     <div class="building-section-form">
                                         <div class="building-form-grid">
                                             <div class="building-form-group">
-                                                <label for="building-contents-insurance">כהס מבנה (₪)</label>
+                                                <label for="building-contents-insurance">
+                                                    <span>כהס מבנה (₪)</span>
+                                                    <span class="form-icon">📦</span>
+                                                </label>
                                                 <input type="number" id="building-contents-insurance" name="building-contents-insurance" min="0" step="1000" placeholder="הכנס סכום כהס מבנה">
+                                                <small class="form-helper-text">כל הסיכונים למבנה - כיסוי מורחב (אופציונלי)</small>
                                             </div>
                                             
                                             <div class="building-form-group" id="storage-group" style="display: none;">
-                                                <label for="storage-insurance">מחסן (₪)</label>
+                                                <label for="storage-insurance">
+                                                    <span>מחסן (₪)</span>
+                                                    <span class="form-icon">🗄️</span>
+                                                </label>
                                                 <input type="number" id="storage-insurance" name="storage-insurance" min="0" step="1000" placeholder="הכנס סכום מחסן">
+                                                <small class="form-helper-text">סכום ביטוח למחסן צמוד לדירה (אופציונלי)</small>
                                             </div>
                                             
                                             <div class="building-form-group">
-                                                <label for="swimming-pool-insurance">בריכת שחיה</label>
+                                                <label for="swimming-pool-insurance">
+                                                    <span>בריכת שחיה</span>
+                                                    <span class="form-icon">🏊</span>
+                                                </label>
                                                 <input type="number" id="swimming-pool-insurance" name="swimming-pool-insurance" min="0" step="1000" placeholder="הכנס סכום בריכת שחיה">
+                                                <small class="form-helper-text">סכום ביטוח לבריכה פרטית ומתקניה (אופציונלי)</small>
                                             </div>
                                             
                                             <div class="building-form-group">
-                                                <label for="glass-breakage-insurance">שבר שמשות</label>
+                                                <label for="glass-breakage-insurance">
+                                                    <span>שבר שמשות</span>
+                                                    <span class="form-icon">🪟</span>
+                                                </label>
                                                 <input type="number" id="glass-breakage-insurance" name="glass-breakage-insurance" min="0" step="1000" placeholder="הכנס סכום שבר שמשות">
+                                                <small class="form-helper-text">כיסוי לשבר של חלונות, דלתות זכוכית ומראות (אופציונלי)</small>
                                             </div>
                                             
                                             <div class="building-form-group building-checkbox-group" id="boilers-group">
@@ -479,6 +517,7 @@
                                                     <input type="checkbox" id="boilers-coverage" name="boilers-coverage" value="דוודים">
                                                     <label for="boilers-coverage">דוודים</label>
                                                 </div>
+                                                <small class="form-helper-text">כיסוי לנזקים לדוד החשמלי או דוד השמש</small>
                                             </div>
                                         </div>
                                     </div>

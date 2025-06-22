@@ -2224,16 +2224,17 @@ input:disabled {
     box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
 }
 
-.building-form-group .error-message {
+.building-form-group .form-error-message {
     color: #dc2626;
     font-size: 0.875rem;
     margin-top: 6px;
     display: flex;
     align-items: center;
     gap: 4px;
+    font-weight: 500;
 }
 
-.building-form-group .error-message::before {
+.building-form-group .form-error-message::before {
     content: "⚠";
     font-size: 0.875rem;
 }

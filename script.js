@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
             initializeProductSections();
             addFormInputListeners();
             setupModalCloseHandlers();
+            addBuildingFormListeners();
             
             // Initialize building fields based on current product type
             const productType = document.getElementById('productType');
@@ -180,25 +181,38 @@ function updateWizardNavigation() {
  * Navigate to next wizard step
  */
 function wizardNext() {
-    // If on general details step, validate form first
-    if (currentWizardStep === 0) {
-        const form = document.getElementById('generalDetailsForm');
-        if (form) {
-            // Clear all previous errors
-            clearFormErrors();
-            
-            // Perform custom validation
-            const isValid = validateGeneralDetailsForm();
-            
-            if (!isValid || !form.checkValidity()) {
-                form.reportValidity();
-                return;
+                // If on general details step, validate form first
+            if (currentWizardStep === 0) {
+                const form = document.getElementById('generalDetailsForm');
+                if (form) {
+                    // Clear all previous errors
+                    clearFormErrors();
+                    
+                    // Perform custom validation
+                    const isValid = validateGeneralDetailsForm();
+                    
+                    if (!isValid || !form.checkValidity()) {
+                        form.reportValidity();
+                        return;
+                    }
+                    
+                    // Rebuild steps based on selected product type
+                    buildWizardSteps();
+                }
             }
             
-            // Rebuild steps based on selected product type
-            buildWizardSteps();
-        }
-    }
+            // If on building section step, validate building fields
+            if (wizardSteps[currentWizardStep] === 'step-cover-structure') {
+                // Clear all previous errors
+                clearBuildingFormErrors();
+                
+                // Perform building section validation
+                const isValid = validateBuildingSection();
+                
+                if (!isValid) {
+                    return;
+                }
+            }
     
     // If on last step, submit form
     if (currentWizardStep === wizardSteps.length - 1) {
@@ -3758,4 +3772,188 @@ function logInitializationSummary() {
     }
     
     console.log('Use window.testConditionalLogic() to run comprehensive tests');
+}
+
+/**
+ * Validate building section fields
+ * @returns {boolean} - True if all visible required fields are valid
+ */
+function validateBuildingSection() {
+    let isValid = true;
+    
+    // Section 1: מבנה (Building) fields
+    // Insurance amount
+    const insuranceAmount = document.getElementById('insurance-amount');
+    if (insuranceAmount && insuranceAmount.required && !insuranceAmount.value) {
+        showBuildingFormError(insuranceAmount, 'שדה חובה - יש למלא סכום ביטוח');
+        isValid = false;
+    }
+    
+    // Building age (only if visible)
+    const buildingAge = document.getElementById('building-age');
+    const buildingAgeGroup = buildingAge ? buildingAge.closest('.building-form-group') : null;
+    if (buildingAge && buildingAgeGroup && buildingAgeGroup.style.display !== 'none' && buildingAge.required && !buildingAge.value) {
+        showBuildingFormError(buildingAge, 'שדה חובה - יש למלא גיל המבנה');
+        isValid = false;
+    }
+    
+    // Building area
+    const buildingArea = document.getElementById('building-area');
+    if (buildingArea && buildingArea.required && !buildingArea.value) {
+        showBuildingFormError(buildingArea, 'שדה חובה - יש למלא שטח המבנה');
+        isValid = false;
+    }
+    
+    // Construction type
+    const constructionType = document.getElementById('construction-type');
+    if (constructionType && constructionType.required && !constructionType.value) {
+        showBuildingFormError(constructionType, 'שדה חובה - יש לבחור סוג בניה');
+        isValid = false;
+    }
+    
+    // Construction standard
+    const constructionStandard = document.getElementById('construction-standard');
+    if (constructionStandard && constructionStandard.required && !constructionStandard.value) {
+        showBuildingFormError(constructionStandard, 'שדה חובה - יש לבחור סטנדרט בניה');
+        isValid = false;
+    }
+    
+    // Renewals dropdown (only if visible and required)
+    const renewalsGroup = document.getElementById('renewals-group');
+    const renewalsSelect = document.getElementById('renewals');
+    if (renewalsSelect && renewalsGroup && renewalsGroup.style.display !== 'none' && renewalsSelect.required && !renewalsSelect.value) {
+        showBuildingFormError(renewalsSelect, 'שדה חובה - יש לבחור סוג חידוש');
+        isValid = false;
+    }
+    
+    // Section 2: כיסויים נוספים למבנה (Additional Coverages)
+    // Water damage type
+    const waterDamageType = document.getElementById('water-damage-type');
+    if (waterDamageType && waterDamageType.required && !waterDamageType.value) {
+        showBuildingFormError(waterDamageType, 'שדה חובה - יש לבחור סוג כיסוי נזקי מים');
+        isValid = false;
+    }
+    
+    // Water deductible (only if visible and required)
+    const waterDeductibleGroup = document.getElementById('water-deductible-group');
+    const waterDeductibleSelect = document.getElementById('water-deductible');
+    if (waterDeductibleSelect && waterDeductibleGroup && waterDeductibleGroup.style.display !== 'none' && waterDeductibleSelect.required && !waterDeductibleSelect.value) {
+        showBuildingFormError(waterDeductibleSelect, 'שדה חובה - יש לבחור השתתפות עצמית');
+        isValid = false;
+    }
+    
+    // Earthquake coverage
+    const earthquakeCoverage = document.getElementById('earthquake-coverage');
+    if (earthquakeCoverage && earthquakeCoverage.required && !earthquakeCoverage.value) {
+        showBuildingFormError(earthquakeCoverage, 'שדה חובה - יש לבחור האם לכלול כיסוי רעידת אדמה');
+        isValid = false;
+    }
+    
+    // Earthquake deductible (only if visible and required)
+    const earthquakeDeductibleGroup = document.getElementById('earthquake-deductible-group');
+    const earthquakeDeductibleSelect = document.getElementById('earthquake-deductible');
+    if (earthquakeDeductibleSelect && earthquakeDeductibleGroup && earthquakeDeductibleGroup.style.display !== 'none' && earthquakeDeductibleSelect.required && !earthquakeDeductibleSelect.value) {
+        showBuildingFormError(earthquakeDeductibleSelect, 'שדה חובה - יש לבחור השתתפות עצמית לרעידת אדמה');
+        isValid = false;
+    }
+    
+    // Section 3: הרחבות נוספות למבנה (Additional Extensions)
+    // No required fields in this section - all are optional
+    
+    return isValid;
+}
+
+/**
+ * Show error message for a building form field
+ * @param {HTMLElement} field - The form field element
+ * @param {string} message - The error message to display
+ */
+function showBuildingFormError(field, message) {
+    // Add error class to field
+    field.classList.add('error');
+    
+    // Create error message element
+    const errorElement = document.createElement('div');
+    errorElement.className = 'form-error-message';
+    errorElement.textContent = message;
+    
+    // Insert error message after the field or helper text
+    const formGroup = field.closest('.building-form-group');
+    if (formGroup) {
+        // Remove any existing error message
+        const existingError = formGroup.querySelector('.form-error-message');
+        if (existingError) {
+            existingError.remove();
+        }
+        
+        // Find where to insert the error (after helper text if exists, otherwise after field)
+        const helperText = formGroup.querySelector('.form-helper-text');
+        if (helperText) {
+            helperText.insertAdjacentElement('afterend', errorElement);
+        } else {
+            field.insertAdjacentElement('afterend', errorElement);
+        }
+    }
+}
+
+/**
+ * Clear all building form errors
+ */
+function clearBuildingFormErrors() {
+    // Find all error fields in building sections
+    const buildingSections = document.querySelectorAll('.building-section');
+    
+    buildingSections.forEach(section => {
+        // Remove error classes from fields
+        const errorFields = section.querySelectorAll('.error');
+        errorFields.forEach(field => {
+            field.classList.remove('error');
+        });
+        
+        // Remove all error messages
+        const errorMessages = section.querySelectorAll('.form-error-message');
+        errorMessages.forEach(message => {
+            message.remove();
+        });
+    });
+}
+
+/**
+ * Add input event listeners for building form validation
+ */
+function addBuildingFormListeners() {
+    // Add listeners to all building form fields
+    const buildingSections = document.querySelectorAll('.building-section');
+    
+    buildingSections.forEach(section => {
+        // Add listeners to input fields
+        const inputFields = section.querySelectorAll('input[type="number"], input[type="text"]');
+        inputFields.forEach(field => {
+            field.addEventListener('input', function() {
+                if (this.value) {
+                    this.classList.remove('error');
+                    const errorMsg = this.closest('.building-form-group')?.querySelector('.form-error-message');
+                    if (errorMsg) errorMsg.remove();
+                }
+            });
+        });
+        
+        // Add listeners to select fields
+        const selectFields = section.querySelectorAll('select');
+        selectFields.forEach(field => {
+            field.addEventListener('change', function() {
+                if (this.value) {
+                    this.classList.remove('error');
+                    const errorMsg = this.closest('.building-form-group')?.querySelector('.form-error-message');
+                    if (errorMsg) errorMsg.remove();
+                }
+            });
+        });
+    });
+}
+
+// Call the building form listeners when modal opens
+// Add this to the openModal function or initialization
+if (typeof window.addBuildingFormListeners === 'undefined') {
+    window.addBuildingFormListeners = addBuildingFormListeners;
 }
