@@ -8,6 +8,9 @@ let wizardSteps = [];
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Home Insurance Landing Page loaded successfully! - Version 20250620-2 (Static site mode)');
     
+    // Initialize statistics counter animation
+    initializeStatsCounter();
+    
     // Initialize CTA button - simplified version
     const ctaButton = document.getElementById('getQuoteBtn');
     const modal = document.getElementById('generalDetailsModal');
@@ -4367,4 +4370,51 @@ if (typeof window.initializeContentsFields === 'undefined') {
 }
 if (typeof window.addContentsFormListeners === 'undefined') {
     window.addContentsFormListeners = addContentsFormListeners;
+}
+
+/**
+ * Initialize statistics counter animation
+ */
+function initializeStatsCounter() {
+    const statsNumbers = document.querySelectorAll('.stat-number');
+    
+    if (statsNumbers.length === 0) return;
+    
+    const observerOptions = {
+        threshold: 0.5,
+        rootMargin: '0px'
+    };
+    
+    const countUp = (element, target) => {
+        const duration = 2000; // 2 seconds
+        const start = 0;
+        const increment = target / (duration / 16); // 60fps
+        let current = start;
+        
+        const updateCounter = () => {
+            current += increment;
+            if (current < target) {
+                element.textContent = Math.floor(current).toLocaleString('he-IL');
+                requestAnimationFrame(updateCounter);
+            } else {
+                element.textContent = target.toLocaleString('he-IL');
+            }
+        };
+        
+        updateCounter();
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !entry.target.hasAttribute('data-counted')) {
+                const target = parseInt(entry.target.getAttribute('data-count'));
+                entry.target.setAttribute('data-counted', 'true');
+                countUp(entry.target, target);
+            }
+        });
+    }, observerOptions);
+    
+    statsNumbers.forEach(number => {
+        observer.observe(number);
+    });
 }
