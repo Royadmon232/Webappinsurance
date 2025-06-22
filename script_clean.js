@@ -1498,3 +1498,10 @@ function smoothScroll(target) {
     cityInput.addEventListener('blur', function() {
         setTimeout(() => { dropdown.style.display = 'none'; }, 150);
     });
+    
+    // Sync select with input when form loads
+    if (citySelect.value) {
+        cityInput.value = citySelect.value;
+    }
+})();
+// --- End Dynamic City Dropdown Code ---
