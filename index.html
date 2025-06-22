@@ -1254,6 +1254,133 @@
                         </div>
                     </section>
                     
+                    <!-- Step 5: סיום וקבלת הצעת מחיר -->
+                    <section id="step-completion" class="wizard-step">
+                        <div class="modal-body-grid modal-centered">
+                            <div class="completion-container">
+                                <div class="completion-header">
+                                    <div class="completion-icon-wrapper">
+                                        <div class="completion-icon">
+                                            <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <circle cx="40" cy="40" r="38" stroke="#10b981" stroke-width="4" stroke-dasharray="240" stroke-dashoffset="240">
+                                                    <animate attributeName="stroke-dashoffset" from="240" to="0" dur="1s" fill="freeze"/>
+                                                </circle>
+                                                <path d="M25 40L35 50L55 30" stroke="#10b981" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+                                                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.5s" fill="freeze"/>
+                                                </path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <h2 class="completion-title">כל הכבוד! סיימת למלא את כל הפרטים</h2>
+                                    <p class="completion-subtitle">נשאר רק לאמת את מספר הטלפון שלך וניצור איתך קשר בהקדם עם הצעת מחיר מותאמת אישית</p>
+                                </div>
+
+                                <div class="completion-content">
+                                    <!-- Phone Verification Section -->
+                                    <div class="verification-section" id="phone-section">
+                                        <h3 class="section-title">
+                                            <span class="step-number">1</span>
+                                            אימות מספר טלפון
+                                        </h3>
+                                        <div class="phone-input-wrapper">
+                                            <div class="building-form-group">
+                                                <label for="phone-number">
+                                                    <span>מספר טלפון נייד</span>
+                                                    <span class="form-icon">📱</span>
+                                                </label>
+                                                <div class="phone-input-container">
+                                                    <input type="tel" id="phone-number" name="phone-number" placeholder="050-1234567" pattern="[0-9]{3}-[0-9]{7}" maxlength="11" required>
+                                                    <button type="button" class="btn-send-code" id="send-code-btn" onclick="window.HomeInsuranceApp.sendVerificationCode()">
+                                                        <span class="btn-text">שלח קוד אימות</span>
+                                                        <span class="btn-loader" style="display: none;">
+                                                            <svg class="spinner" viewBox="0 0 50 50">
+                                                                <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+                                                            </svg>
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                                <small class="form-helper-text">נשלח אליך קוד אימות ב-SMS</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Code Verification Section -->
+                                    <div class="verification-section" id="code-section" style="display: none;">
+                                        <h3 class="section-title">
+                                            <span class="step-number">2</span>
+                                            הזן את קוד האימות
+                                        </h3>
+                                        <div class="code-input-wrapper">
+                                            <p class="code-sent-message">קוד אימות נשלח למספר <span id="phone-display"></span></p>
+                                            <div class="code-inputs">
+                                                <input type="text" class="code-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                                                <input type="text" class="code-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                                                <input type="text" class="code-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                                                <input type="text" class="code-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                                                <input type="text" class="code-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                                                <input type="text" class="code-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                                            </div>
+                                            <div class="code-actions">
+                                                <button type="button" class="btn-resend" onclick="window.HomeInsuranceApp.resendCode()">
+                                                    <span class="resend-text">לא קיבלת קוד? שלח שוב</span>
+                                                    <span class="resend-timer" style="display: none;">שלח שוב בעוד <span id="timer">60</span> שניות</span>
+                                                </button>
+                                            </div>
+                                            <div class="verification-error" id="verification-error" style="display: none;">
+                                                <span class="error-icon">⚠️</span>
+                                                <span class="error-text">קוד שגוי, נסה שוב</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Success Section -->
+                                    <div class="verification-section" id="success-section" style="display: none;">
+                                        <div class="success-animation">
+                                            <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <circle cx="60" cy="60" r="58" fill="#10b981" fill-opacity="0.1"/>
+                                                <circle cx="60" cy="60" r="50" stroke="#10b981" stroke-width="4"/>
+                                                <path d="M40 60L52 72L80 44" stroke="#10b981" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
+                                        <h3 class="success-title">מצוין! האימות הושלם בהצלחה</h3>
+                                        <p class="success-message">הפרטים שלך נקלטו במערכת ונשלחו לסוכנות הביטוח אדמון</p>
+                                        <div class="agency-info">
+                                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%230052cc'/%3E%3Ctext x='50' y='65' font-family='Arial' font-size='40' font-weight='bold' text-anchor='middle' fill='white'%3EA%3C/text%3E%3C/svg%3E" alt="אדמון סוכנות לביטוח" class="agency-logo">
+                                            <div class="agency-details">
+                                                <h4>אדמון סוכנות לביטוח</h4>
+                                                <p>נציג מטעמנו יצור איתך קשר בתוך 24 שעות עם הצעת מחיר מותאמת אישית</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Additional Info -->
+                                    <div class="info-cards">
+                                        <div class="info-card">
+                                            <div class="info-icon">🏠</div>
+                                            <h4>ביטוח מקיף</h4>
+                                            <p>קיבלנו את כל הפרטים הנדרשים לבניית הצעת ביטוח מותאמת לצרכיך</p>
+                                        </div>
+                                        <div class="info-card">
+                                            <div class="info-icon">💰</div>
+                                            <h4>מחיר תחרותי</h4>
+                                            <p>נבדוק עבורך את המחירים הטובים ביותר מחברות הביטוח המובילות</p>
+                                        </div>
+                                        <div class="info-card">
+                                            <div class="info-icon">📞</div>
+                                            <h4>שירות אישי</h4>
+                                            <p>נציג מקצועי ילווה אותך לאורך כל התהליך ויענה על כל שאלה</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Final Submit Button -->
+                                    <button type="button" class="btn-submit-final" onclick="window.HomeInsuranceApp.closeGeneralDetailsModal()">
+                                        סגור וחזור לדף הראשי
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
                     <!-- Right Column - Product Sections (hidden - kept for compatibility) -->
                     <div class="modal-sections-container" style="display: none;">
                         <h3>פרקים לבחירתך</h3>

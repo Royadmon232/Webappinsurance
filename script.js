@@ -126,6 +126,9 @@ function buildWizardSteps() {
             });
             break;
     }
+    
+    // Always add completion step at the end
+    wizardSteps.push('step-completion');
 }
 
 /**
@@ -236,9 +239,10 @@ function wizardNext() {
                 }
             }
     
-    // If on last step, submit form
+    // If on last step, show completion step
     if (currentWizardStep === wizardSteps.length - 1) {
-        window.HomeInsuranceApp.submitGeneralDetails();
+        // Don't submit yet, just move to completion step
+        showWizardStep(currentWizardStep + 1);
         return;
     }
     
@@ -261,6 +265,385 @@ function wizardPrev() {
 window.HomeInsuranceApp = window.HomeInsuranceApp || {};
 window.HomeInsuranceApp.wizardNext = wizardNext;
 window.HomeInsuranceApp.wizardPrev = wizardPrev;
+
+// Phone verification state
+let verificationCode = '';
+let phoneNumber = '';
+let resendTimer = null;
+
+/**
+ * Send verification code
+ */
+window.HomeInsuranceApp.sendVerificationCode = async function() {
+    const phoneInput = document.getElementById('phone-number');
+    const sendBtn = document.getElementById('send-code-btn');
+    
+    if (!phoneInput.value || !phoneInput.checkValidity()) {
+        phoneInput.reportValidity();
+        return;
+    }
+    
+    phoneNumber = phoneInput.value;
+    
+    // Show loading state
+    sendBtn.disabled = true;
+    sendBtn.querySelector('.btn-text').style.display = 'none';
+    sendBtn.querySelector('.btn-loader').style.display = 'inline-block';
+    
+    // Generate random 6-digit code
+    verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // In production, you would send SMS here
+    console.log('Verification code:', verificationCode);
+    
+    // Show code section
+    document.getElementById('phone-section').style.display = 'none';
+    document.getElementById('code-section').style.display = 'block';
+    document.getElementById('phone-display').textContent = phoneNumber;
+    
+    // Reset button state
+    sendBtn.disabled = false;
+    sendBtn.querySelector('.btn-text').style.display = 'inline';
+    sendBtn.querySelector('.btn-loader').style.display = 'none';
+    
+    // Start resend timer
+    startResendTimer();
+    
+    // Focus first code input
+    document.querySelector('.code-digit').focus();
+    
+    // Setup code inputs
+    setupCodeInputs();
+};
+
+/**
+ * Setup code digit inputs
+ */
+function setupCodeInputs() {
+    const codeInputs = document.querySelectorAll('.code-digit');
+    
+    codeInputs.forEach((input, index) => {
+        input.addEventListener('input', function(e) {
+            // Clear error state
+            document.getElementById('verification-error').style.display = 'none';
+            codeInputs.forEach(inp => inp.classList.remove('error'));
+            
+            // Only allow digits
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            // Move to next input
+            if (this.value && index < codeInputs.length - 1) {
+                codeInputs[index + 1].focus();
+            }
+            
+            // Check if all inputs are filled
+            if (index === codeInputs.length - 1) {
+                const code = Array.from(codeInputs).map(inp => inp.value).join('');
+                if (code.length === 6) {
+                    verifyCode(code);
+                }
+            }
+        });
+        
+        input.addEventListener('keydown', function(e) {
+            // Handle backspace
+            if (e.key === 'Backspace' && !this.value && index > 0) {
+                codeInputs[index - 1].focus();
+            }
+        });
+        
+        input.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pastedData = e.clipboardData.getData('text');
+            const digits = pastedData.replace(/[^0-9]/g, '').slice(0, 6);
+            
+            digits.split('').forEach((digit, i) => {
+                if (codeInputs[i]) {
+                    codeInputs[i].value = digit;
+                }
+            });
+            
+            if (digits.length === 6) {
+                verifyCode(digits);
+            }
+        });
+    });
+}
+
+/**
+ * Verify entered code
+ */
+function verifyCode(enteredCode) {
+    const codeInputs = document.querySelectorAll('.code-digit');
+    
+    if (enteredCode === verificationCode) {
+        // Success!
+        codeInputs.forEach(input => input.classList.add('filled'));
+        
+        // Show success section
+        setTimeout(() => {
+            document.getElementById('code-section').style.display = 'none';
+            document.getElementById('success-section').style.display = 'block';
+            
+            // Submit form data
+            submitFinalForm();
+        }, 500);
+    } else {
+        // Error
+        codeInputs.forEach(input => input.classList.add('error'));
+        document.getElementById('verification-error').style.display = 'flex';
+    }
+}
+
+/**
+ * Start resend timer
+ */
+function startResendTimer() {
+    const resendBtn = document.querySelector('.btn-resend');
+    const resendText = document.querySelector('.resend-text');
+    const resendTimerEl = document.querySelector('.resend-timer');
+    const timerSpan = document.getElementById('timer');
+    
+    let seconds = 60;
+    
+    resendBtn.disabled = true;
+    resendText.style.display = 'none';
+    resendTimerEl.style.display = 'inline';
+    
+    resendTimer = setInterval(() => {
+        seconds--;
+        timerSpan.textContent = seconds;
+        
+        if (seconds <= 0) {
+            clearInterval(resendTimer);
+            resendBtn.disabled = false;
+            resendText.style.display = 'inline';
+            resendTimerEl.style.display = 'none';
+        }
+    }, 1000);
+}
+
+/**
+ * Resend verification code
+ */
+window.HomeInsuranceApp.resendCode = function() {
+    // Generate new code
+    verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log('New verification code:', verificationCode);
+    
+    // Clear inputs
+    document.querySelectorAll('.code-digit').forEach(input => {
+        input.value = '';
+        input.classList.remove('error', 'filled');
+    });
+    
+    // Hide error
+    document.getElementById('verification-error').style.display = 'none';
+    
+    // Start timer again
+    startResendTimer();
+    
+    // Focus first input
+    document.querySelector('.code-digit').focus();
+};
+
+/**
+ * Submit final form with all collected data
+ */
+async function submitFinalForm() {
+    // Collect all form data
+    const formData = collectAllFormData();
+    
+    // Add phone number
+    formData.phoneNumber = phoneNumber;
+    
+    // Format email content
+    const emailContent = formatEmailContent(formData);
+    
+    // In production, you would send this to your backend
+    console.log('Sending email to royadmon23@gmail.com');
+    console.log('Email content:', emailContent);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Show final success message
+    const submitBtn = document.querySelector('.btn-submit-final');
+    if (submitBtn) {
+        submitBtn.textContent = 'הפרטים נשלחו בהצלחה!';
+        submitBtn.disabled = true;
+    }
+}
+
+/**
+ * Collect all form data from all steps
+ */
+function collectAllFormData() {
+    const data = {
+        // General details
+        firstName: document.getElementById('firstName')?.value || '',
+        lastName: document.getElementById('lastName')?.value || '',
+        email: document.getElementById('email')?.value || '',
+        idNumber: document.getElementById('idNumber')?.value || '',
+        productType: document.getElementById('productType')?.value || '',
+        propertyType: document.getElementById('propertyType')?.value || '',
+        startDate: document.getElementById('startDate')?.value || '',
+        
+        // Address
+        city: document.getElementById('city')?.value || '',
+        street: document.getElementById('street')?.value || '',
+        houseNumber: document.getElementById('houseNumber')?.value || '',
+        postalCode: document.getElementById('postalCode')?.value || '',
+        hasGarden: document.getElementById('garden-checkbox')?.checked || false,
+        
+        // Building details (if applicable)
+        buildingInsuranceAmount: document.getElementById('insurance-amount')?.value || '',
+        buildingAge: document.getElementById('building-age')?.value || '',
+        buildingArea: document.getElementById('building-area')?.value || '',
+        constructionType: document.getElementById('construction-type')?.value || '',
+        constructionStandard: document.getElementById('construction-standard')?.value || '',
+        mortgagedProperty: document.getElementById('mortgaged-property')?.checked || false,
+        renewals: document.getElementById('renewals')?.value || '',
+        
+        // Building coverages
+        waterDamageType: document.getElementById('water-damage-type')?.value || '',
+        waterDeductible: document.getElementById('water-deductible')?.value || '',
+        mortgageWaterDamage: document.getElementById('mortgage-water-damage')?.value || '',
+        burglaryBuilding: document.getElementById('burglary-building')?.checked || false,
+        earthquakeCoverage: document.getElementById('earthquake-coverage')?.value || '',
+        earthquakeDeductible: document.getElementById('earthquake-deductible')?.value || '',
+        additionalSharedInsurance: document.getElementById('additional-shared-insurance')?.value || '',
+        
+        // Building extensions
+        buildingContentsInsurance: document.getElementById('building-contents-insurance')?.value || '',
+        storageInsurance: document.getElementById('storage-insurance')?.value || '',
+        swimmingPoolInsurance: document.getElementById('swimming-pool-insurance')?.value || '',
+        glassBreakageInsurance: document.getElementById('glass-breakage-insurance')?.value || '',
+        boilersCoverage: document.getElementById('boilers-coverage')?.checked || false,
+        
+        // Contents details (if applicable)
+        contentsInsuranceAmount: document.getElementById('contents-insurance-amount')?.value || '',
+        contentsBuildingAge: document.getElementById('contents-building-age')?.value || '',
+        jewelryAmount: document.getElementById('jewelry-amount')?.value || '',
+        jewelryCoverage: document.getElementById('jewelry-coverage')?.value || '',
+        watchesAmount: document.getElementById('watches-amount')?.value || '',
+        watchesCoverage: document.getElementById('watches-coverage')?.value || '',
+        
+        // Valuable items
+        camerasAmount: document.getElementById('cameras-amount')?.value || '',
+        electronicsAmount: document.getElementById('electronics-amount')?.value || '',
+        bicyclesAmount: document.getElementById('bicycles-amount')?.value || '',
+        musicalInstrumentsAmount: document.getElementById('musical-instruments-amount')?.value || '',
+        
+        // Contents coverages
+        contentsWaterDamage: document.getElementById('contents-water-damage')?.checked || false,
+        contentsBurglary: document.getElementById('contents-burglary')?.checked || false,
+        contentsEarthquake: document.getElementById('contents-earthquake')?.value || '',
+        contentsEarthquakeDeductible: document.getElementById('contents-earthquake-deductible')?.value || '',
+        
+        // Additional coverages
+        businessContentsAmount: document.getElementById('business-contents-amount')?.value || '',
+        businessEmployers: document.getElementById('business-employers')?.checked || false,
+        businessThirdParty: document.getElementById('business-third-party')?.checked || false,
+        thirdPartyCoverage: document.getElementById('third-party-coverage')?.checked || false,
+        employersLiability: document.getElementById('employers-liability')?.checked || false,
+        cyberCoverage: document.getElementById('cyber-coverage')?.checked || false,
+        terrorCoverage: document.getElementById('terror-coverage')?.checked || false,
+        
+        // Timestamp
+        submittedAt: new Date().toLocaleString('he-IL')
+    };
+    
+    return data;
+}
+
+/**
+ * Format email content
+ */
+function formatEmailContent(data) {
+    let content = `
+פרטי הצעת ביטוח דירה חדשה
+========================
+
+פרטים אישיים:
+--------------
+שם מלא: ${data.firstName} ${data.lastName}
+מספר טלפון: ${phoneNumber}
+אימייל: ${data.email}
+תעודת זהות: ${data.idNumber}
+
+פרטי הביטוח:
+--------------
+סוג מוצר: ${data.productType}
+סוג נכס: ${data.propertyType}
+תאריך התחלה: ${data.startDate}
+
+כתובת:
+-------
+עיר: ${data.city}
+רחוב: ${data.street}
+מספר בית: ${data.houseNumber}
+מיקוד: ${data.postalCode}
+גינה: ${data.hasGarden ? 'כן' : 'לא'}
+`;
+
+    // Add building details if applicable
+    if (data.buildingInsuranceAmount) {
+        content += `
+
+פרטי מבנה:
+-----------
+סכום ביטוח: ₪${data.buildingInsuranceAmount}
+גיל המבנה: ${data.buildingAge} שנים
+שטח: ${data.buildingArea} מ"ר
+סוג בניה: ${data.constructionType}
+סטנדרט בניה: ${data.constructionStandard}
+משועבד/מוטב: ${data.mortgagedProperty ? 'כן' : 'לא'}
+חידושים: ${data.renewals}
+
+כיסויים נוספים למבנה:
+נזקי מים: ${data.waterDamageType}
+השתתפות עצמית: ${data.waterDeductible}
+פריצה: ${data.burglaryBuilding ? 'כן' : 'לא'}
+רעידת אדמה: ${data.earthquakeCoverage}
+`;
+    }
+
+    // Add contents details if applicable
+    if (data.contentsInsuranceAmount) {
+        content += `
+
+פרטי תכולה:
+-----------
+סכום ביטוח: ₪${data.contentsInsuranceAmount}
+תכשיטים: ₪${data.jewelryAmount || '0'}
+שעונים: ₪${data.watchesAmount || '0'}
+מצלמות: ₪${data.camerasAmount || '0'}
+ציוד אלקטרוני: ₪${data.electronicsAmount || '0'}
+אופניים: ₪${data.bicyclesAmount || '0'}
+כלי נגינה: ₪${data.musicalInstrumentsAmount || '0'}
+`;
+    }
+
+    // Add additional coverages
+    content += `
+
+כיסויים נוספים:
+---------------
+פעילות עסקית: ${data.businessContentsAmount ? `₪${data.businessContentsAmount}` : 'לא'}
+צד שלישי: ${data.thirdPartyCoverage ? 'כן' : 'לא'}
+חבות מעבידים: ${data.employersLiability ? 'כן' : 'לא'}
+סייבר למשפחה: ${data.cyberCoverage ? 'כן' : 'לא'}
+טרור: ${data.terrorCoverage ? 'כן' : 'לא'}
+
+נשלח בתאריך: ${data.submittedAt}
+`;
+
+    return content;
+}
 
 /**
  * Initialize page functionality
