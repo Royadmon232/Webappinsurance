@@ -3025,6 +3025,26 @@ input:disabled {
     box-shadow: 0 18px 45px rgba(255, 136, 0, 0.4);
 }
 
+.cta-features {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-top: 2rem;
+}
+
+.cta-feature {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary-white);
+    font-size: 1.125rem;
+}
+
+.cta-feature i {
+    width: 24px;
+    height: 24px;
+}
+
 /* Responsive Updates */
 @media (max-width: 768px) {
     .hero-title {
