@@ -24,6 +24,8 @@ document.addEventListener('DOMContentLoaded', function() {
             addFormInputListeners();
             setupModalCloseHandlers();
             addBuildingFormListeners();
+            initializeContentsFields();
+            addContentsFormListeners();
             
             // Initialize building fields based on current product type
             const productType = document.getElementById('productType');
@@ -208,6 +210,19 @@ function wizardNext() {
                 
                 // Perform building section validation
                 const isValid = validateBuildingSection();
+                
+                if (!isValid) {
+                    return;
+                }
+            }
+            
+            // If on contents section step, validate contents fields
+            if (wizardSteps[currentWizardStep] === 'step-cover-contents') {
+                // Clear all previous errors
+                clearContentsFormErrors();
+                
+                // Perform contents section validation
+                const isValid = validateContentsSection();
                 
                 if (!isValid) {
                     return;
@@ -991,6 +1006,14 @@ function initializeConditionalFields() {
     const coverageTypeField = coverageTypeSelect ? coverageTypeSelect.closest('.form-group') : null;
     const floorCountField = floorCountSelect ? floorCountSelect.closest('.form-group') : null;
     
+    // Coverage Type change handler
+    if (coverageTypeSelect) {
+        coverageTypeSelect.addEventListener('change', function() {
+            // Update valuable items section based on coverage type
+            updateValuableItemsSection();
+        });
+    }
+    
     // Product Type change handler
     if (productTypeSelect) {
         productTypeSelect.addEventListener('change', function() {
@@ -1020,6 +1043,9 @@ function initializeConditionalFields() {
             
             // Update building extensions section based on selection
             updateBuildingExtensionsForProduct(selectedValue);
+            
+            // Update contents fields based on product type
+            updateContentsFieldsForProductType();
         });
     }
     
@@ -3956,4 +3982,389 @@ function addBuildingFormListeners() {
 // Add this to the openModal function or initialization
 if (typeof window.addBuildingFormListeners === 'undefined') {
     window.addBuildingFormListeners = addBuildingFormListeners;
+}
+
+/**
+ * Initialize contents section conditional fields
+ */
+function initializeContentsFields() {
+    // Product type and coverage type from general details
+    const productTypeSelect = document.getElementById('productType');
+    const coverageTypeSelect = document.getElementById('coverageType');
+    
+    // Contents section fields
+    const contentsBuilingAgeGroup = document.getElementById('contents-building-age-group');
+    const jewelryAmountInput = document.getElementById('jewelry-amount');
+    const jewelryCoverageGroup = document.getElementById('jewelry-coverage-group');
+    const watchesAmountInput = document.getElementById('watches-amount');
+    const watchesCoverageGroup = document.getElementById('watches-coverage-group');
+    const valuableItemsSection = document.getElementById('valuable-items-section');
+    const contentsWaterDamageGroup = document.getElementById('contents-water-damage-group');
+    const contentsEarthquakeSelect = document.getElementById('contents-earthquake');
+    const contentsEarthquakeDeductibleGroup = document.getElementById('contents-earthquake-deductible-group');
+    
+    // Update contents fields based on product type
+    updateContentsFieldsForProductType();
+    
+    // Update valuable items section based on coverage type
+    updateValuableItemsSection();
+    
+    // Jewelry amount change handler
+    if (jewelryAmountInput) {
+        jewelryAmountInput.addEventListener('input', function() {
+            updateJewelryCoverageField(this.value);
+        });
+    }
+    
+    // Watches amount change handler
+    if (watchesAmountInput) {
+        watchesAmountInput.addEventListener('input', function() {
+            updateWatchesCoverageField(this.value);
+        });
+    }
+    
+    // Contents earthquake change handler
+    if (contentsEarthquakeSelect) {
+        contentsEarthquakeSelect.addEventListener('change', function() {
+            updateContentsEarthquakeDeductible(this.value);
+        });
+    }
+}
+
+/**
+ * Update contents fields based on product type
+ */
+function updateContentsFieldsForProductType() {
+    const productType = document.getElementById('productType')?.value;
+    const contentsBuilingAgeGroup = document.getElementById('contents-building-age-group');
+    const contentsBuilingAgeInput = document.getElementById('contents-building-age');
+    const contentsWaterDamageGroup = document.getElementById('contents-water-damage-group');
+    
+    if (productType === 'תכולה בלבד') {
+        // Show building age field for contents only
+        if (contentsBuilingAgeGroup) {
+            contentsBuilingAgeGroup.style.display = 'block';
+            if (contentsBuilingAgeInput) {
+                contentsBuilingAgeInput.required = true;
+            }
+        }
+        
+        // Show water damage checkbox for contents only
+        if (contentsWaterDamageGroup) {
+            contentsWaterDamageGroup.style.display = 'block';
+        }
+    } else {
+        // Hide building age field
+        if (contentsBuilingAgeGroup) {
+            contentsBuilingAgeGroup.style.display = 'none';
+            if (contentsBuilingAgeInput) {
+                contentsBuilingAgeInput.required = false;
+                contentsBuilingAgeInput.value = '';
+            }
+        }
+        
+        // Hide water damage checkbox
+        if (contentsWaterDamageGroup) {
+            contentsWaterDamageGroup.style.display = 'none';
+        }
+    }
+}
+
+/**
+ * Update valuable items section based on coverage type
+ */
+function updateValuableItemsSection() {
+    const coverageType = document.getElementById('coverageType')?.value;
+    const valuableItemsSection = document.getElementById('valuable-items-section');
+    
+    if (coverageType === 'חלק מהתכולה בכה״ס' || coverageType === 'כל התכולה בכה״ס') {
+        // Show valuable items section
+        if (valuableItemsSection) {
+            valuableItemsSection.style.display = 'block';
+        }
+    } else {
+        // Hide valuable items section
+        if (valuableItemsSection) {
+            valuableItemsSection.style.display = 'none';
+            
+            // Clear values in hidden fields
+            const fields = valuableItemsSection.querySelectorAll('input[type="number"]');
+            fields.forEach(field => {
+                field.value = '';
+            });
+        }
+    }
+    
+    // Handle special case for תכולה מקיף בלבד
+    updateContentsDropdownsForCoverageType(coverageType);
+}
+
+/**
+ * Update jewelry coverage field based on jewelry amount
+ * @param {string} amount - The jewelry amount value
+ */
+function updateJewelryCoverageField(amount) {
+    const jewelryCoverageGroup = document.getElementById('jewelry-coverage-group');
+    const jewelryCoverageSelect = document.getElementById('jewelry-coverage');
+    
+    if (amount && parseFloat(amount) > 0) {
+        // Show jewelry coverage dropdown
+        if (jewelryCoverageGroup) {
+            jewelryCoverageGroup.style.display = 'block';
+            if (jewelryCoverageSelect) {
+                jewelryCoverageSelect.required = true;
+            }
+        }
+    } else {
+        // Hide jewelry coverage dropdown
+        if (jewelryCoverageGroup) {
+            jewelryCoverageGroup.style.display = 'none';
+            if (jewelryCoverageSelect) {
+                jewelryCoverageSelect.required = false;
+                jewelryCoverageSelect.value = '';
+            }
+        }
+    }
+}
+
+/**
+ * Update watches coverage field based on watches amount
+ * @param {string} amount - The watches amount value
+ */
+function updateWatchesCoverageField(amount) {
+    const watchesCoverageGroup = document.getElementById('watches-coverage-group');
+    const watchesCoverageSelect = document.getElementById('watches-coverage');
+    
+    if (amount && parseFloat(amount) > 0) {
+        // Show watches coverage dropdown
+        if (watchesCoverageGroup) {
+            watchesCoverageGroup.style.display = 'block';
+            if (watchesCoverageSelect) {
+                watchesCoverageSelect.required = true;
+            }
+        }
+    } else {
+        // Hide watches coverage dropdown
+        if (watchesCoverageGroup) {
+            watchesCoverageGroup.style.display = 'none';
+            if (watchesCoverageSelect) {
+                watchesCoverageSelect.required = false;
+                watchesCoverageSelect.value = '';
+            }
+        }
+    }
+}
+
+/**
+ * Update contents earthquake deductible field based on earthquake selection
+ * @param {string} earthquakeCoverage - The earthquake coverage selection
+ */
+function updateContentsEarthquakeDeductible(earthquakeCoverage) {
+    const contentsEarthquakeDeductibleGroup = document.getElementById('contents-earthquake-deductible-group');
+    const contentsEarthquakeDeductibleSelect = document.getElementById('contents-earthquake-deductible');
+    
+    if (earthquakeCoverage === 'כן') {
+        // Show earthquake deductible field
+        if (contentsEarthquakeDeductibleGroup) {
+            contentsEarthquakeDeductibleGroup.style.display = 'block';
+            if (contentsEarthquakeDeductibleSelect) {
+                contentsEarthquakeDeductibleSelect.required = true;
+            }
+        }
+    } else {
+        // Hide earthquake deductible field
+        if (contentsEarthquakeDeductibleGroup) {
+            contentsEarthquakeDeductibleGroup.style.display = 'none';
+            if (contentsEarthquakeDeductibleSelect) {
+                contentsEarthquakeDeductibleSelect.required = false;
+                contentsEarthquakeDeductibleSelect.value = '';
+            }
+        }
+    }
+}
+
+/**
+ * Update contents dropdowns for תכולה מקיף בלבד coverage type
+ * @param {string} coverageType - The coverage type selection
+ */
+function updateContentsDropdownsForCoverageType(coverageType) {
+    const jewelryCoverageSelect = document.getElementById('jewelry-coverage');
+    const watchesCoverageSelect = document.getElementById('watches-coverage');
+    
+    if (coverageType === 'תכולה מקיף בלבד') {
+        // Set jewelry coverage to מקיף and disable
+        if (jewelryCoverageSelect) {
+            jewelryCoverageSelect.value = 'מקיף';
+            jewelryCoverageSelect.disabled = true;
+        }
+        
+        // Set watches coverage to מקיף and disable
+        if (watchesCoverageSelect) {
+            watchesCoverageSelect.value = 'מקיף';
+            watchesCoverageSelect.disabled = true;
+        }
+    } else {
+        // Enable jewelry coverage dropdown
+        if (jewelryCoverageSelect) {
+            jewelryCoverageSelect.disabled = false;
+        }
+        
+        // Enable watches coverage dropdown
+        if (watchesCoverageSelect) {
+            watchesCoverageSelect.disabled = false;
+        }
+    }
+}
+
+/**
+ * Validate contents section fields
+ * @returns {boolean} - True if all visible required fields are valid
+ */
+function validateContentsSection() {
+    let isValid = true;
+    
+    // Contents insurance amount
+    const contentsInsuranceAmount = document.getElementById('contents-insurance-amount');
+    if (contentsInsuranceAmount && contentsInsuranceAmount.required && !contentsInsuranceAmount.value) {
+        showContentsFormError(contentsInsuranceAmount, 'שדה חובה - יש למלא סכום ביטוח תכולה');
+        isValid = false;
+    }
+    
+    // Building age (only if visible)
+    const contentsBuildingAge = document.getElementById('contents-building-age');
+    const contentsBuildingAgeGroup = contentsBuildingAge ? contentsBuildingAge.closest('.building-form-group') : null;
+    if (contentsBuildingAge && contentsBuildingAgeGroup && contentsBuildingAgeGroup.style.display !== 'none' && contentsBuildingAge.required && !contentsBuildingAge.value) {
+        showContentsFormError(contentsBuildingAge, 'שדה חובה - יש למלא גיל המבנה');
+        isValid = false;
+    }
+    
+    // Jewelry coverage (only if visible and required)
+    const jewelryCoverageGroup = document.getElementById('jewelry-coverage-group');
+    const jewelryCoverageSelect = document.getElementById('jewelry-coverage');
+    if (jewelryCoverageSelect && jewelryCoverageGroup && jewelryCoverageGroup.style.display !== 'none' && jewelryCoverageSelect.required && !jewelryCoverageSelect.value) {
+        showContentsFormError(jewelryCoverageSelect, 'שדה חובה - יש לבחור סוג כיסוי לתכשיטים');
+        isValid = false;
+    }
+    
+    // Watches coverage (only if visible and required)
+    const watchesCoverageGroup = document.getElementById('watches-coverage-group');
+    const watchesCoverageSelect = document.getElementById('watches-coverage');
+    if (watchesCoverageSelect && watchesCoverageGroup && watchesCoverageGroup.style.display !== 'none' && watchesCoverageSelect.required && !watchesCoverageSelect.value) {
+        showContentsFormError(watchesCoverageSelect, 'שדה חובה - יש לבחור סוג כיסוי לשעונים');
+        isValid = false;
+    }
+    
+    // Earthquake coverage
+    const contentsEarthquake = document.getElementById('contents-earthquake');
+    if (contentsEarthquake && contentsEarthquake.required && !contentsEarthquake.value) {
+        showContentsFormError(contentsEarthquake, 'שדה חובה - יש לבחור האם לכלול כיסוי רעידת אדמה');
+        isValid = false;
+    }
+    
+    // Earthquake deductible (only if visible and required)
+    const contentsEarthquakeDeductibleGroup = document.getElementById('contents-earthquake-deductible-group');
+    const contentsEarthquakeDeductibleSelect = document.getElementById('contents-earthquake-deductible');
+    if (contentsEarthquakeDeductibleSelect && contentsEarthquakeDeductibleGroup && contentsEarthquakeDeductibleGroup.style.display !== 'none' && contentsEarthquakeDeductibleSelect.required && !contentsEarthquakeDeductibleSelect.value) {
+        showContentsFormError(contentsEarthquakeDeductibleSelect, 'שדה חובה - יש לבחור השתתפות עצמית לרעידת אדמה');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+/**
+ * Show error message for a contents form field
+ * @param {HTMLElement} field - The form field element
+ * @param {string} message - The error message to display
+ */
+function showContentsFormError(field, message) {
+    // Add error class to field
+    field.classList.add('error');
+    
+    // Create error message element
+    const errorElement = document.createElement('div');
+    errorElement.className = 'form-error-message';
+    errorElement.textContent = message;
+    
+    // Insert error message after the field or helper text
+    const formGroup = field.closest('.building-form-group');
+    if (formGroup) {
+        // Remove any existing error message
+        const existingError = formGroup.querySelector('.form-error-message');
+        if (existingError) {
+            existingError.remove();
+        }
+        
+        // Find where to insert the error (after helper text if exists, otherwise after field)
+        const helperText = formGroup.querySelector('.form-helper-text');
+        if (helperText) {
+            helperText.insertAdjacentElement('afterend', errorElement);
+        } else {
+            field.insertAdjacentElement('afterend', errorElement);
+        }
+    }
+}
+
+/**
+ * Clear all contents form errors
+ */
+function clearContentsFormErrors() {
+    // Find all error fields in contents sections
+    const contentsContainer = document.querySelector('#step-cover-contents .building-sections-container');
+    
+    if (contentsContainer) {
+        // Remove error classes from fields
+        const errorFields = contentsContainer.querySelectorAll('.error');
+        errorFields.forEach(field => {
+            field.classList.remove('error');
+        });
+        
+        // Remove all error messages
+        const errorMessages = contentsContainer.querySelectorAll('.form-error-message');
+        errorMessages.forEach(message => {
+            message.remove();
+        });
+    }
+}
+
+/**
+ * Add input event listeners for contents form validation
+ */
+function addContentsFormListeners() {
+    // Add listeners to all contents form fields
+    const contentsSections = document.querySelectorAll('#step-cover-contents .building-section');
+    
+    contentsSections.forEach(section => {
+        // Add listeners to input fields
+        const inputFields = section.querySelectorAll('input[type="number"]');
+        inputFields.forEach(field => {
+            field.addEventListener('input', function() {
+                if (this.value) {
+                    this.classList.remove('error');
+                    const errorMsg = this.closest('.building-form-group')?.querySelector('.form-error-message');
+                    if (errorMsg) errorMsg.remove();
+                }
+            });
+        });
+        
+        // Add listeners to select fields
+        const selectFields = section.querySelectorAll('select');
+        selectFields.forEach(field => {
+            field.addEventListener('change', function() {
+                if (this.value) {
+                    this.classList.remove('error');
+                    const errorMsg = this.closest('.building-form-group')?.querySelector('.form-error-message');
+                    if (errorMsg) errorMsg.remove();
+                }
+            });
+        });
+    });
+}
+
+// Make functions available globally
+if (typeof window.initializeContentsFields === 'undefined') {
+    window.initializeContentsFields = initializeContentsFields;
+}
+if (typeof window.addContentsFormListeners === 'undefined') {
+    window.addContentsFormListeners = addContentsFormListeners;
 }

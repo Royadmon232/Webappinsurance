@@ -529,12 +529,171 @@
                     <!-- Step 3: תכולה -->
                     <section id="step-cover-contents" class="wizard-step">
                         <div class="modal-body-grid modal-centered">
-                            <div class="modal-sections-container">
-                                <h3>תכולה</h3>
-                                <div class="product-sections">
-                                    <div class="section-item" data-section="תכולה">
-                                        <input type="checkbox" id="section-contents" name="sections[]" value="תכולה">
-                                        <label for="section-contents">תכולה</label>
+                            <div class="building-sections-container">
+                                <h2 class="building-main-title">תכולה</h2>
+                                
+                                <!-- Section 1: תכולה -->
+                                <div class="building-section">
+                                    <h3 class="building-section-title">תכולה</h3>
+                                    <div class="building-section-form">
+                                        <div class="building-form-grid">
+                                            <div class="building-form-group">
+                                                <label for="contents-insurance-amount" data-required="*">
+                                                    <span>סכום ביטוח תכולה (₪)</span>
+                                                    <span class="form-icon">💰</span>
+                                                </label>
+                                                <input type="number" id="contents-insurance-amount" name="contents-insurance-amount" min="0" step="1000" placeholder="הכנס סכום ביטוח" required>
+                                                <small class="form-helper-text">סכום הביטוח צריך לכסות את ערך התכולה של הדירה</small>
+                                            </div>
+                                            
+                                            <div class="building-form-group" id="contents-building-age-group" style="display: none;">
+                                                <label for="contents-building-age" data-required="*">
+                                                    <span>גיל מבנה</span>
+                                                    <span class="form-icon">🏠</span>
+                                                </label>
+                                                <input type="number" id="contents-building-age" name="contents-building-age" min="0" max="200" placeholder="הכנס גיל המבנה בשנים">
+                                                <small class="form-helper-text">מספר השנים מאז בניית הנכס</small>
+                                            </div>
+                                            
+                                            <div class="building-form-group">
+                                                <label for="jewelry-amount">
+                                                    <span>תכשיטים (₪)</span>
+                                                    <span class="form-icon">💎</span>
+                                                </label>
+                                                <input type="number" id="jewelry-amount" name="jewelry-amount" min="0" step="100" placeholder="הכנס סכום תכשיטים">
+                                                <small class="form-helper-text">ערך התכשיטים שברצונך לבטח</small>
+                                            </div>
+                                            
+                                            <div class="building-form-group" id="jewelry-coverage-group" style="display: none;">
+                                                <label for="jewelry-coverage" data-required="*">
+                                                    <span>כיסוי מקיף/כיסוי כל הסיכונים מלא</span>
+                                                    <span class="form-icon">🛡️</span>
+                                                </label>
+                                                <select id="jewelry-coverage" name="jewelry-coverage">
+                                                    <option value="">בחר סוג כיסוי</option>
+                                                    <option value="מקיף">מקיף</option>
+                                                    <option value="מקיף + כל הסיכונים">מקיף + כל הסיכונים</option>
+                                                </select>
+                                                <small class="form-helper-text">בחר את סוג הכיסוי לתכשיטים</small>
+                                            </div>
+                                            
+                                            <div class="building-form-group">
+                                                <label for="watches-amount">
+                                                    <span>שעונים (₪)</span>
+                                                    <span class="form-icon">⌚</span>
+                                                </label>
+                                                <input type="number" id="watches-amount" name="watches-amount" min="0" step="100" placeholder="הכנס סכום שעונים">
+                                                <small class="form-helper-text">ערך השעונים שברצונך לבטח</small>
+                                            </div>
+                                            
+                                            <div class="building-form-group" id="watches-coverage-group" style="display: none;">
+                                                <label for="watches-coverage" data-required="*">
+                                                    <span>כיסוי שעונים</span>
+                                                    <span class="form-icon">🛡️</span>
+                                                </label>
+                                                <select id="watches-coverage" name="watches-coverage">
+                                                    <option value="">בחר סוג כיסוי</option>
+                                                    <option value="מקיף">מקיף</option>
+                                                    <option value="מקיף + כל הסיכונים">מקיף + כל הסיכונים</option>
+                                                </select>
+                                                <small class="form-helper-text">בחר את סוג הכיסוי לשעונים</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Section 2: דברי ערך בכל הסיכונים -->
+                                <div class="building-section" id="valuable-items-section" style="display: none;">
+                                    <h3 class="building-section-title">דברי ערך ב"כל הסיכונים"</h3>
+                                    <div class="building-section-form">
+                                        <div class="building-form-grid">
+                                            <div class="building-form-group">
+                                                <label for="cameras-amount">
+                                                    <span>מצלמות (₪)</span>
+                                                    <span class="form-icon">📷</span>
+                                                </label>
+                                                <input type="number" id="cameras-amount" name="cameras-amount" min="0" step="100" placeholder="הכנס סכום מצלמות">
+                                                <small class="form-helper-text">ערך המצלמות שברצונך לבטח</small>
+                                            </div>
+                                            
+                                            <div class="building-form-group">
+                                                <label for="electronics-amount">
+                                                    <span>ציוד אלקטרוני/מחשבים ניידים (₪)</span>
+                                                    <span class="form-icon">💻</span>
+                                                </label>
+                                                <input type="number" id="electronics-amount" name="electronics-amount" min="0" step="100" placeholder="הכנס סכום ציוד אלקטרוני">
+                                                <small class="form-helper-text">ערך הציוד האלקטרוני והמחשבים הניידים</small>
+                                            </div>
+                                            
+                                            <div class="building-form-group">
+                                                <label for="bicycles-amount">
+                                                    <span>אופניים (לא חשמליים) (₪)</span>
+                                                    <span class="form-icon">🚲</span>
+                                                </label>
+                                                <input type="number" id="bicycles-amount" name="bicycles-amount" min="0" step="100" placeholder="הכנס סכום אופניים">
+                                                <small class="form-helper-text">ערך האופניים הרגילים (לא חשמליים)</small>
+                                            </div>
+                                            
+                                            <div class="building-form-group">
+                                                <label for="musical-instruments-amount">
+                                                    <span>כלי נגינה ניידים (₪)</span>
+                                                    <span class="form-icon">🎸</span>
+                                                </label>
+                                                <input type="number" id="musical-instruments-amount" name="musical-instruments-amount" min="0" step="100" placeholder="הכנס סכום כלי נגינה">
+                                                <small class="form-helper-text">ערך כלי הנגינה הניידים</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Section 3: כיסויים נוספים לתכולה -->
+                                <div class="building-section">
+                                    <h3 class="building-section-title">כיסויים נוספים לתכולה</h3>
+                                    <div class="building-section-form">
+                                        <div class="building-form-grid">
+                                            <div class="building-form-group building-checkbox-group" id="contents-water-damage-group" style="display: none;">
+                                                <div class="building-checkbox-wrapper">
+                                                    <input type="checkbox" id="contents-water-damage" name="contents-water-damage" value="נזקי מים (תכולה בלבד)">
+                                                    <label for="contents-water-damage">נזקי מים (תכולה בלבד)</label>
+                                                </div>
+                                                <small class="form-helper-text">כיסוי לנזקי מים לתכולה בלבד</small>
+                                            </div>
+                                            
+                                            <div class="building-form-group building-checkbox-group">
+                                                <div class="building-checkbox-wrapper">
+                                                    <input type="checkbox" id="contents-burglary" name="contents-burglary" value="פריצה, גניבה ושוד (תכולה)">
+                                                    <label for="contents-burglary">פריצה, גניבה ושוד (תכולה)</label>
+                                                </div>
+                                                <small class="form-helper-text">כיסוי לנזקים מפריצה, גניבה ושוד לתכולה</small>
+                                            </div>
+                                            
+                                            <div class="building-form-group">
+                                                <label for="contents-earthquake" data-required="*">
+                                                    <span>רעידת אדמה</span>
+                                                    <span class="form-icon">🌍</span>
+                                                </label>
+                                                <select id="contents-earthquake" name="contents-earthquake" required>
+                                                    <option value="">בחר כיסוי רעידת אדמה</option>
+                                                    <option value="כן">כן</option>
+                                                    <option value="לא">לא</option>
+                                                </select>
+                                                <small class="form-helper-text">כיסוי לנזקים הנגרמים מרעידות אדמה</small>
+                                            </div>
+                                            
+                                            <div class="building-form-group" id="contents-earthquake-deductible-group" style="display: none;">
+                                                <label for="contents-earthquake-deductible" data-required="*">
+                                                    <span>השתתפות עצמית רעידת אדמה (תכולה)</span>
+                                                    <span class="form-icon">💵</span>
+                                                </label>
+                                                <select id="contents-earthquake-deductible" name="contents-earthquake-deductible">
+                                                    <option value="">בחר השתתפות עצמית</option>
+                                                    <option value="השתתפות עצמית 2%">השתתפות עצמית 2%</option>
+                                                    <option value="השתתפות עצמית 4.2%">השתתפות עצמית 4.2%</option>
+                                                    <option value="השתתפות עצמית 10%">השתתפות עצמית 10%</option>
+                                                </select>
+                                                <small class="form-helper-text">אחוז מסכום הנזק שתשלם בעת תביעה לרעידת אדמה</small>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
