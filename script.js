@@ -6473,3 +6473,17 @@ function showNotification(type, message) {
         }, 300);
     }, 4000);
 }
+
+// DEBUG: Show the submit quote button always in the final step
+const showQuoteBtn = () => {
+    const btn = document.querySelector('.btn-submit-quote');
+    if (btn) {
+        btn.style.display = 'block';
+        btn.style.visibility = 'visible';
+        btn.disabled = false;
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    showQuoteBtn();
+});

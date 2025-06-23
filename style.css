@@ -7676,3 +7676,8 @@ input[type="number"]::-webkit-outer-spin-button {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
+
+/* Final Step: Completion Window - Black Text */
+#step-completion, #step-completion * {
+    color: #111 !important;
+}
