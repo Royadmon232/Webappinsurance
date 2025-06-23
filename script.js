@@ -6488,27 +6488,22 @@ document.addEventListener('DOMContentLoaded', () => {
     showQuoteBtn();
 });
 
-// Always show the submit quote button when reaching the final step
-function showQuoteBtnOnFinalStep() {
-    const observer = new MutationObserver(() => {
-        const finalStep = document.getElementById('step-completion');
-        const btn = document.querySelector('.btn-submit-quote');
-        if (finalStep && finalStep.style.display !== 'none' && btn) {
-            btn.style.display = 'block';
-            btn.style.visibility = 'visible';
-            btn.disabled = false;
-            console.log('✅ כפתור קבל הצעת מחיר מוצג!');
-        }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+// ... existing code ...
+// DEBUG: Show the success section and submit quote button always for testing
+function showSuccessSectionAlways() {
+    const successSection = document.getElementById('success-section');
+    if (successSection) {
+        successSection.style.display = 'block';
+    }
+    const submitBtn = document.querySelector('.btn-submit-quote');
+    if (submitBtn) {
+        submitBtn.style.display = 'block';
+        submitBtn.style.visibility = 'visible';
+        submitBtn.disabled = false;
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    showQuoteBtnOnFinalStep();
+    showSuccessSectionAlways();
 });
-
-// הוספת לוג לפעולת שליחת הליד
-async function submitQuoteRequest() {
-    console.log('📧 submitQuoteRequest נלחץ! מנסה לשלוח ליד...');
-    // ... existing code ...
-}
+// ... existing code ...
