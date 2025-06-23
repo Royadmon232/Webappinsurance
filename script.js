@@ -148,6 +148,13 @@ function showWizardStep(stepIndex) {
             currentStepElement.classList.add('active');
         }
         currentWizardStep = stepIndex;
+        
+        // Initialize phone validation when reaching the final step
+        if (wizardSteps[stepIndex] === 'step-final-details') {
+            setTimeout(() => {
+                initializePhoneValidation();
+            }, 100);
+        }
     }
     
     // Update navigation
@@ -284,23 +291,23 @@ window.HomeInsuranceApp.sendVerificationCode = async function() {
     const validation = validateIsraeliPhone(phoneValue);
     
     if (!phoneValue) {
-        showPhoneError(phoneInput, 'אנא הזן מספר טלפון נייד');
+        showPhoneMessage('error', 'אנא הזן מספר טלפון נייד');
         return;
     }
     
     if (!validation.isValid) {
-        showPhoneError(phoneInput, 'אנא הזן מספר טלפון נייד ישראלי תקין (050-1234567)');
+        showPhoneMessage('error', 'אנא הזן מספר טלפון נייד ישראלי תקין (050-1234567)');
         return;
     }
     
     // Clear any previous errors and hide SMS message
-    clearPhoneError(phoneInput);
+    clearPhoneMessage();
     if (smsMessage) {
         smsMessage.style.display = 'none';
     }
     
     // Use the clean number for API call
-    phoneNumber = validation.cleanNumber;
+    phoneNumber = phoneValue.replace(/\D/g, '');
     
     // Show loading state
     sendBtn.disabled = true;
@@ -326,13 +333,13 @@ window.HomeInsuranceApp.sendVerificationCode = async function() {
         // Show SMS success message
         if (smsMessage) {
             smsMessage.style.display = 'block';
-            smsMessage.textContent = `קוד אימות נשלח למספר ${validation.formattedNumber}`;
+            smsMessage.textContent = `קוד אימות נשלח למספר ${validation.formatted}`;
         }
         
         // Show code section
         document.getElementById('phone-section').style.display = 'none';
         document.getElementById('code-section').style.display = 'block';
-        document.getElementById('phone-display').textContent = validation.formattedNumber;
+        document.getElementById('phone-display').textContent = validation.formatted;
         
         // Start resend timer
         startResendTimer();
@@ -5428,6 +5435,8 @@ function updateSendButtonState() {
 function initializePhoneValidation() {
     const phoneInput = document.getElementById('phone-number');
     
+    console.log('Initializing phone validation, input found:', !!phoneInput);
+    
     if (phoneInput) {
         // Clear any existing event listeners by cloning the element
         const newPhoneInput = phoneInput.cloneNode(true);
@@ -5457,6 +5466,11 @@ function initializePhoneValidation() {
         
         // Set initial state
         updateSendButtonState();
+        
+        // If there's already a value, validate it
+        if (newPhoneInput.value) {
+            handlePhoneInput({ target: newPhoneInput });
+        }
         
         console.log('Enhanced phone validation initialized with real-time feedback');
     }
