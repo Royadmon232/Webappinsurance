@@ -5668,3 +5668,23 @@ input:disabled {
         justify-content: center;
     }
 }
+
+/* Override automatic validation display for phone input */
+#phone-number:valid {
+    background-image: none !important;
+    padding-right: 16px !important;
+    border-color: #e5e7eb !important;
+}
+
+/* Only show valid state when explicitly added by our validation */
+#phone-number.valid {
+    border-color: #10b981 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2310b981'%3e%3cpath fill-rule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clip-rule='evenodd'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 20px !important;
+    padding-right: 44px !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
+}
+
+/* Phone validation styles */

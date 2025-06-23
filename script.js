@@ -277,6 +277,7 @@ let resendTimer = null;
 window.HomeInsuranceApp.sendVerificationCode = async function() {
     const phoneInput = document.getElementById('phone-number');
     const sendBtn = document.getElementById('send-code-btn');
+    const smsMessage = document.getElementById('sms-message');
     
     // Validate phone number using the new validation function
     const phoneValue = phoneInput.value.trim();
@@ -288,8 +289,14 @@ window.HomeInsuranceApp.sendVerificationCode = async function() {
     }
     
     if (!validation.isValid) {
-        showPhoneError(phoneInput, 'יש להזין מספר טלפון נייד ישראלי פרטי בלבד (ללא קווי/עסקי/חברתי)');
+        showPhoneError(phoneInput, 'אנא הזן מספר טלפון נייד ישראלי תקין (050-1234567)');
         return;
+    }
+    
+    // Clear any previous errors and hide SMS message
+    clearPhoneError(phoneInput);
+    if (smsMessage) {
+        smsMessage.style.display = 'none';
     }
     
     // Use the clean number for API call
@@ -316,6 +323,12 @@ window.HomeInsuranceApp.sendVerificationCode = async function() {
             throw new Error(data.error || 'Failed to send verification code');
         }
         
+        // Show SMS success message
+        if (smsMessage) {
+            smsMessage.style.display = 'block';
+            smsMessage.textContent = `קוד אימות נשלח למספר ${validation.formattedNumber}`;
+        }
+        
         // Show code section
         document.getElementById('phone-section').style.display = 'none';
         document.getElementById('code-section').style.display = 'block';
@@ -333,6 +346,11 @@ window.HomeInsuranceApp.sendVerificationCode = async function() {
     } catch (error) {
         console.error('Error sending verification code:', error);
         alert('שגיאה בשליחת קוד אימות. אנא נסה שוב.');
+        
+        // Hide SMS message on error
+        if (smsMessage) {
+            smsMessage.style.display = 'none';
+        }
     } finally {
         // Reset button state
         sendBtn.disabled = false;
@@ -5201,22 +5219,42 @@ function addAdditionalCoverageFormListeners() {
 /**
  * Advanced Israeli phone number validation
  * Validates Israeli mobile numbers: 050, 051, 052, 053, 054, 055, 058, 059
- * Also accepts landline numbers: 02, 03, 04, 08, 09, 077, 072, 073, 074, 076, 079
+ * Only accepts private mobile numbers (not landline, not business/VOIP)
  */
 function validateIsraeliPhone(phone) {
     // Remove all non-digit characters
     const cleanPhone = phone.replace(/\D/g, '');
     
-    // Only allow Israeli private mobile numbers
+    // Must be exactly 10 digits and start with 05
+    if (cleanPhone.length !== 10) {
+        return {
+            isValid: false,
+            isMobile: false,
+            cleanNumber: cleanPhone,
+            formattedNumber: cleanPhone
+        };
+    }
+    
+    // Must start with 05 (Israeli mobile prefix)
+    if (!cleanPhone.startsWith('05')) {
+        return {
+            isValid: false,
+            isMobile: false,
+            cleanNumber: cleanPhone,
+            formattedNumber: cleanPhone
+        };
+    }
+    
+    // Only allow Israeli private mobile numbers (third digit must be 0,1,2,3,4,5,8,9)
     const mobilePatterns = [
-        /^50\d{7}$/,  // 050-1234567
-        /^51\d{7}$/,  // 051-1234567
-        /^52\d{7}$/,  // 052-1234567
-        /^53\d{7}$/,  // 053-1234567
-        /^54\d{7}$/,  // 054-1234567
-        /^55\d{7}$/,  // 055-1234567
-        /^58\d{7}$/,  // 058-1234567
-        /^59\d{7}$/   // 059-1234567
+        /^050\d{7}$/,  // 050-1234567
+        /^051\d{7}$/,  // 051-1234567
+        /^052\d{7}$/,  // 052-1234567
+        /^053\d{7}$/,  // 053-1234567
+        /^054\d{7}$/,  // 054-1234567
+        /^055\d{7}$/,  // 055-1234567
+        /^058\d{7}$/,  // 058-1234567
+        /^059\d{7}$/   // 059-1234567
     ];
     
     const isMobile = mobilePatterns.some(pattern => pattern.test(cleanPhone));
@@ -5288,12 +5326,24 @@ function showPhoneError(phoneInput, message) {
  */
 function clearPhoneError(phoneInput) {
     phoneInput.classList.remove('error');
-    phoneInput.classList.remove('valid');
     
     // Remove error message
     const errorDiv = phoneInput.closest('.building-form-group').querySelector('.phone-error-message');
     if (errorDiv) {
         errorDiv.remove();
+    }
+    
+    // Only show valid state if phone is actually valid
+    const value = phoneInput.value.trim();
+    if (value) {
+        const validation = validateIsraeliPhone(value);
+        if (validation.isValid) {
+            phoneInput.classList.add('valid');
+        } else {
+            phoneInput.classList.remove('valid');
+        }
+    } else {
+        phoneInput.classList.remove('valid');
     }
 }
 
@@ -5339,17 +5389,17 @@ function initializePhoneValidation() {
         } else {
             this.classList.remove('valid');
             
-            // Show appropriate error message
+            // Show appropriate error message based on the actual problem
             let errorMessage = 'מספר הטלפון אינו תקין';
             
-            if (filteredValue.length < 9) {
-                errorMessage = 'מספר הטלפון קצר מדי';
+            if (filteredValue.length < 10) {
+                errorMessage = 'מספר הטלפון חייב להכיל 10 ספרות (050-1234567)';
             } else if (filteredValue.length > 10) {
-                errorMessage = 'מספר הטלפון ארוך מדי';
-            } else if (!filteredValue.startsWith('0')) {
-                errorMessage = 'מספר הטלפון חייב להתחיל ב-0';
+                errorMessage = 'מספר הטלפון ארוך מדי - רק 10 ספרות (050-1234567)';
+            } else if (!filteredValue.startsWith('05')) {
+                errorMessage = 'מספר נייד ישראלי חייב להתחיל ב-05';
             } else {
-                errorMessage = 'יש להזין מספר טלפון נייד ישראלי פרטי בלבד (ללא קווי/עסקי/חברתי)';
+                errorMessage = 'מספר נייד לא תקין. אנא הזן מספר שמתחיל ב-050, 051, 052, 053, 054, 055, 058 או 059';
             }
             
             showPhoneError(this, errorMessage);
@@ -5374,7 +5424,7 @@ function initializePhoneValidation() {
         
         if (!validation.isValid) {
             this.classList.remove('valid');
-            showPhoneError(this, 'אנא הזן מספר טלפון ישראלי תקין');
+            showPhoneError(this, 'אנא הזן מספר טלפון נייד ישראלי תקין (050-1234567)');
         } else {
             this.classList.add('valid');
         }
