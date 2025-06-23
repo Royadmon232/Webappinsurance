@@ -151,13 +151,12 @@ function showWizardStep(stepIndex) {
         
         // Initialize phone validation when reaching the final step
         const currentStepId = wizardSteps[stepIndex];
-        console.log('Current step ID:', currentStepId);
         
         if (currentStepId === 'step-completion' || currentStepId === 'step-final-details') {
-            console.log('Reached final step, initializing phone validation...');
+            // Initialize phone validation immediately for the final step
             setTimeout(() => {
                 initializePhoneValidation();
-            }, 100);
+            }, 50);
         }
     }
     
@@ -1484,6 +1483,15 @@ function openGeneralDetailsModal() {
         // Initialize phone validation (delayed to ensure DOM is ready)
         setTimeout(() => {
             initializePhoneValidation();
+            
+            // Also check if we're already on the final step
+            const currentStepElement = document.querySelector('.wizard-step.active');
+            if (currentStepElement && currentStepElement.id === 'step-completion') {
+                // Re-initialize for the final step to ensure it works
+                setTimeout(() => {
+                    initializePhoneValidation();
+                }, 100);
+            }
         }, 300);
         
         // Add event listeners for closing the modal
@@ -5317,13 +5325,11 @@ function formatPhoneNumber(value) {
 function showPhoneMessage(type, message) {
     const phoneInput = document.getElementById('phone-number');
     if (!phoneInput) {
-        console.error('Phone input not found!');
         return;
     }
     
     const phoneGroup = phoneInput.closest('.building-form-group');
     if (!phoneGroup) {
-        console.error('Phone group not found!');
         return;
     }
     
@@ -5353,20 +5359,18 @@ function showPhoneMessage(type, message) {
         phoneGroup.appendChild(messageDiv);
     }
     
-    console.log('Phone message shown:', type, message);
+    // Phone message shown
 }
 
 // Clear phone validation message
 function clearPhoneMessage() {
     const phoneInput = document.getElementById('phone-number');
     if (!phoneInput) {
-        console.error('Phone input not found in clearPhoneMessage!');
         return;
     }
     
     const phoneGroup = phoneInput.closest('.building-form-group');
     if (!phoneGroup) {
-        console.error('Phone group not found in clearPhoneMessage!');
         return;
     }
     
@@ -5385,7 +5389,7 @@ function handlePhoneInput(event) {
     const input = event.target;
     let value = input.value;
     
-    console.log('handlePhoneInput called with value:', value);
+    // handlePhoneInput called
     
     // Filter input - only allow digits, spaces, dashes, and plus
     const filteredValue = value.replace(/[^\d\s\-+]/g, '');
@@ -5407,18 +5411,16 @@ function handlePhoneInput(event) {
     // Validate the phone number
     const validation = validateIsraeliPhone(limitedDigits);
     
-    console.log('Validation result:', validation);
+    // Validation result
     
     if (limitedDigits === '') {
         // Empty field - clear validation
         clearPhoneMessage();
     } else if (validation.isValid) {
         // Valid phone number
-        console.log('Phone is valid, showing success message');
         showPhoneMessage('success', 'מספר טלפון נייד תקין');
     } else {
         // Invalid phone number
-        console.log('Phone is invalid, showing error:', validation.error);
         showPhoneMessage('error', validation.error);
     }
     
@@ -5474,8 +5476,6 @@ function updateSendButtonState() {
 function initializePhoneValidation() {
     const phoneInput = document.getElementById('phone-number');
     
-    console.log('Initializing phone validation, input found:', !!phoneInput);
-    
     if (phoneInput) {
         // Clear any existing event listeners by cloning the element
         const newPhoneInput = phoneInput.cloneNode(true);
@@ -5511,6 +5511,6 @@ function initializePhoneValidation() {
             handlePhoneInput({ target: newPhoneInput });
         }
         
-        console.log('Enhanced phone validation initialized with real-time feedback');
+        // Enhanced phone validation initialized with real-time feedback
     }
 }
