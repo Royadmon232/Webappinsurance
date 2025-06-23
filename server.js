@@ -37,6 +37,13 @@ const smsLimiter = rateLimit({
 app.use('/api/', limiter);
 app.use('/api/send-verification', smsLimiter);
 
+// Simple auth middleware for testing
+function authenticateToken(req, res, next) {
+    // For testing, allow all requests
+    // In production, implement proper JWT verification
+    next();
+}
+
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/insurance_db', {
     useNewUrlParser: true,
@@ -181,14 +188,20 @@ const InsuranceForm = mongoose.model('InsuranceForm', insuranceFormSchema);
 
 // Twilio setup - only if credentials are available
 let twilioClient = null;
-if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
-    twilioClient = twilio(
-        process.env.TWILIO_ACCOUNT_SID,
-        process.env.TWILIO_AUTH_TOKEN
-    );
-    console.log('✅ Twilio client initialized');
-} else {
-    console.log('⚠️  Twilio credentials not found - SMS functionality disabled');
+try {
+    if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && 
+        process.env.TWILIO_ACCOUNT_SID.startsWith('AC')) {
+        twilioClient = twilio(
+            process.env.TWILIO_ACCOUNT_SID,
+            process.env.TWILIO_AUTH_TOKEN
+        );
+        console.log('✅ Twilio client initialized');
+    } else {
+        console.log('⚠️  Twilio credentials not found or invalid - SMS functionality disabled');
+    }
+} catch (error) {
+    console.log('⚠️  Twilio initialization failed - SMS functionality disabled:', error.message);
+    twilioClient = null;
 }
 
 // Gmail API setup
