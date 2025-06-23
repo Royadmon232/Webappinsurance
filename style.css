@@ -5568,3 +5568,103 @@ input:disabled {
     from { transform: scale(0.8); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
 }
+
+/* Phone validation styles */
+#phone-number.error {
+    border-color: #e74c3c !important;
+    box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2) !important;
+}
+
+.phone-error-message {
+    color: #e74c3c;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.phone-error-message span:first-child {
+    font-size: 1rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Phone input focus states */
+#phone-number:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+#phone-number:focus.error {
+    border-color: #e74c3c;
+    box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
+}
+
+/* Phone input container improvements */
+.phone-input-container {
+    position: relative;
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.phone-input-container input[type="tel"] {
+    flex: 1;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+}
+
+/* Disable send button when phone is invalid */
+.btn-send-code:disabled,
+.btn-send-code.disabled {
+    background-color: #9ca3af !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+    transform: none !important;
+}
+
+.btn-send-code:disabled:hover,
+.btn-send-code.disabled:hover {
+    background-color: #9ca3af !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn-send-code:disabled:active,
+.btn-send-code.disabled:active {
+    transform: none !important;
+}
+
+/* Phone validation success state */
+#phone-number.valid {
+    border-color: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+/* Responsive phone validation */
+@media (max-width: 768px) {
+    .phone-input-container {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .phone-error-message {
+        font-size: 0.8rem;
+    }
+    
+    .btn-send-code {
+        width: 100%;
+        justify-content: center;
+    }
+}
