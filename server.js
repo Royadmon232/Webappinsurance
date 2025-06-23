@@ -179,11 +179,17 @@ insuranceFormSchema.pre('save', async function(next) {
 const VerificationCode = mongoose.model('VerificationCode', verificationCodeSchema);
 const InsuranceForm = mongoose.model('InsuranceForm', insuranceFormSchema);
 
-// Twilio setup
-const twilioClient = twilio(
-    process.env.TWILIO_ACCOUNT_SID,
-    process.env.TWILIO_AUTH_TOKEN
-);
+// Twilio setup - only if credentials are available
+let twilioClient = null;
+if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+    twilioClient = twilio(
+        process.env.TWILIO_ACCOUNT_SID,
+        process.env.TWILIO_AUTH_TOKEN
+    );
+    console.log('✅ Twilio client initialized');
+} else {
+    console.log('⚠️  Twilio credentials not found - SMS functionality disabled');
+}
 
 // Gmail API setup
 const oauth2Client = new google.auth.OAuth2(
@@ -258,7 +264,7 @@ app.post('/api/send-verification', async (req, res) => {
         );
         
         // Send SMS
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env.NODE_ENV === 'production' && twilioClient) {
             await twilioClient.messages.create({
                 body: `קוד האימות שלך לביטוח דירה הוא: ${code}`,
                 from: process.env.TWILIO_PHONE_NUMBER,
