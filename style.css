@@ -7501,6 +7501,7 @@ input[type="number"]::-webkit-outer-spin-button {
     transition: all 0.3s;
 }
 
+
 #phone-number:focus {
     border-color: #10b981;
     background: white;
