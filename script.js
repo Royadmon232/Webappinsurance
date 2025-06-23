@@ -1500,6 +1500,17 @@ function openGeneralDetailsModal() {
         // Initialize wizard
         initStepWizard();
         
+        // Ensure phone validation is ready when needed
+        document.addEventListener('input', function(e) {
+            if (e.target && e.target.id === 'phone-number') {
+                const phoneInput = e.target;
+                if (!phoneInput.hasAttribute('data-validation-initialized')) {
+                    phoneInput.setAttribute('data-validation-initialized', 'true');
+                    initializePhoneValidation();
+                }
+            }
+        }, true);
+        
         // Focus on the modal for accessibility
         const modalContent = modal.querySelector('.modal-content');
         if (modalContent) {
