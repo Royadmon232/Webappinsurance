@@ -1126,13 +1126,9 @@
                     <!-- Step 4: כיסויים נוספים לדירה שלכם -->
                     <section id="step-cover-additional" class="wizard-step">
                         <div class="modal-body-grid modal-centered">
-                            <div class="building-window">
-                                <div class="building-window-header">
-                                    <h2 class="building-window-title">כיסויים נוספים לדירה שלכם</h2>
-                                    <p class="building-window-subtitle">בחרו מבין הכיסויים הנוספים המומלצים לביטוח הדירה שלכם</p>
-                                </div>
-                                
-                                <!-- Section 1: פעילות עסקית -->
+                            <div class="building-sections-container">
+                                <h2 class="building-main-title">כיסויים נוספים לבחירתך</h2>
+                                <!-- כל building-section נשאר, רק ללא קופסאות צבעוניות/הדגשות -->
                                 <div class="building-section">
                                     <h3 class="building-section-title">💼 פעילות עסקית</h3>
                                     <div class="building-section-form">
@@ -1164,15 +1160,9 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Section 2: כיסוי צד שלישי -->
                                 <div class="building-section">
                                     <h3 class="building-section-title">⚖️ כיסוי צד שלישי</h3>
                                     <div class="building-section-form">
-                                        <div class="coverage-explanation">
-                                            <p><strong>מה זה ביטוח צד שלישי בביטוח דירה?</strong></p>
-                                            <p>כיסוי חבות כלפי צד שלישי מגן עליכם במקרה שתגרמו נזק לאחרים או לרכושם. הכיסוי כולל פיצויים עבור נזקי גוף או רכוש שנגרמו בשל מעשה או מחדל מצדכם, כולל נזקים הנגרמים מחיות מחמד או מפעילות יומיומית בבית.</p>
-                                        </div>
                                         <div class="building-form-grid">
                                             <div class="building-form-group building-checkbox-group">
                                                 <div class="building-checkbox-wrapper">
@@ -1184,41 +1174,9 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Section 3: מעבידים -->
-                                <div class="building-section">
-                                    <h3 class="building-section-title">👥 חבות מעבידים</h3>
-                                    <div class="building-section-form">
-                                        <div class="coverage-explanation">
-                                            <p><strong>מה זה כיסוי חבות מעבידים?</strong></p>
-                                            <p>כיסוי זה מגן עליכם כמעסיקים של עובדי משק בית (מנקות, גננים, מטפלות וכו'). הביטוח מכסה נזקי גוף שעלולים להיגרם לעובדים במהלך עבודתם אצלכם. הכיסוי מוגבל ל-3 עובדי משק בית בלבד.</p>
-                                        </div>
-                                        <div class="building-form-grid">
-                                            <div class="building-form-group building-checkbox-group">
-                                                <div class="building-checkbox-wrapper">  
-                                                    <input type="checkbox" id="employers-liability" name="employers-liability" value="חבות מעבידים">
-                                                    <label for="employers-liability">האם מעוניין לרכוש כיסוי זה?</label>
-                                                </div>
-                                                <small class="form-helper-text">חיוני למי שמעסיק עובדי משק בית</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Section 4: כיסוי סייבר למשפחה -->
                                 <div class="building-section">
                                     <h3 class="building-section-title">🔒 כיסוי סייבר למשפחה</h3>
                                     <div class="building-section-form">
-                                        <div class="coverage-explanation">
-                                            <p><strong>מה זה ביטוח סייבר בדירה?</strong></p>
-                                            <p>ביטוח המגן על המשפחה (עד 7 נפשות) מפני סיכונים דיגיטליים. הכיסוי כולל:</p>
-                                            <ul class="coverage-list">
-                                                <li><strong>הוצאות שחזור מידע מבוטח</strong> - עלויות שחזור מידע שאבד עקב תקיפה סייברנטית</li>
-                                                <li><strong>בריונות ברשת או השמצה</strong> - סיוע משפטי ופסיכולוגי במקרי הטרדה ברשת</li>
-                                                <li><strong>גניבה מקוונת של כספים אישיים</strong> - פיצוי עבור כספים שנגנבו בהונאות אינטרנט</li>
-                                                <li><strong>הנדסה חברתית וגניבת זהות</strong> - כיסוי עבור נזקים מזיוף זהות וגניבת מידע אישי</li>
-                                            </ul>
-                                        </div>
                                         <div class="building-form-grid">
                                             <div class="building-form-group building-checkbox-group">
                                                 <div class="building-checkbox-wrapper">
@@ -1230,15 +1188,9 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Section 5: כיסוי לטרור -->
                                 <div class="building-section">
                                     <h3 class="building-section-title">🛡️ כיסוי לטרור</h3>
                                     <div class="building-section-form">
-                                        <div class="coverage-explanation">
-                                            <p><strong>מה זה כיסוי לטרור בביטוח דירה?</strong></p>
-                                            <p>כיסוי המגן על הדירה מפני נזקים הנגרמים כתוצאה מפעולות טרור או פעילות עוינת. הכיסוי כולל נזקי אש, פיצוץ, התמוטטות ונזקי מים הנגרמים בעקבות פעולות טרור. גבול האחריות זהה לסכום ביטוח המבנה ועד מקסימום של 500,000 שקלים.</p>
-                                        </div>
                                         <div class="building-form-grid">
                                             <div class="building-form-group building-checkbox-group">
                                                 <div class="building-checkbox-wrapper">

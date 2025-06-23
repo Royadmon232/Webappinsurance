@@ -4925,3 +4925,142 @@ input:disabled {
         font-size: 1.125rem;
     }
 }
+
+/* --- עיצוב אחיד לחלון 'כיסויים נוספים לבחירתך' כמו 'מבנה' --- */
+#step-cover-additional .building-window {
+    background: none;
+    box-shadow: none;
+    padding: 0;
+}
+#step-cover-additional .building-window-header {
+    background: none;
+    border: none;
+    margin-bottom: 0;
+    padding: 0;
+}
+#step-cover-additional .building-section {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    margin-bottom: 30px;
+    padding: 28px 24px;
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.06);
+    transition: all 0.2s;
+}
+#step-cover-additional .building-section-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-dark, #1e293b);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+}
+#step-cover-additional .building-section-form {
+    margin-top: 15px;
+}
+#step-cover-additional .building-form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+#step-cover-additional .building-form-group {
+    margin-bottom: 0;
+}
+#step-cover-additional .building-checkbox-wrapper {
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+#step-cover-additional .building-checkbox-wrapper label {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1e293b;
+}
+#step-cover-additional .form-helper-text {
+    background: none;
+    border: none;
+    padding: 0;
+    margin-top: 4px;
+    font-size: 0.9rem;
+    color: #475569;
+}
+#step-cover-additional .coverage-explanation, #step-cover-additional .coverage-list {
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin-bottom: 10px;
+}
+#step-cover-additional .coverage-list li {
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0 0 0 16px;
+    margin-bottom: 4px;
+    position: relative;
+    font-size: 0.95rem;
+}
+#step-cover-additional .coverage-list li::before {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    #step-cover-additional .building-section {
+        padding: 18px 10px;
+        margin-bottom: 18px;
+    }
+    #step-cover-additional .building-section-title {
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+    }
+}
+@media (max-width: 480px) {
+    #step-cover-additional .building-section {
+        padding: 10px 2px;
+        margin-bottom: 10px;
+    }
+    #step-cover-additional .building-section-title {
+        font-size: 1rem;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+    }
+}
+
+/* --- רספונסיביות משופרת לחלון הסיום --- */
+.completion-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 32px 16px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+}
+@media (max-width: 768px) {
+    .completion-container {
+        padding: 18px 4px;
+        border-radius: 12px;
+    }
+    .completion-title {
+        font-size: 1.2rem;
+    }
+    .completion-subtitle {
+        font-size: 1rem;
+    }
+}
+@media (max-width: 480px) {
+    .completion-container {
+        padding: 8px 0;
+        border-radius: 8px;
+    }
+    .completion-title {
+        font-size: 1rem;
+    }
+    .completion-subtitle {
+        font-size: 0.95rem;
+    }
+}
