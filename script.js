@@ -5751,7 +5751,7 @@ async function submitQuoteRequest() {
         
         // Prepare email content
         const emailData = {
-            to: 'insurance@admon-agency.co.il', // Agent email - you can change this
+            to: 'royadmon23@gmail.com', // Agent email
             subject: `בקשה חדשה להצעת ביטוח דירה - ${formData.idNumber}`,
             replyTo: formData.email || 'noreply@admon-agency.co.il',
             html: generateEmailHTML(formData),
