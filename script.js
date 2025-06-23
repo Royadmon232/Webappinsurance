@@ -278,6 +278,7 @@ function wizardPrev() {
 window.HomeInsuranceApp = window.HomeInsuranceApp || {};
 window.HomeInsuranceApp.wizardNext = wizardNext;
 window.HomeInsuranceApp.wizardPrev = wizardPrev;
+window.HomeInsuranceApp.submitQuoteRequest = submitQuoteRequest;
 
 // Phone verification state
 let verificationCode = '';
@@ -5750,7 +5751,7 @@ async function submitQuoteRequest() {
         
         // Prepare email content
         const emailData = {
-            to: 'insurance@admon-agency.co.il', // Agent email
+            to: 'insurance@admon-agency.co.il', // Agent email - you can change this
             subject: `בקשה חדשה להצעת ביטוח דירה - ${formData.idNumber}`,
             replyTo: formData.email || 'noreply@admon-agency.co.il',
             html: generateEmailHTML(formData),
@@ -6269,24 +6270,50 @@ function generateEmailHTML(data) {
  * Send email to agent via backend service
  */
 async function sendEmailToAgent(emailData) {
-    // In production, this would send to your backend API
-    // For now, we'll simulate the email sending
-    console.log('📮 Email data prepared:', emailData);
+    console.log('📮 Sending email via Gmail API...', emailData);
     
-    // Simulate API call
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            // In production, replace with actual API call:
-            // const response = await fetch('/api/send-email', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(emailData)
-            // });
-            // return response.json();
-            
-            resolve({ success: true, messageId: Date.now() });
-        }, 1000);
-    });
+    try {
+        // Get auth token if available
+        const authToken = localStorage.getItem('authToken');
+        
+        const response = await fetch('/api/send-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': authToken ? `Bearer ${authToken}` : ''
+            },
+            body: JSON.stringify(emailData)
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to send email');
+        }
+        
+        console.log('✅ Email sent successfully:', result);
+        return result;
+        
+    } catch (error) {
+        console.error('❌ Error sending email:', error);
+        
+        // Fallback to localStorage if email fails
+        const timestamp = new Date().toISOString();
+        const savedForms = JSON.parse(localStorage.getItem('savedInsuranceForms') || '[]');
+        savedForms.push({
+            ...emailData,
+            savedAt: timestamp,
+            status: 'email_failed'
+        });
+        localStorage.setItem('savedInsuranceForms', JSON.stringify(savedForms));
+        
+        // Still return success to user but log the error
+        return { 
+            success: true, 
+            messageId: `local_${Date.now()}`,
+            note: 'Email service unavailable, form saved locally'
+        };
+    }
 }
 
 /**

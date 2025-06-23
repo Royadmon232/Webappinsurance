@@ -193,9 +193,11 @@ const oauth2Client = new google.auth.OAuth2(
 );
 
 // Set credentials
-oauth2Client.setCredentials({
-    refresh_token: process.env.GMAIL_REFRESH_TOKEN
-});
+if (process.env.GMAIL_REFRESH_TOKEN) {
+    oauth2Client.setCredentials({
+        refresh_token: process.env.GMAIL_REFRESH_TOKEN
+    });
+}
 
 const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
 
@@ -394,6 +396,58 @@ app.get('/api/form-status/:formId', async (req, res) => {
     } catch (error) {
         console.error('Error getting form status:', error);
         res.status(500).json({ error: 'Failed to get form status' });
+    }
+});
+
+// Send email via Gmail API
+app.post('/api/send-email', authenticateToken, async (req, res) => {
+    try {
+        const { to, subject, html, replyTo } = req.body;
+        
+        // Create email message
+        const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
+        const messageParts = [
+            `From: "אדמון סוכנות לביטוח" <${process.env.GMAIL_USER || 'insurance@admon-agency.co.il'}>`,
+            `To: ${to}`,
+            `Reply-To: ${replyTo || 'noreply@admon-agency.co.il'}`,
+            `Subject: ${utf8Subject}`,
+            'MIME-Version: 1.0',
+            'Content-Type: text/html; charset=utf-8',
+            '',
+            html
+        ];
+        const message = messageParts.join('\n');
+        
+        // Encode message in base64
+        const encodedMessage = Buffer.from(message)
+            .toString('base64')
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
+        
+        // Send email via Gmail API
+        const response = await gmail.users.messages.send({
+            userId: 'me',
+            requestBody: {
+                raw: encodedMessage
+            }
+        });
+        
+        console.log('Email sent successfully:', response.data.id);
+        
+        res.json({
+            success: true,
+            messageId: response.data.id,
+            message: 'Email sent successfully'
+        });
+        
+    } catch (error) {
+        console.error('Error sending email:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to send email',
+            message: error.message
+        });
     }
 });
 
