@@ -1450,7 +1450,8 @@ window.HomeInsuranceApp = {
     closeGeneralDetailsModal,
     submitGeneralDetails,
     wizardNext,
-    wizardPrev
+    wizardPrev,
+    submitQuoteRequest
 };
 
 /**
@@ -5640,4 +5641,231 @@ function initializeAdditionalCoverageEnhancements() {
             }
         });
     });
+}
+
+/**
+ * Submit quote request - sends all collected data to agent
+ */
+async function submitQuoteRequest() {
+    try {
+        // Show loading state
+        const submitBtn = document.querySelector('.btn-submit-quote');
+        if (submitBtn) {
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="btn-icon">⏳</span> שולח בקשה...';
+        }
+
+        // Collect all form data
+        const formData = collectAllFormData();
+        
+        // Get the auth token from sessionStorage
+        const authToken = sessionStorage.getItem('authToken');
+        if (!authToken) {
+            throw new Error('לא נמצא אישור אימות');
+        }
+
+        // Submit to server
+        const response = await fetch('/api/submit-form', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            // Show success message
+            if (submitBtn) {
+                submitBtn.innerHTML = '<span class="btn-icon">✅</span> הבקשה נשלחה בהצלחה!';
+                submitBtn.classList.remove('loading');
+            }
+            
+            // Show success notification
+            showNotification('success', 'הבקשה נשלחה בהצלחה! נציג יצור איתך קשר בקרוב.');
+            
+            // Close modal after delay
+            setTimeout(() => {
+                closeGeneralDetailsModal();
+                // Clear form data
+                sessionStorage.clear();
+            }, 3000);
+        } else {
+            throw new Error(result.error || 'שגיאה בשליחת הטופס');
+        }
+        
+    } catch (error) {
+        console.error('Error submitting quote request:', error);
+        
+        // Reset button on error
+        const submitBtn = document.querySelector('.btn-submit-quote');
+        if (submitBtn) {
+            submitBtn.classList.remove('loading');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="btn-icon">📧</span> קבל הצעת מחיר';
+        }
+        
+        showNotification('error', error.message || 'אירעה שגיאה בשליחת הבקשה. נסה שוב.');
+    }
+}
+
+/**
+ * Collect all form data from the wizard
+ */
+function collectAllFormData() {
+    const data = {
+        // Personal details
+        firstName: document.getElementById('first-name')?.value || '',
+        lastName: document.getElementById('last-name')?.value || '',
+        email: document.getElementById('email')?.value || '',
+        phoneNumber: document.getElementById('phone-number')?.value || '',
+        idNumber: document.getElementById('id-number')?.value || '',
+        
+        // Insurance details
+        productType: document.getElementById('product-type')?.value || '',
+        propertyType: document.getElementById('property-type')?.value || '',
+        startDate: document.getElementById('start-date')?.value || '',
+        
+        // Address
+        address: {
+            city: document.getElementById('city')?.value || '',
+            street: document.getElementById('street')?.value || '',
+            houseNumber: document.getElementById('house-number')?.value || '',
+            postalCode: document.getElementById('postal-code')?.value || '',
+            hasGarden: document.getElementById('has-garden')?.checked || false
+        },
+        
+        // Building details (if product includes building)
+        building: collectBuildingData(),
+        
+        // Contents details (if product includes contents)
+        contents: collectContentsData(),
+        
+        // Additional coverages
+        additionalCoverages: collectAdditionalCoverages(),
+        
+        // Timestamp
+        submittedAt: new Date().toISOString()
+    };
+    
+    return data;
+}
+
+/**
+ * Collect building insurance data
+ */
+function collectBuildingData() {
+    const productType = document.getElementById('product-type')?.value;
+    if (!productType || !productType.includes('מבנה')) {
+        return null;
+    }
+    
+    return {
+        insuranceAmount: parseFloat(document.getElementById('building-insurance-amount')?.value) || 0,
+        age: parseInt(document.getElementById('building-age')?.value) || 0,
+        area: parseFloat(document.getElementById('area')?.value) || 0,
+        constructionType: document.getElementById('construction-type')?.value || '',
+        constructionStandard: document.getElementById('construction-standard')?.value || '',
+        mortgagedProperty: document.getElementById('mortgaged-property')?.checked || false,
+        renewals: document.getElementById('renewals')?.value || '',
+        waterDamageType: document.getElementById('water-damage-type')?.value || '',
+        waterDeductible: document.getElementById('water-deductible')?.value || '',
+        burglary: document.getElementById('burglary')?.checked || false,
+        earthquakeCoverage: document.getElementById('earthquake-coverage')?.value || '',
+        earthquakeDeductible: document.getElementById('earthquake-deductible')?.value || '',
+        additionalSharedInsurance: parseFloat(document.getElementById('additional-shared-insurance')?.value) || 0,
+        extensions: {
+            buildingContentsInsurance: parseFloat(document.getElementById('building-contents-insurance')?.value) || 0,
+            storageInsurance: parseFloat(document.getElementById('storage-insurance')?.value) || 0,
+            swimmingPoolInsurance: parseFloat(document.getElementById('swimming-pool-insurance')?.value) || 0,
+            glassBreakageInsurance: parseFloat(document.getElementById('glass-breakage-insurance')?.value) || 0,
+            boilersCoverage: document.getElementById('boilers-coverage')?.checked || false
+        }
+    };
+}
+
+/**
+ * Collect contents insurance data
+ */
+function collectContentsData() {
+    const productType = document.getElementById('product-type')?.value;
+    if (!productType || !productType.includes('תכולה')) {
+        return null;
+    }
+    
+    return {
+        insuranceAmount: parseFloat(document.getElementById('contents-insurance-amount')?.value) || 0,
+        buildingAge: parseInt(document.getElementById('contents-building-age')?.value) || 0,
+        jewelry: {
+            amount: parseFloat(document.getElementById('jewelry-amount')?.value) || 0,
+            coverage: document.getElementById('jewelry-coverage')?.value || ''
+        },
+        watches: {
+            amount: parseFloat(document.getElementById('watches-amount')?.value) || 0,
+            coverage: document.getElementById('watches-coverage')?.value || ''
+        },
+        valuableItems: {
+            cameras: parseFloat(document.getElementById('cameras-amount')?.value) || 0,
+            electronics: parseFloat(document.getElementById('electronics-amount')?.value) || 0,
+            bicycles: parseFloat(document.getElementById('bicycles-amount')?.value) || 0,
+            musicalInstruments: parseFloat(document.getElementById('musical-instruments-amount')?.value) || 0
+        },
+        coverages: {
+            waterDamage: document.getElementById('contents-water-damage')?.checked || false,
+            burglary: document.getElementById('contents-burglary')?.checked || false,
+            earthquake: document.getElementById('contents-earthquake')?.value || '',
+            earthquakeDeductible: document.getElementById('contents-earthquake-deductible')?.value || ''
+        }
+    };
+}
+
+/**
+ * Collect additional coverages data
+ */
+function collectAdditionalCoverages() {
+    return {
+        businessContents: parseFloat(document.getElementById('business-contents-amount')?.value) || 0,
+        businessEmployers: document.getElementById('business-employers')?.checked || false,
+        businessThirdParty: document.getElementById('business-third-party')?.checked || false,
+        thirdPartyCoverage: document.getElementById('third-party-coverage')?.checked || false,
+        employersLiability: document.getElementById('employers-liability')?.checked || false,
+        cyberCoverage: document.getElementById('cyber-coverage')?.checked || false,
+        terrorCoverage: document.getElementById('terror-coverage')?.checked || false
+    };
+}
+
+/**
+ * Show notification to user
+ * @param {string} type - 'success' or 'error'
+ * @param {string} message - The message to display
+ */
+function showNotification(type, message) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-icon">${type === 'success' ? '✅' : '❌'}</span>
+            <span class="notification-message">${message}</span>
+        </div>
+    `;
+    
+    // Add to document
+    document.body.appendChild(notification);
+    
+    // Trigger animation
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+    
+    // Remove after delay
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 4000);
 }
