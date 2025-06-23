@@ -5734,12 +5734,12 @@ async function submitQuoteRequest() {
     console.log('📧 Submitting quote request...');
     
     // Get the submit button
-    const submitBtn = document.querySelector('.btn-submit-quote');
-    if (submitBtn) {
-        submitBtn.disabled = true;
+        const submitBtn = document.querySelector('.btn-submit-quote');
+        if (submitBtn) {
+            submitBtn.disabled = true;
         submitBtn.classList.add('loading');
-    }
-    
+        }
+
     try {
         // Collect all form data
         const formData = collectFullFormData();
