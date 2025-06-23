@@ -6487,3 +6487,28 @@ const showQuoteBtn = () => {
 document.addEventListener('DOMContentLoaded', () => {
     showQuoteBtn();
 });
+
+// Always show the submit quote button when reaching the final step
+function showQuoteBtnOnFinalStep() {
+    const observer = new MutationObserver(() => {
+        const finalStep = document.getElementById('step-completion');
+        const btn = document.querySelector('.btn-submit-quote');
+        if (finalStep && finalStep.style.display !== 'none' && btn) {
+            btn.style.display = 'block';
+            btn.style.visibility = 'visible';
+            btn.disabled = false;
+            console.log('✅ כפתור קבל הצעת מחיר מוצג!');
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    showQuoteBtnOnFinalStep();
+});
+
+// הוספת לוג לפעולת שליחת הליד
+async function submitQuoteRequest() {
+    console.log('📧 submitQuoteRequest נלחץ! מנסה לשלוח ליד...');
+    // ... existing code ...
+}
