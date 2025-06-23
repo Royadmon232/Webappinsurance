@@ -5216,264 +5216,248 @@ function addAdditionalCoverageFormListeners() {
     console.log('Additional coverage form listeners added');
 }
 
-/**
- * Advanced Israeli phone number validation
- * Validates Israeli mobile numbers: 050, 051, 052, 053, 054, 055, 058, 059
- * Only accepts private mobile numbers (not landline, not business/VOIP)
- */
-function validateIsraeliPhone(phone) {
-    // Remove all non-digit characters
-    const cleanPhone = phone.replace(/\D/g, '');
+// Enhanced phone validation function with detailed error messages
+function validateIsraeliPhone(phoneNumber) {
+    // Clean the phone number - remove all non-digits
+    const cleanPhone = phoneNumber.replace(/\D/g, '');
     
-    // Must be exactly 10 digits and start with 05
-    if (cleanPhone.length !== 10) {
+    // Check if empty
+    if (!cleanPhone) {
         return {
             isValid: false,
-            isMobile: false,
-            cleanNumber: cleanPhone,
-            formattedNumber: cleanPhone
+            error: 'מספר טלפון נייד נדרש',
+            formatted: ''
         };
     }
     
-    // Must start with 05 (Israeli mobile prefix)
+    // Check if it's too short
+    if (cleanPhone.length < 10) {
+        return {
+            isValid: false,
+            error: `מספר הטלפון חייב להכיל 10 ספרות (יש רק ${cleanPhone.length})`,
+            formatted: cleanPhone
+        };
+    }
+    
+    // Check if it's too long
+    if (cleanPhone.length > 10) {
+        return {
+            isValid: false,
+            error: `מספר הטלפון חייב להכיל 10 ספרות (יש ${cleanPhone.length})`,
+            formatted: cleanPhone
+        };
+    }
+    
+    // Check if it starts with 05
     if (!cleanPhone.startsWith('05')) {
         return {
             isValid: false,
-            isMobile: false,
-            cleanNumber: cleanPhone,
-            formattedNumber: cleanPhone
+            error: 'מספר טלפון נייד חייב להתחיל ב-05',
+            formatted: cleanPhone
         };
     }
     
-    // Only allow Israeli private mobile numbers (third digit must be 0,1,2,3,4,5,8,9)
+    // Define valid Israeli mobile patterns
     const mobilePatterns = [
-        /^050\d{7}$/,  // 050-1234567
-        /^051\d{7}$/,  // 051-1234567
-        /^052\d{7}$/,  // 052-1234567
-        /^053\d{7}$/,  // 053-1234567
-        /^054\d{7}$/,  // 054-1234567
-        /^055\d{7}$/,  // 055-1234567
-        /^058\d{7}$/,  // 058-1234567
-        /^059\d{7}$/   // 059-1234567
+        /^050\d{7}$/, // Partner/Orange
+        /^051\d{7}$/, // Golan
+        /^052\d{7}$/, // Cellcom
+        /^053\d{7}$/, // Hot Mobile/Pelephone
+        /^054\d{7}$/, // Partner
+        /^055\d{7}$/, // Hot Mobile
+        /^058\d{7}$/, // Golan/MVNO
+        /^059\d{7}$/  // Various MVNO
     ];
     
-    const isMobile = mobilePatterns.some(pattern => pattern.test(cleanPhone));
+    // Check if it matches any valid mobile pattern
+    const isValidMobile = mobilePatterns.some(pattern => pattern.test(cleanPhone));
+    
+    if (!isValidMobile) {
+        return {
+            isValid: false,
+            error: 'מספר הטלפון אינו תקין. מספרי נייד תקינים: 050, 051, 052, 053, 054, 055, 058, 059',
+            formatted: cleanPhone
+        };
+    }
+    
+    // Format the phone number for display
+    const formatted = cleanPhone.replace(/(\d{3})(\d{7})/, '$1-$2');
     
     return {
-        isValid: isMobile,
-        isMobile: isMobile,
-        cleanNumber: cleanPhone,
-        formattedNumber: formatPhoneNumber(cleanPhone)
+        isValid: true,
+        error: null,
+        formatted: formatted
     };
 }
 
-/**
- * Format phone number for display
- */
-function formatPhoneNumber(phone) {
-    const cleanPhone = phone.replace(/\D/g, '');
-    
-    if (cleanPhone.length === 10) {
-        // Mobile numbers: 050-1234567
-        if (cleanPhone.startsWith('05')) {
-            return `${cleanPhone.slice(0, 3)}-${cleanPhone.slice(3)}`;
-        }
-        // Landline numbers: 02-1234567
-        return `${cleanPhone.slice(0, 2)}-${cleanPhone.slice(2)}`;
-    } else if (cleanPhone.length === 9) {
-        // Landline numbers: 077-123456
-        return `${cleanPhone.slice(0, 3)}-${cleanPhone.slice(3)}`;
+// Format phone number for display
+function formatPhoneNumber(value) {
+    const cleanValue = value.replace(/\D/g, '');
+    if (cleanValue.length <= 3) return cleanValue;
+    if (cleanValue.length <= 10) {
+        return cleanValue.replace(/(\d{3})(\d{1,7})/, '$1-$2');
     }
-    
-    return cleanPhone;
+    return cleanValue.slice(0, 10).replace(/(\d{3})(\d{7})/, '$1-$2');
 }
 
-/**
- * Show phone validation error
- */
-function showPhoneError(phoneInput, message) {
-    // Clear previous errors
-    clearPhoneError(phoneInput);
-    
-    // Add error class
-    phoneInput.classList.add('error');
-    
-    // Create error message element
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'phone-error-message';
-    errorDiv.style.cssText = `
-        color: #e74c3c;
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-    `;
-    errorDiv.innerHTML = `
-        <span style="font-size: 1rem;">⚠️</span>
-        <span>${message}</span>
-    `;
-    
-    // Insert error message after the input container
-    const inputContainer = phoneInput.closest('.phone-input-container');
-    if (inputContainer) {
-        inputContainer.parentNode.insertBefore(errorDiv, inputContainer.nextSibling);
-    }
-}
-
-/**
- * Clear phone validation error
- */
-function clearPhoneError(phoneInput) {
-    phoneInput.classList.remove('error');
-    
-    // Remove error message
-    const errorDiv = phoneInput.closest('.building-form-group').querySelector('.phone-error-message');
-    if (errorDiv) {
-        errorDiv.remove();
-    }
-    
-    // Only show valid state if phone is actually valid
-    const value = phoneInput.value.trim();
-    if (value) {
-        const validation = validateIsraeliPhone(value);
-        if (validation.isValid) {
-            phoneInput.classList.add('valid');
-        } else {
-            phoneInput.classList.remove('valid');
-        }
-    } else {
-        phoneInput.classList.remove('valid');
-    }
-}
-
-/**
- * Initialize phone number input validation
- */
-function initializePhoneValidation() {
+// Show phone validation message
+function showPhoneMessage(type, message) {
     const phoneInput = document.getElementById('phone-number');
-    if (!phoneInput) return;
+    const phoneGroup = phoneInput.closest('.building-form-group');
     
-    // Add input event listener for real-time validation
-    phoneInput.addEventListener('input', function(e) {
-        const value = this.value;
-        
-        // Allow only digits, spaces, dashes, and plus sign
-        const filteredValue = value.replace(/[^\d\s\-+]/g, '');
-        
-        // If user typed invalid characters, update the value
-        if (filteredValue !== value) {
-            this.value = filteredValue;
-        }
-        
-        // Clear error if input is empty
-        if (!filteredValue.trim()) {
-            clearPhoneError(this);
-            this.classList.remove('valid');
-            updateSendButtonState();
-            return;
-        }
-        
-        // Validate the phone number
-        const validation = validateIsraeliPhone(filteredValue);
-        
-        if (validation.isValid) {
-            clearPhoneError(this);
-            this.classList.add('valid');
-            this.classList.remove('error');
-            
-            // Format the number for better UX
-            if (validation.formattedNumber !== filteredValue) {
-                this.value = validation.formattedNumber;
-            }
-        } else {
-            this.classList.remove('valid');
-            
-            // Show appropriate error message based on the actual problem
-            let errorMessage = 'מספר הטלפון אינו תקין';
-            
-            if (filteredValue.length < 10) {
-                errorMessage = 'מספר הטלפון חייב להכיל 10 ספרות (050-1234567)';
-            } else if (filteredValue.length > 10) {
-                errorMessage = 'מספר הטלפון ארוך מדי - רק 10 ספרות (050-1234567)';
-            } else if (!filteredValue.startsWith('05')) {
-                errorMessage = 'מספר נייד ישראלי חייב להתחיל ב-05';
-            } else {
-                errorMessage = 'מספר נייד לא תקין. אנא הזן מספר שמתחיל ב-050, 051, 052, 053, 054, 055, 058 או 059';
-            }
-            
-            showPhoneError(this, errorMessage);
-        }
-        
-        // Update button state
-        updateSendButtonState();
-    });
+    // Clear any existing messages
+    clearPhoneMessage();
     
-    // Add blur event listener for final validation
-    phoneInput.addEventListener('blur', function(e) {
-        const value = this.value.trim();
-        
-        if (!value) {
-            clearPhoneError(this);
-            this.classList.remove('valid');
-            updateSendButtonState();
-            return;
-        }
-        
-        const validation = validateIsraeliPhone(value);
-        
-        if (!validation.isValid) {
-            this.classList.remove('valid');
-            showPhoneError(this, 'אנא הזן מספר טלפון נייד ישראלי תקין (050-1234567)');
-        } else {
-            this.classList.add('valid');
-        }
-        
-        updateSendButtonState();
-    });
+    // Create message element
+    const messageDiv = document.createElement('div');
+    if (type === 'error') {
+        messageDiv.className = 'phone-error-message';
+        messageDiv.innerHTML = `<span class="error-icon">❌</span><span>${message}</span>`;
+        phoneInput.classList.add('error');
+        phoneInput.classList.remove('valid');
+    } else if (type === 'success') {
+        messageDiv.className = 'phone-success-message';
+        messageDiv.innerHTML = `<span class="success-icon">✅</span><span>מספר טלפון נייד תקין</span>`;
+        phoneInput.classList.add('valid');
+        phoneInput.classList.remove('error');
+    }
     
-    // Add paste event listener to clean pasted content
-    phoneInput.addEventListener('paste', function(e) {
-        e.preventDefault();
-        
-        const pastedText = (e.clipboardData || window.clipboardData).getData('text');
-        const cleanText = pastedText.replace(/[^\d\s\-+]/g, '');
-        
-        // Insert the clean text
-        const start = this.selectionStart;
-        const end = this.selectionEnd;
-        const currentValue = this.value;
-        
-        this.value = currentValue.substring(0, start) + cleanText + currentValue.substring(end);
-        
-        // Trigger input event for validation
-        this.dispatchEvent(new Event('input'));
-        
-        // Set cursor position
-        this.setSelectionRange(start + cleanText.length, start + cleanText.length);
-    });
+    phoneGroup.appendChild(messageDiv);
+}
+
+// Clear phone validation message
+function clearPhoneMessage() {
+    const phoneInput = document.getElementById('phone-number');
+    const phoneGroup = phoneInput.closest('.building-form-group');
     
-    // Initial button state
+    // Remove existing message
+    const existingMessage = phoneGroup.querySelector('.phone-error-message, .phone-success-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Reset input classes
+    phoneInput.classList.remove('error', 'valid');
+}
+
+// Real-time phone validation and formatting
+function handlePhoneInput(event) {
+    const input = event.target;
+    let value = input.value;
+    
+    // Filter input - only allow digits, spaces, dashes, and plus
+    const filteredValue = value.replace(/[^\d\s\-+]/g, '');
+    
+    // Remove any non-digit characters for validation
+    const digitsOnly = filteredValue.replace(/\D/g, '');
+    
+    // Limit to 10 digits maximum
+    const limitedDigits = digitsOnly.slice(0, 10);
+    
+    // Format the display value
+    const formattedValue = formatPhoneNumber(limitedDigits);
+    
+    // Update input value if it changed
+    if (input.value !== formattedValue) {
+        input.value = formattedValue;
+    }
+    
+    // Validate the phone number
+    const validation = validateIsraeliPhone(limitedDigits);
+    
+    if (limitedDigits === '') {
+        // Empty field - clear validation
+        clearPhoneMessage();
+    } else if (validation.isValid) {
+        // Valid phone number
+        showPhoneMessage('success', 'מספר טלפון נייד תקין');
+    } else {
+        // Invalid phone number
+        showPhoneMessage('error', validation.error);
+    }
+    
+    // Update send button state
     updateSendButtonState();
 }
 
-/**
- * Update send button state based on phone validation
- */
+// Handle phone input blur (when user leaves the field)
+function handlePhoneBlur(event) {
+    const input = event.target;
+    const value = input.value.replace(/\D/g, '');
+    
+    if (value && value.length > 0) {
+        const validation = validateIsraeliPhone(value);
+        if (validation.isValid) {
+            showPhoneMessage('success', 'מספר טלפון נייד תקין');
+        } else {
+            showPhoneMessage('error', validation.error);
+        }
+    }
+    
+    updateSendButtonState();
+}
+
+// Handle paste events for phone input
+function handlePhonePaste(event) {
+    // Allow the paste to happen, then process it
+    setTimeout(() => {
+        handlePhoneInput(event);
+    }, 10);
+}
+
+// Update send button state based on phone validation
 function updateSendButtonState() {
     const phoneInput = document.getElementById('phone-number');
-    const sendBtn = document.getElementById('send-code-btn');
+    const sendButton = document.getElementById('send-code-btn');
     
-    if (!phoneInput || !sendBtn) return;
+    if (!phoneInput || !sendButton) return;
     
-    const value = phoneInput.value.trim();
-    const validation = validateIsraeliPhone(value);
+    const phoneValue = phoneInput.value.replace(/\D/g, '');
+    const validation = validateIsraeliPhone(phoneValue);
     
     if (validation.isValid) {
-        sendBtn.disabled = false;
-        sendBtn.classList.remove('disabled');
+        sendButton.disabled = false;
+        sendButton.classList.remove('disabled');
     } else {
-        sendBtn.disabled = true;
-        sendBtn.classList.add('disabled');
+        sendButton.disabled = true;
+        sendButton.classList.add('disabled');
+    }
+}
+
+// Initialize phone validation with enhanced real-time feedback
+function initializePhoneValidation() {
+    const phoneInput = document.getElementById('phone-number');
+    
+    if (phoneInput) {
+        // Clear any existing event listeners by cloning the element
+        const newPhoneInput = phoneInput.cloneNode(true);
+        phoneInput.parentNode.replaceChild(newPhoneInput, phoneInput);
+        
+        // Add event listeners for real-time validation
+        newPhoneInput.addEventListener('input', handlePhoneInput);
+        newPhoneInput.addEventListener('blur', handlePhoneBlur);
+        newPhoneInput.addEventListener('paste', handlePhonePaste);
+        newPhoneInput.addEventListener('keydown', function(e) {
+            // Allow: backspace, delete, tab, escape, enter
+            if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
+                // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                (e.keyCode === 65 && e.ctrlKey === true) ||
+                (e.keyCode === 67 && e.ctrlKey === true) ||
+                (e.keyCode === 86 && e.ctrlKey === true) ||
+                (e.keyCode === 88 && e.ctrlKey === true) ||
+                // Allow: home, end, left, right
+                (e.keyCode >= 35 && e.keyCode <= 39)) {
+                return;
+            }
+            // Ensure that it is a number and stop the keypress
+            if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                e.preventDefault();
+            }
+        });
+        
+        // Set initial state
+        updateSendButtonState();
+        
+        console.log('Enhanced phone validation initialized with real-time feedback');
     }
 }

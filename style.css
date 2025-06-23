@@ -5687,4 +5687,207 @@ input:disabled {
     box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
 }
 
-/* Phone validation styles */
+/* Phone validation styles - Enhanced real-time feedback */
+#phone-number {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+/* Default state - no validation icon */
+#phone-number:not(.valid):not(.error) {
+    background-image: none !important;
+    padding-right: 16px !important;
+    border-color: #e5e7eb !important;
+}
+
+/* Valid state - green checkmark */
+#phone-number.valid {
+    border-color: #10b981 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2310b981'%3e%3cpath fill-rule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clip-rule='evenodd'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 20px !important;
+    padding-right: 44px !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
+}
+
+/* Error state - red X */
+#phone-number.error {
+    border-color: #e74c3c !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23e74c3c'%3e%3cpath fill-rule='evenodd' d='M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z' clip-rule='evenodd'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 20px !important;
+    padding-right: 44px !important;
+    box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2) !important;
+}
+
+/* Override automatic validation display for phone input */
+#phone-number:valid {
+    background-image: none !important;
+    padding-right: 16px !important;
+    border-color: #e5e7eb !important;
+}
+
+/* Phone error message styling */
+.phone-error-message {
+    color: #e74c3c;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    animation: fadeInError 0.3s ease-in-out;
+    line-height: 1.4;
+}
+
+.phone-error-message .error-icon {
+    font-size: 1rem;
+    margin-top: 1px;
+    flex-shrink: 0;
+}
+
+.phone-success-message {
+    color: #10b981;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    animation: fadeInSuccess 0.3s ease-in-out;
+    line-height: 1.4;
+}
+
+.phone-success-message .success-icon {
+    font-size: 1rem;
+    margin-top: 1px;
+    flex-shrink: 0;
+}
+
+@keyframes fadeInError {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInSuccess {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Focus states */
+#phone-number:focus {
+    outline: none !important;
+}
+
+#phone-number:focus.valid {
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3) !important;
+}
+
+#phone-number:focus.error {
+    border-color: #e74c3c !important;
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.3) !important;
+}
+
+#phone-number:focus:not(.valid):not(.error) {
+    border-color: #4f46e5 !important;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2) !important;
+}
+
+/* Enhanced Send Code Button Styling for Real-time Validation */
+.btn-send-code:disabled,
+.btn-send-code.disabled {
+    background-color: #95a5a6 !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+    border-color: #95a5a6 !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn-send-code:disabled:hover,
+.btn-send-code.disabled:hover {
+    background-color: #95a5a6 !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: #95a5a6 !important;
+}
+
+.btn-send-code:disabled:active,
+.btn-send-code.disabled:active {
+    background-color: #95a5a6 !important;
+    transform: none !important;
+    border-color: #95a5a6 !important;
+}
+
+/* Enabled state for button when phone is valid */
+.btn-send-code:not(:disabled):not(.disabled) {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+    color: white !important;
+    border-color: #007bff !important;
+    cursor: pointer !important;
+    opacity: 1 !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-send-code:not(:disabled):not(.disabled):hover {
+    background: linear-gradient(135deg, #0056b3 0%, #003d82 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3) !important;
+}
+
+/* Loading state for button */
+.btn-send-code.loading {
+    pointer-events: none !important;
+    opacity: 0.7 !important;
+}
+
+.btn-send-code.loading::after {
+    content: '';
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-left: 8px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Enhanced button states for better UX */
+.btn-send-code {
+    transition: all 0.3s ease !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-send-code:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25) !important;
+}
+
+.btn-send-code:focus:not(:disabled):not(.disabled) {
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25), 0 8px 25px rgba(0, 123, 255, 0.3) !important;
+}
+
+/* Mobile responsiveness for button */
+@media (max-width: 768px) {
+    .btn-send-code {
+        width: 100% !important;
+        padding: 14px 20px !important;
+        font-size: 16px !important;
+    }
+}
