@@ -192,9 +192,9 @@ try {
     if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && 
         process.env.TWILIO_ACCOUNT_SID.startsWith('AC')) {
         twilioClient = twilio(
-            process.env.TWILIO_ACCOUNT_SID,
-            process.env.TWILIO_AUTH_TOKEN
-        );
+    process.env.TWILIO_ACCOUNT_SID,
+    process.env.TWILIO_AUTH_TOKEN
+);
         console.log('✅ Twilio client initialized');
     } else {
         console.log('⚠️  Twilio credentials not found or invalid - SMS functionality disabled');
@@ -213,9 +213,9 @@ const oauth2Client = new google.auth.OAuth2(
 
 // Set credentials
 if (process.env.GMAIL_REFRESH_TOKEN) {
-    oauth2Client.setCredentials({
-        refresh_token: process.env.GMAIL_REFRESH_TOKEN
-    });
+oauth2Client.setCredentials({
+    refresh_token: process.env.GMAIL_REFRESH_TOKEN
+});
 }
 
 const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
