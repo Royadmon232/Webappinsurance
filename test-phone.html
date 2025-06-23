@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>בדיקת וולידציה טלפון</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            padding: 50px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>בדיקת וולידציה טלפון</h1>
+        
+        <div class="building-form-group">
+            <label for="phone-number">
+                <span>מספר טלפון נייד</span>
+                <span class="form-icon">📱</span>
+            </label>
+            <div class="phone-input-container">
+                <input type="tel" id="phone-number" name="phone-number" placeholder="050-1234567" inputmode="numeric" maxlength="11" required>
+            </div>
+            <small class="form-helper-text">הקלד מספר טלפון נייד ישראלי</small>
+        </div>
+        
+        <button id="test-button" style="margin-top: 20px; padding: 10px 20px;">בדוק וולידציה</button>
+        
+        <div id="console-output" style="margin-top: 30px; padding: 20px; background: #f5f5f5; border-radius: 5px; font-family: monospace; white-space: pre-wrap; display: none;"></div>
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+        // Console override for debugging
+        const output = document.getElementById('console-output');
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            output.style.display = 'block';
+            output.innerHTML += 'LOG: ' + args.join(' ') + '\n';
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            output.style.display = 'block';
+            output.innerHTML += 'ERROR: ' + args.join(' ') + '\n';
+        };
+        
+        // Initialize after DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, initializing phone validation...');
+            initializePhoneValidation();
+            
+            // Test button
+            document.getElementById('test-button').addEventListener('click', function() {
+                const phoneInput = document.getElementById('phone-number');
+                console.log('Test button clicked, phone value:', phoneInput.value);
+                
+                const validation = validateIsraeliPhone(phoneInput.value);
+                console.log('Validation result:', JSON.stringify(validation, null, 2));
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -150,7 +150,11 @@ function showWizardStep(stepIndex) {
         currentWizardStep = stepIndex;
         
         // Initialize phone validation when reaching the final step
-        if (wizardSteps[stepIndex] === 'step-final-details') {
+        const currentStepId = wizardSteps[stepIndex];
+        console.log('Current step ID:', currentStepId);
+        
+        if (currentStepId === 'step-completion' || currentStepId === 'step-final-details') {
+            console.log('Reached final step, initializing phone validation...');
             setTimeout(() => {
                 initializePhoneValidation();
             }, 100);
@@ -1477,8 +1481,10 @@ function openGeneralDetailsModal() {
         // Add form input listeners for real-time validation
         addFormInputListeners();
         
-        // Initialize phone validation
-        initializePhoneValidation();
+        // Initialize phone validation (delayed to ensure DOM is ready)
+        setTimeout(() => {
+            initializePhoneValidation();
+        }, 300);
         
         // Add event listeners for closing the modal
         setupModalCloseHandlers();
@@ -5310,7 +5316,16 @@ function formatPhoneNumber(value) {
 // Show phone validation message
 function showPhoneMessage(type, message) {
     const phoneInput = document.getElementById('phone-number');
+    if (!phoneInput) {
+        console.error('Phone input not found!');
+        return;
+    }
+    
     const phoneGroup = phoneInput.closest('.building-form-group');
+    if (!phoneGroup) {
+        console.error('Phone group not found!');
+        return;
+    }
     
     // Clear any existing messages
     clearPhoneMessage();
@@ -5329,13 +5344,31 @@ function showPhoneMessage(type, message) {
         phoneInput.classList.remove('error');
     }
     
-    phoneGroup.appendChild(messageDiv);
+    // Try to insert after phone-input-container first
+    const phoneContainer = phoneInput.closest('.phone-input-container');
+    if (phoneContainer && phoneContainer.parentNode) {
+        phoneContainer.parentNode.insertBefore(messageDiv, phoneContainer.nextSibling);
+    } else {
+        // Fallback to appending to form group
+        phoneGroup.appendChild(messageDiv);
+    }
+    
+    console.log('Phone message shown:', type, message);
 }
 
 // Clear phone validation message
 function clearPhoneMessage() {
     const phoneInput = document.getElementById('phone-number');
+    if (!phoneInput) {
+        console.error('Phone input not found in clearPhoneMessage!');
+        return;
+    }
+    
     const phoneGroup = phoneInput.closest('.building-form-group');
+    if (!phoneGroup) {
+        console.error('Phone group not found in clearPhoneMessage!');
+        return;
+    }
     
     // Remove existing message
     const existingMessage = phoneGroup.querySelector('.phone-error-message, .phone-success-message');
@@ -5351,6 +5384,8 @@ function clearPhoneMessage() {
 function handlePhoneInput(event) {
     const input = event.target;
     let value = input.value;
+    
+    console.log('handlePhoneInput called with value:', value);
     
     // Filter input - only allow digits, spaces, dashes, and plus
     const filteredValue = value.replace(/[^\d\s\-+]/g, '');
@@ -5372,14 +5407,18 @@ function handlePhoneInput(event) {
     // Validate the phone number
     const validation = validateIsraeliPhone(limitedDigits);
     
+    console.log('Validation result:', validation);
+    
     if (limitedDigits === '') {
         // Empty field - clear validation
         clearPhoneMessage();
     } else if (validation.isValid) {
         // Valid phone number
+        console.log('Phone is valid, showing success message');
         showPhoneMessage('success', 'מספר טלפון נייד תקין');
     } else {
         // Invalid phone number
+        console.log('Phone is invalid, showing error:', validation.error);
         showPhoneMessage('error', validation.error);
     }
     
