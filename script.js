@@ -1645,6 +1645,27 @@ function updateProductSections(productType) {
         'סייבר למשפחה': document.querySelector('[data-section="סייבר למשפחה"]'),
         'טרור': document.querySelector('[data-section="טרור"]')
     };
+    // Additional Coverage step sections
+    const additionalCoverageStep = document.getElementById('step-cover-additional');
+    if (additionalCoverageStep) {
+        const businessSection = additionalCoverageStep.querySelector('.building-section:nth-of-type(1)');
+        const thirdPartySection = additionalCoverageStep.querySelector('.building-section:nth-of-type(2)');
+        const employersSection = additionalCoverageStep.querySelector('.building-section:nth-of-type(3)');
+        const cyberSection = additionalCoverageStep.querySelector('.building-section:nth-of-type(4)');
+        const terrorSection = additionalCoverageStep.querySelector('.building-section:nth-of-type(5)');
+        // Show all by default
+        [businessSection, thirdPartySection, employersSection, cyberSection, terrorSection].forEach(section => {
+            if (section) section.style.display = '';
+        });
+        if (productType === 'מבנה בלבד משועבד') {
+            // Hide all except third party
+            if (businessSection) businessSection.style.display = 'none';
+            if (employersSection) employersSection.style.display = 'none';
+            if (cyberSection) cyberSection.style.display = 'none';
+            if (terrorSection) terrorSection.style.display = 'none';
+            if (thirdPartySection) thirdPartySection.style.display = '';
+        }
+    }
     
     // First, enable all sections and remove disabled state
     Object.values(sections).forEach(section => {
