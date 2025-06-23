@@ -4449,7 +4449,7 @@ input:disabled {
     color: #1e293b;
     margin: 0 0 16px 0;
     line-height: 1.2;
-    background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -4714,14 +4714,15 @@ input:disabled {
 
 /* Agency Info */
 .agency-info {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
     border-radius: 16px;
     padding: 24px;
     display: flex;
     align-items: center;
     gap: 20px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #bae6fd;
     direction: rtl;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
 }
 
 .agency-logo {
@@ -7108,28 +7109,31 @@ input[type="number"]::-webkit-outer-spin-button {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
-    max-width: 300px;
-    margin: 30px auto 0;
-    padding: 16px 32px;
-    background: linear-gradient(135deg, #0052cc 0%, #003d99 100%);
+    max-width: 400px;
+    margin: 40px auto 20px;
+    padding: 20px 40px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
-    border: none;
+    border: 2px solid transparent;
     border-radius: 50px;
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 20px;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 82, 204, 0.3);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
     position: relative;
     overflow: hidden;
+    transform: scale(1.05);
+    animation: pulseButton 2s ease-in-out infinite;
 }
 
 .btn-submit-quote:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 25px rgba(0, 82, 204, 0.4);
-    background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+    transform: translateY(-3px) scale(1.08);
+    box-shadow: 0 12px 35px rgba(16, 185, 129, 0.5);
+    background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+    animation: none;
 }
 
 .btn-submit-quote:active {
@@ -7177,6 +7181,21 @@ input[type="number"]::-webkit-outer-spin-button {
     0% { transform: scale(1); }
     50% { transform: scale(1.1); }
     100% { transform: scale(1); }
+}
+
+@keyframes pulseButton {
+    0% { 
+        transform: scale(1.05);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+    50% { 
+        transform: scale(1.08);
+        box-shadow: 0 12px 35px rgba(16, 185, 129, 0.6);
+    }
+    100% { 
+        transform: scale(1.05);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
 }
 
 /* Mobile responsiveness */

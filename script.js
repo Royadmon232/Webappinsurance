@@ -8,6 +8,9 @@ let wizardSteps = [];
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Home Insurance Landing Page loaded successfully! - Version 20250620-2 (Static site mode)');
     
+    // Initialize page functionality
+    initializePage();
+    
     // Initialize statistics counter animation
     initializeStatsCounter();
     
@@ -353,6 +356,11 @@ window.HomeInsuranceApp.sendVerificationCode = async function() {
         // Setup code inputs
         setupCodeInputs();
         
+        // Also call initializeCodeInputs if it exists (for compatibility)
+        if (typeof initializeCodeInputs === 'function') {
+            initializeCodeInputs();
+        }
+        
     } catch (error) {
         console.error('Error sending verification code:', error);
         alert('שגיאה בשליחת קוד אימות. אנא נסה שוב.');
@@ -370,7 +378,66 @@ window.HomeInsuranceApp.sendVerificationCode = async function() {
 };
 
 /**
- * Setup code digit inputs
+ * Initialize code input handlers (enhanced version)
+ * This function provides better handling of code inputs with filled state
+ */
+function initializeCodeInputs() {
+    const codeInputs = document.querySelectorAll('.code-digit');
+    
+    codeInputs.forEach((input, index) => {
+        // Handle input
+        input.addEventListener('input', function(e) {
+            const value = e.target.value.replace(/\D/g, '');
+            e.target.value = value;
+            
+            // Clear error state
+            document.getElementById('verification-error').style.display = 'none';
+            codeInputs.forEach(inp => inp.classList.remove('error'));
+            
+            if (value) {
+                e.target.classList.add('filled');
+                // Move to next input
+                if (index < codeInputs.length - 1) {
+                    codeInputs[index + 1].focus();
+                } else {
+                    // All digits entered - verify code
+                    const code = Array.from(codeInputs).map(inp => inp.value).join('');
+                    if (code.length === 6) {
+                        verifyCode(code);
+                    }
+                }
+            } else {
+                e.target.classList.remove('filled');
+            }
+        });
+        
+        // Handle backspace
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                codeInputs[index - 1].focus();
+            }
+        });
+        
+        // Handle paste
+        input.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pastedData = e.clipboardData.getData('text').replace(/\D/g, '');
+            
+            for (let i = 0; i < Math.min(pastedData.length, codeInputs.length); i++) {
+                codeInputs[i].value = pastedData[i];
+                codeInputs[i].classList.add('filled');
+            }
+            
+            if (pastedData.length >= codeInputs.length) {
+                const code = Array.from(codeInputs).map(inp => inp.value).join('');
+                verifyCode(code);
+            }
+        });
+    });
+}
+
+/**
+ * Setup code digit inputs (legacy version - kept for compatibility)
  */
 function setupCodeInputs() {
     const codeInputs = document.querySelectorAll('.code-digit');
@@ -763,8 +830,6 @@ function formatEmailContent(data) {
  */
 function initializePage() {
     console.log('initializePage called');
-    // Add smooth scrolling for anchor links
-    initializeSmoothScrolling();
     
     // Add responsive navigation handling
     initializeNavigation();
@@ -772,13 +837,13 @@ function initializePage() {
     // Add form validation (ready for future forms)
     initializeFormValidation();
     
-    // Initialize CTA button functionality - REMOVED to prevent conflict with modal
-    // initializeCTAButton();
-    
     // Initialize modal CTA button
     console.log('About to call initializeModalCTAButton');
     initializeModalCTAButton();
     console.log('initializeModalCTAButton completed');
+    
+    // Note: initializeSmoothScrolling is called separately in other DOMContentLoaded
+    // to avoid conflicts with the existing implementation
 }
 
 /**
@@ -1034,6 +1099,12 @@ function validatePostalCode(postalCode) {
     // Postal code: 5-7 digits only
     const postalRegex = /^\d{5,7}$/;
     return postalRegex.test(postalCode);
+}
+
+function validateZipCode(zipCode) {
+    // Israeli ZIP code format: 5 or 7 digits (alias for validatePostalCode)
+    const zipRegex = /^\d{5}(\d{2})?$/;
+    return zipRegex.test(zipCode);
 }
 
 function validateYearBuilt(year) {
@@ -1451,7 +1522,19 @@ window.HomeInsuranceApp = {
     submitGeneralDetails,
     wizardNext,
     wizardPrev,
-    submitQuoteRequest
+    submitQuoteRequest,
+    // Add missing functions
+    initializeConditionalFields,
+    validateGeneralDetailsForm,
+    clearFormErrors,
+    updateProductSections,
+    initializeProductSections,
+    collectAllFormData,
+    showNotification,
+    // Phone verification functions
+    initializeCodeInputs,
+    verifyCode,
+    startResendTimer
 };
 
 /**
@@ -5647,69 +5730,563 @@ function initializeAdditionalCoverageEnhancements() {
  * Submit quote request - sends all collected data to agent
  */
 async function submitQuoteRequest() {
+    console.log('📧 Submitting quote request...');
+    
+    // Get the submit button
+    const submitBtn = document.querySelector('.btn-submit-quote');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('loading');
+    }
+    
     try {
-        // Show loading state
-        const submitBtn = document.querySelector('.btn-submit-quote');
-        if (submitBtn) {
-            submitBtn.classList.add('loading');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="btn-icon">⏳</span> שולח בקשה...';
-        }
-
         // Collect all form data
-        const formData = collectAllFormData();
+        const formData = collectFullFormData();
         
-        // Get the auth token from sessionStorage
-        const authToken = sessionStorage.getItem('authToken');
-        if (!authToken) {
-            throw new Error('לא נמצא אישור אימות');
-        }
-
-        // Submit to server
-        const response = await fetch('/api/submit-form', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify(formData)
-        });
-
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-            // Show success message
-            if (submitBtn) {
-                submitBtn.innerHTML = '<span class="btn-icon">✅</span> הבקשה נשלחה בהצלחה!';
-                submitBtn.classList.remove('loading');
-            }
-            
+        // Add timestamp and metadata
+        formData.submittedAt = new Date().toISOString();
+        formData.formVersion = '2.0';
+        formData.source = 'ביטוח דירה - אדמון סוכנות לביטוח';
+        
+        // Prepare email content
+        const emailData = {
+            to: 'insurance@admon-agency.co.il', // Agent email
+            subject: `בקשה חדשה להצעת ביטוח דירה - ${formData.idNumber}`,
+            replyTo: formData.email || 'noreply@admon-agency.co.il',
+            html: generateEmailHTML(formData),
+            formData: formData
+        };
+        
+        // Send to backend/email service
+        const response = await sendEmailToAgent(emailData);
+        
+        if (response && response.success) {
             // Show success notification
             showNotification('success', 'הבקשה נשלחה בהצלחה! נציג יצור איתך קשר בקרוב.');
             
-            // Close modal after delay
+            // Log success
+            console.log('✅ Quote request sent successfully');
+            
+            // Close modal after 3 seconds
             setTimeout(() => {
                 closeGeneralDetailsModal();
-                // Clear form data
-                sessionStorage.clear();
             }, 3000);
         } else {
-            throw new Error(result.error || 'שגיאה בשליחת הטופס');
+            throw new Error('Failed to send email');
         }
         
     } catch (error) {
-        console.error('Error submitting quote request:', error);
-        
-        // Reset button on error
-        const submitBtn = document.querySelector('.btn-submit-quote');
+        console.error('❌ Error submitting quote request:', error);
+        showNotification('error', 'אירעה שגיאה בשליחת הבקשה. אנא נסה שוב.');
+    } finally {
+        // Re-enable button
         if (submitBtn) {
-            submitBtn.classList.remove('loading');
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<span class="btn-icon">📧</span> קבל הצעת מחיר';
+            submitBtn.classList.remove('loading');
         }
-        
-        showNotification('error', error.message || 'אירעה שגיאה בשליחת הבקשה. נסה שוב.');
     }
+}
+
+/**
+ * Collect complete form data from all steps
+ */
+function collectFullFormData() {
+    // Start with basic form data
+    const formData = collectFormData();
+    
+    // Add phone number if verified
+    const phoneNumber = document.getElementById('phone-number');
+    if (phoneNumber && phoneNumber.value) {
+        formData.phoneNumber = phoneNumber.value;
+    }
+    
+    // Add building/structure data
+    const buildingData = {
+        insuranceAmount: document.getElementById('insurance-amount')?.value || '',
+        buildingAge: document.getElementById('building-age')?.value || '',
+        buildingArea: document.getElementById('building-area')?.value || '',
+        constructionType: document.getElementById('construction-type')?.value || '',
+        constructionStandard: document.getElementById('construction-standard')?.value || '',
+        mortgaged: document.getElementById('mortgaged-property')?.checked || false,
+        renewals: document.getElementById('renewals')?.value || '',
+        buildingContentsInsurance: document.getElementById('building-contents-insurance')?.value || '',
+        storageInsurance: document.getElementById('storage-insurance')?.value || '',
+        swimmingPoolInsurance: document.getElementById('swimming-pool-insurance')?.value || '',
+        glassBreakageInsurance: document.getElementById('glass-breakage-insurance')?.value || '',
+        boilersCoverage: document.getElementById('boilers-coverage')?.checked || false
+    };
+    
+    // Add contents data
+    const contentsData = {
+        contentsInsuranceAmount: document.getElementById('contents-insurance-amount')?.value || '',
+        contentsBuildingAge: document.getElementById('contents-building-age')?.value || '',
+        jewelryAmount: document.getElementById('jewelry-amount')?.value || '',
+        jewelryCoverage: document.getElementById('jewelry-coverage')?.value || '',
+        watchesAmount: document.getElementById('watches-amount')?.value || '',
+        watchesCoverage: document.getElementById('watches-coverage')?.value || '',
+        camerasAmount: document.getElementById('cameras-amount')?.value || '',
+        electronicsAmount: document.getElementById('electronics-amount')?.value || '',
+        bicyclesAmount: document.getElementById('bicycles-amount')?.value || '',
+        musicalInstrumentsAmount: document.getElementById('musical-instruments-amount')?.value || '',
+        contentsWaterDamage: document.getElementById('contents-water-damage')?.checked || false,
+        contentsBurglary: document.getElementById('contents-burglary')?.checked || false,
+        contentsEarthquake: document.getElementById('contents-earthquake')?.value || '',
+        contentsEarthquakeDeductible: document.getElementById('contents-earthquake-deductible')?.value || ''
+    };
+    
+    // Add additional coverage data
+    const additionalCoverage = {
+        businessContentsAmount: document.getElementById('business-contents-amount')?.value || '',
+        businessEmployers: document.getElementById('business-employers')?.checked || false,
+        businessThirdParty: document.getElementById('business-third-party')?.checked || false,
+        thirdPartyCoverage: document.getElementById('third-party-coverage')?.checked || false,
+        employersLiability: document.getElementById('employers-liability')?.checked || false,
+        cyberCoverage: document.getElementById('cyber-coverage')?.checked || false,
+        terrorCoverage: document.getElementById('terror-coverage')?.checked || false
+    };
+    
+    // Combine all data
+    return {
+        ...formData,
+        building: buildingData,
+        contents: contentsData,
+        additionalCoverage: additionalCoverage
+    };
+}
+
+/**
+ * Generate HTML email content with comprehensive details
+ */
+function generateEmailHTML(data) {
+    // Format date nicely
+    const formatDate = (dateStr) => {
+        if (!dateStr) return 'לא צוין';
+        try {
+            return new Date(dateStr).toLocaleDateString('he-IL');
+        } catch {
+            return dateStr;
+        }
+    };
+    
+    // Format currency
+    const formatCurrency = (amount) => {
+        if (!amount) return '0';
+        return new Intl.NumberFormat('he-IL').format(amount);
+    };
+    
+    // Format boolean values
+    const formatBoolean = (value) => value ? 'כן' : 'לא';
+    
+    return `
+        <!DOCTYPE html>
+        <html dir="rtl" lang="he">
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body { font-family: Arial, sans-serif; direction: rtl; text-align: right; background: #f5f5f5; margin: 0; padding: 20px; }
+                .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); overflow: hidden; }
+                .header { background: linear-gradient(135deg, #0052cc 0%, #003d99 100%); color: white; padding: 30px; text-align: center; }
+                .header h1 { margin: 0; font-size: 28px; }
+                .header p { margin: 10px 0 0 0; opacity: 0.9; }
+                .content { padding: 30px; }
+                .section { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-right: 4px solid #0052cc; }
+                .section h2 { color: #0052cc; margin-top: 0; font-size: 20px; }
+                .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+                .info-item { background: white; padding: 12px; border-radius: 5px; border: 1px solid #e0e0e0; }
+                .info-item strong { color: #333; display: block; margin-bottom: 5px; }
+                .info-item span { color: #666; font-size: 15px; }
+                .coverage-list { list-style: none; padding: 0; margin: 0; }
+                .coverage-list li { background: white; padding: 10px 15px; margin-bottom: 8px; border-radius: 5px; border-right: 3px solid #4CAF50; }
+                .coverage-list li:before { content: "✓ "; color: #4CAF50; font-weight: bold; margin-left: 5px; }
+                .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 14px; }
+                .highlight { background: #fff3cd; padding: 15px; border-radius: 5px; border-right: 4px solid #ffc107; margin-bottom: 20px; }
+                .subsection { background: #e8f4f8; padding: 15px; border-radius: 5px; margin: 10px 0; }
+                .value-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0; }
+                .value-item:last-child { border-bottom: none; }
+                .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+                .badge.active { background: #d4edda; color: #155724; }
+                .badge.inactive { background: #f8d7da; color: #721c24; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🏠 בקשה חדשה להצעת ביטוח דירה</h1>
+                    <p>נשלח בתאריך: ${new Date(data.submittedAt).toLocaleString('he-IL')}</p>
+                </div>
+                
+                <div class="content">
+                    <!-- פרטים אישיים -->
+                    <div class="section">
+                        <h2>👤 פרטים אישיים</h2>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <strong>מספר ת.ז:</strong>
+                                <span>${data.idNumber || 'לא צוין'}</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>מספר טלפון:</strong>
+                                <span>${data.phoneNumber || 'לא צוין'}</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>תאריך התחלת ביטוח:</strong>
+                                <span>${formatDate(data.startDate)}</span>
+                            </div>
+                            ${data.email ? `
+                            <div class="info-item">
+                                <strong>אימייל:</strong>
+                                <span>${data.email}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    <!-- פרטי הנכס -->
+                    <div class="section">
+                        <h2>🏘️ פרטי הנכס</h2>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <strong>סוג מוצר:</strong>
+                                <span>${data.productType || 'לא צוין'}</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>סוג נכס:</strong>
+                                <span>${data.assetType || data.propertyType || 'לא צוין'}</span>
+                            </div>
+                            ${data.coverageType ? `
+                            <div class="info-item">
+                                <strong>סוג כיסוי:</strong>
+                                <span>${data.coverageType}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="subsection">
+                            <h3 style="margin-top: 0;">📍 כתובת מלאה</h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <strong>עיר:</strong>
+                                    <span>${data.city || 'לא צוין'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <strong>רחוב:</strong>
+                                    <span>${data.street || 'לא צוין'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <strong>מספר בית:</strong>
+                                    <span>${data.houseNumber || 'לא צוין'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <strong>מיקוד:</strong>
+                                    <span>${data.zipCode || 'לא צוין'}</span>
+                                </div>
+                                ${data.floorsNumber ? `
+                                <div class="info-item">
+                                    <strong>מספר קומות:</strong>
+                                    <span>${data.floorsNumber}</span>
+                                </div>
+                                ` : ''}
+                                ${data.hasGarden !== undefined ? `
+                                <div class="info-item">
+                                    <strong>גינה:</strong>
+                                    <span class="badge ${data.hasGarden ? 'active' : 'inactive'}">${formatBoolean(data.hasGarden)}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- כיסויים נבחרים -->
+                    ${data.selectedProducts && data.selectedProducts.length > 0 ? `
+                    <div class="section">
+                        <h2>✅ כיסויים נבחרים</h2>
+                        <ul class="coverage-list">
+                            ${data.selectedProducts.map(product => `<li>${product}</li>`).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- פרטי מבנה -->
+                    ${data.building && data.building.insuranceAmount ? `
+                    <div class="section">
+                        <h2>🏗️ פרטי ביטוח מבנה</h2>
+                        <div class="highlight">
+                            <strong>סכום ביטוח מבנה:</strong> ₪${formatCurrency(data.building.insuranceAmount)}
+                        </div>
+                        <div class="info-grid">
+                            ${data.building.buildingAge ? `
+                            <div class="info-item">
+                                <strong>גיל המבנה:</strong>
+                                <span>${data.building.buildingAge} שנים</span>
+                            </div>
+                            ` : ''}
+                            ${data.building.buildingArea ? `
+                            <div class="info-item">
+                                <strong>שטח המבנה:</strong>
+                                <span>${data.building.buildingArea} מ"ר</span>
+                            </div>
+                            ` : ''}
+                            ${data.building.constructionType ? `
+                            <div class="info-item">
+                                <strong>סוג בנייה:</strong>
+                                <span>${data.building.constructionType}</span>
+                            </div>
+                            ` : ''}
+                            ${data.building.constructionStandard ? `
+                            <div class="info-item">
+                                <strong>סטנדרט בנייה:</strong>
+                                <span>${data.building.constructionStandard}</span>
+                            </div>
+                            ` : ''}
+                            <div class="info-item">
+                                <strong>נכס משועבד:</strong>
+                                <span class="badge ${data.building.mortgaged ? 'active' : 'inactive'}">${formatBoolean(data.building.mortgaged)}</span>
+                            </div>
+                            ${data.building.renewals ? `
+                            <div class="info-item">
+                                <strong>חידושים:</strong>
+                                <span>${data.building.renewals}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        <!-- כיסויים נוספים למבנה -->
+                        <div class="subsection">
+                            <h3 style="margin-top: 0;">כיסויים וסכומים נוספים</h3>
+                            <div class="value-item">
+                                <span>נזקי מים:</span>
+                                <strong>${data.building.waterDamageType || 'לא נבחר'}</strong>
+                            </div>
+                            ${data.building.waterDeductible ? `
+                            <div class="value-item">
+                                <span>השתתפות עצמית נזקי מים:</span>
+                                <strong>${data.building.waterDeductible}</strong>
+                            </div>
+                            ` : ''}
+                            <div class="value-item">
+                                <span>פריצה:</span>
+                                <strong class="badge ${data.building.burglaryBuilding ? 'active' : 'inactive'}">${formatBoolean(data.building.burglaryBuilding)}</strong>
+                            </div>
+                            <div class="value-item">
+                                <span>רעידת אדמה:</span>
+                                <strong>${data.building.earthquakeCoverage || 'לא'}</strong>
+                            </div>
+                            ${data.building.earthquakeDeductible ? `
+                            <div class="value-item">
+                                <span>השתתפות עצמית רעידת אדמה:</span>
+                                <strong>${data.building.earthquakeDeductible}</strong>
+                            </div>
+                            ` : ''}
+                            ${data.building.additionalSharedInsurance ? `
+                            <div class="value-item">
+                                <span>רכוש משותף נוסף:</span>
+                                <strong>₪${formatCurrency(data.building.additionalSharedInsurance)}</strong>
+                            </div>
+                            ` : ''}
+                            ${data.building.buildingContentsInsurance ? `
+                            <div class="value-item">
+                                <span>תכולת מבנה:</span>
+                                <strong>₪${formatCurrency(data.building.buildingContentsInsurance)}</strong>
+                            </div>
+                            ` : ''}
+                            ${data.building.storageInsurance ? `
+                            <div class="value-item">
+                                <span>מחסן:</span>
+                                <strong>₪${formatCurrency(data.building.storageInsurance)}</strong>
+                            </div>
+                            ` : ''}
+                            ${data.building.swimmingPoolInsurance ? `
+                            <div class="value-item">
+                                <span>בריכת שחייה:</span>
+                                <strong>₪${formatCurrency(data.building.swimmingPoolInsurance)}</strong>
+                            </div>
+                            ` : ''}
+                            ${data.building.glassBreakageInsurance ? `
+                            <div class="value-item">
+                                <span>שבר זכוכית:</span>
+                                <strong>₪${formatCurrency(data.building.glassBreakageInsurance)}</strong>
+                            </div>
+                            ` : ''}
+                            <div class="value-item">
+                                <span>דודי חימום:</span>
+                                <strong class="badge ${data.building.boilersCoverage ? 'active' : 'inactive'}">${formatBoolean(data.building.boilersCoverage)}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- פרטי תכולה -->
+                    ${data.contents && data.contents.contentsInsuranceAmount ? `
+                    <div class="section">
+                        <h2>📦 פרטי ביטוח תכולה</h2>
+                        <div class="highlight">
+                            <strong>סכום ביטוח תכולה:</strong> ₪${formatCurrency(data.contents.contentsInsuranceAmount)}
+                        </div>
+                        <div class="info-grid">
+                            ${data.contents.contentsBuildingAge ? `
+                            <div class="info-item">
+                                <strong>גיל המבנה לתכולה:</strong>
+                                <span>${data.contents.contentsBuildingAge} שנים</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        <!-- פריטי ערך -->
+                        ${(data.contents.jewelryAmount || data.contents.watchesAmount || data.contents.camerasAmount || 
+                           data.contents.electronicsAmount || data.contents.bicyclesAmount || data.contents.musicalInstrumentsAmount) ? `
+                        <div class="subsection">
+                            <h3 style="margin-top: 0;">💎 פריטי ערך</h3>
+                            ${data.contents.jewelryAmount ? `
+                            <div class="value-item">
+                                <span>תכשיטים:</span>
+                                <strong>₪${formatCurrency(data.contents.jewelryAmount)} ${data.contents.jewelryCoverage ? `(${data.contents.jewelryCoverage})` : ''}</strong>
+                            </div>
+                            ` : ''}
+                            ${data.contents.watchesAmount ? `
+                            <div class="value-item">
+                                <span>שעונים:</span>
+                                <strong>₪${formatCurrency(data.contents.watchesAmount)} ${data.contents.watchesCoverage ? `(${data.contents.watchesCoverage})` : ''}</strong>
+                            </div>
+                            ` : ''}
+                            ${data.contents.camerasAmount ? `
+                            <div class="value-item">
+                                <span>מצלמות:</span>
+                                <strong>₪${formatCurrency(data.contents.camerasAmount)}</strong>
+                            </div>
+                            ` : ''}
+                            ${data.contents.electronicsAmount ? `
+                            <div class="value-item">
+                                <span>מוצרי חשמל ואלקטרוניקה:</span>
+                                <strong>₪${formatCurrency(data.contents.electronicsAmount)}</strong>
+                            </div>
+                            ` : ''}
+                            ${data.contents.bicyclesAmount ? `
+                            <div class="value-item">
+                                <span>אופניים:</span>
+                                <strong>₪${formatCurrency(data.contents.bicyclesAmount)}</strong>
+                            </div>
+                            ` : ''}
+                            ${data.contents.musicalInstrumentsAmount ? `
+                            <div class="value-item">
+                                <span>כלי נגינה:</span>
+                                <strong>₪${formatCurrency(data.contents.musicalInstrumentsAmount)}</strong>
+                            </div>
+                            ` : ''}
+                        </div>
+                        ` : ''}
+                        
+                        <!-- כיסויים לתכולה -->
+                        <div class="subsection">
+                            <h3 style="margin-top: 0;">כיסויים לתכולה</h3>
+                            <div class="value-item">
+                                <span>נזקי מים:</span>
+                                <strong class="badge ${data.contents.contentsWaterDamage ? 'active' : 'inactive'}">${formatBoolean(data.contents.contentsWaterDamage)}</strong>
+                            </div>
+                            <div class="value-item">
+                                <span>פריצה:</span>
+                                <strong class="badge ${data.contents.contentsBurglary ? 'active' : 'inactive'}">${formatBoolean(data.contents.contentsBurglary)}</strong>
+                            </div>
+                            <div class="value-item">
+                                <span>רעידת אדמה:</span>
+                                <strong>${data.contents.contentsEarthquake || 'לא'}</strong>
+                            </div>
+                            ${data.contents.contentsEarthquakeDeductible ? `
+                            <div class="value-item">
+                                <span>השתתפות עצמית רעידת אדמה:</span>
+                                <strong>${data.contents.contentsEarthquakeDeductible}</strong>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- כיסויים נוספים -->
+                    ${data.additionalCoverage && (data.additionalCoverage.businessContentsAmount || 
+                       data.additionalCoverage.thirdPartyCoverage || data.additionalCoverage.employersLiability || 
+                       data.additionalCoverage.cyberCoverage || data.additionalCoverage.terrorCoverage) ? `
+                    <div class="section">
+                        <h2>🛡️ כיסויים נוספים</h2>
+                        <div class="info-grid">
+                            ${data.additionalCoverage.businessContentsAmount ? `
+                            <div class="info-item">
+                                <strong>תכולה עסקית:</strong>
+                                <span>₪${formatCurrency(data.additionalCoverage.businessContentsAmount)}</span>
+                            </div>
+                            ` : ''}
+                            ${data.additionalCoverage.businessEmployers !== undefined ? `
+                            <div class="info-item">
+                                <strong>חבות מעבידים עסקית:</strong>
+                                <span class="badge ${data.additionalCoverage.businessEmployers ? 'active' : 'inactive'}">${formatBoolean(data.additionalCoverage.businessEmployers)}</span>
+                            </div>
+                            ` : ''}
+                            ${data.additionalCoverage.businessThirdParty !== undefined ? `
+                            <div class="info-item">
+                                <strong>צד ג' עסקי:</strong>
+                                <span class="badge ${data.additionalCoverage.businessThirdParty ? 'active' : 'inactive'}">${formatBoolean(data.additionalCoverage.businessThirdParty)}</span>
+                            </div>
+                            ` : ''}
+                            ${data.additionalCoverage.thirdPartyCoverage !== undefined ? `
+                            <div class="info-item">
+                                <strong>צד שלישי:</strong>
+                                <span class="badge ${data.additionalCoverage.thirdPartyCoverage ? 'active' : 'inactive'}">${formatBoolean(data.additionalCoverage.thirdPartyCoverage)}</span>
+                            </div>
+                            ` : ''}
+                            ${data.additionalCoverage.employersLiability !== undefined ? `
+                            <div class="info-item">
+                                <strong>חבות מעבידים:</strong>
+                                <span class="badge ${data.additionalCoverage.employersLiability ? 'active' : 'inactive'}">${formatBoolean(data.additionalCoverage.employersLiability)}</span>
+                            </div>
+                            ` : ''}
+                            ${data.additionalCoverage.cyberCoverage !== undefined ? `
+                            <div class="info-item">
+                                <strong>סייבר למשפחה:</strong>
+                                <span class="badge ${data.additionalCoverage.cyberCoverage ? 'active' : 'inactive'}">${formatBoolean(data.additionalCoverage.cyberCoverage)}</span>
+                            </div>
+                            ` : ''}
+                            ${data.additionalCoverage.terrorCoverage !== undefined ? `
+                            <div class="info-item">
+                                <strong>טרור:</strong>
+                                <span class="badge ${data.additionalCoverage.terrorCoverage ? 'active' : 'inactive'}">${formatBoolean(data.additionalCoverage.terrorCoverage)}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <div class="footer">
+                    <p><strong>אדמון סוכנות לביטוח</strong></p>
+                    <p>טלפון: 1-800-ADMON-1 | אימייל: insurance@admon-agency.co.il</p>
+                    <p style="font-size: 12px; color: #999;">מסמך זה נוצר באופן אוטומטי ממערכת הלידים</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+}
+
+/**
+ * Send email to agent via backend service
+ */
+async function sendEmailToAgent(emailData) {
+    // In production, this would send to your backend API
+    // For now, we'll simulate the email sending
+    console.log('📮 Email data prepared:', emailData);
+    
+    // Simulate API call
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            // In production, replace with actual API call:
+            // const response = await fetch('/api/send-email', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(emailData)
+            // });
+            // return response.json();
+            
+            resolve({ success: true, messageId: Date.now() });
+        }, 1000);
+    });
 }
 
 /**
