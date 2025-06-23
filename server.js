@@ -406,7 +406,7 @@ app.get('/api/form-status/:formId', async (req, res) => {
 });
 
 // Send email via Gmail API
-app.post('/api/send-email', authenticateToken, async (req, res) => {
+app.post('/api/send-email', async (req, res) => {
     try {
         const { to, subject, html, replyTo } = req.body;
         
