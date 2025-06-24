@@ -328,9 +328,10 @@ async function sendEmailWithPdf(to, subject, htmlContent, pdfBuffer, filename) {
             Buffer.from(htmlContent).toString('base64'),
             '',
             `--${boundary}`,
-            'Content-Type: application/pdf',
-            `Content-Disposition: attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+            'Content-Type: application/pdf; name="' + filename + '"',
+            `Content-Disposition: attachment; filename="${filename}"`,
             'Content-Transfer-Encoding: base64',
+            'Content-ID: <pdf-attachment>',
             '',
             pdfBuffer.toString('base64'),
             `--${boundary}--`
@@ -422,10 +423,19 @@ async function generatePdf(htmlContent) {
 
         console.log(`✅ PDF generated successfully, size: ${pdfBuffer.length} bytes`);
         
-        // Basic validation - just check if buffer exists and has content
+        // Enhanced PDF validation
         if (!pdfBuffer || pdfBuffer.length === 0) {
             throw new Error('PDF buffer is empty');
         }
+        
+        // Validate minimum PDF size (should be at least a few KB for a real PDF)
+        if (pdfBuffer.length < 1000) {
+            throw new Error(`PDF too small: ${pdfBuffer.length} bytes`);
+        }
+        
+        // Validate that it starts with PDF header
+        const pdfStart = pdfBuffer.slice(0, 4).toString();
+        console.log('📄 PDF header check:', pdfStart);
         
         console.log('✅ PDF validation passed');
         return pdfBuffer;
@@ -495,8 +505,15 @@ export default async function handler(req, res) {
         // Generate PDF (validation is done inside generatePdf function)
         const pdfBuffer = await generatePdf(htmlContent);
         
-        // Convert buffer to base64
+        // Convert buffer to base64 with validation
         const base64Pdf = pdfBuffer.toString('base64');
+        
+        // Validate base64 encoding
+        if (!base64Pdf || base64Pdf.length === 0) {
+            throw new Error('Failed to convert PDF to base64');
+        }
+        
+        console.log(`📄 PDF base64 size: ${base64Pdf.length} characters`);
         
         // Send email with PDF if requested
         let emailResult = null;
@@ -509,11 +526,11 @@ export default async function handler(req, res) {
                     message: 'Gmail API credentials not configured'
                 };
             } else {
-                // Create a safe filename without special characters
-                const firstName = (formData.firstName || 'customer').replace(/[^a-zA-Zא-ת0-9]/g, '');
-                const lastName = (formData.lastName || '').replace(/[^a-zA-Zא-ת0-9]/g, '');
+                // Create a safe filename - only English characters, no Hebrew or special chars
+                const firstName = (formData.firstName || 'customer').replace(/[^a-zA-Z0-9]/g, '');
+                const lastName = (formData.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
                 const timestamp = Date.now();
-                const filename = `lead_${firstName}${lastName ? '_' + lastName : ''}_${timestamp}.pdf`;
+                const filename = `insurance_lead_${firstName}${lastName ? '_' + lastName : ''}_${timestamp}.pdf`;
                 emailResult = await sendEmailWithPdf(
                     emailTo,
                     emailSubject,
@@ -524,14 +541,14 @@ export default async function handler(req, res) {
             }
         }
         
-        // Return success response
-        const firstName = (formData.firstName || 'customer').replace(/[^a-zA-Zא-ת0-9]/g, '');
-        const lastName = (formData.lastName || '').replace(/[^a-zA-Zא-ת0-9]/g, '');
+        // Return success response with safe filename
+        const firstName = (formData.firstName || 'customer').replace(/[^a-zA-Z0-9]/g, '');
+        const lastName = (formData.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
         const timestamp = Date.now();
         
         res.status(200).json({
             success: true,
-            filename: `lead_${firstName}${lastName ? '_' + lastName : ''}_${timestamp}.pdf`,
+            filename: `insurance_lead_${firstName}${lastName ? '_' + lastName : ''}_${timestamp}.pdf`,
             pdf: base64Pdf,
             size: pdfBuffer.length,
             message: 'PDF generated successfully',
