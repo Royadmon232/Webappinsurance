@@ -13,7 +13,7 @@ const puppeteer = require('puppeteer');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // Security middleware
 app.use(helmet());
@@ -45,11 +45,15 @@ function authenticateToken(req, res, next) {
     next();
 }
 
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/insurance_db', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-});
+// MongoDB connection (optional)
+if (process.env.MONGODB_URI || process.env.NODE_ENV === 'production') {
+    mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/insurance_db', {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+    });
+} else {
+    console.log('⚠️  MongoDB not configured - running without database');
+}
 
 // Mongoose schemas
 const verificationCodeSchema = new mongoose.Schema({

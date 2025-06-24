@@ -6433,89 +6433,145 @@ function generateEmailHTML(data) {
 }
 
 /**
- * Send email to agent via backend service
+ * Send email to agent via backend service with fallback endpoints
  */
 async function sendEmailToAgent(emailData) {
     console.log('📮 Sending email via Gmail API...', emailData);
     
-    try {
-        // Get auth token if available
-        const authToken = localStorage.getItem('authToken');
+    // List of possible endpoints to try
+    const endpoints = [
+        'http://localhost:8080/api/send-email',              // Local development (as seen in OAuth config)
+        'https://webappinsurance.vercel.app/api/send-email',  // Production Vercel
+        'http://localhost:3000/api/send-email'               // Fallback endpoint
+    ];
+    
+    for (let i = 0; i < endpoints.length; i++) {
+        const endpoint = endpoints[i];
+        console.log(`📮 Trying endpoint ${i + 1}/${endpoints.length}: ${endpoint}`);
         
-        const response = await fetch('http://localhost:3000/api/send-email', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': authToken ? `Bearer ${authToken}` : ''
-            },
-            body: JSON.stringify(emailData)
-        });
-        
-        const result = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(result.message || 'Failed to send email');
+        try {
+            // Get auth token if available
+            const authToken = localStorage.getItem('authToken');
+            
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': authToken ? `Bearer ${authToken}` : ''
+                },
+                body: JSON.stringify(emailData)
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.message || `Failed to send email (${response.status})`);
+            }
+            
+            console.log(`✅ Email sent successfully via ${endpoint}:`, result);
+            return result;
+            
+        } catch (error) {
+            console.warn(`❌ Failed to send email via ${endpoint}:`, error.message);
+            
+            // If this is the last endpoint, handle the final failure
+            if (i === endpoints.length - 1) {
+                console.error('❌ All email endpoints failed, saving to localStorage');
+                
+                // Fallback to localStorage if all email endpoints fail
+                const timestamp = new Date().toISOString();
+                const savedForms = JSON.parse(localStorage.getItem('savedInsuranceForms') || '[]');
+                savedForms.push({
+                    ...emailData,
+                    savedAt: timestamp,
+                    status: 'email_failed',
+                    lastError: error.message
+                });
+                localStorage.setItem('savedInsuranceForms', JSON.stringify(savedForms));
+                
+                // Show user-friendly message
+                showNotification('warning', 
+                    `📧 הליד נשמר במערכת!<br>
+                    שירות המייל זמנית לא זמין, הליד נשמר ויישלח מאוחר יותר.<br>
+                    נציג יחזור אליך בהקדם.`
+                );
+                
+                // Still return success to user but log the error
+                return { 
+                    success: true, 
+                    messageId: `local_${Date.now()}`,
+                    note: 'Email service unavailable, form saved locally'
+                };
+            }
+            
+            // Continue to next endpoint
+            continue;
         }
-        
-        console.log('✅ Email sent successfully:', result);
-        return result;
-        
-    } catch (error) {
-        console.error('❌ Error sending email:', error);
-        
-        // Fallback to localStorage if email fails
-        const timestamp = new Date().toISOString();
-        const savedForms = JSON.parse(localStorage.getItem('savedInsuranceForms') || '[]');
-        savedForms.push({
-            ...emailData,
-            savedAt: timestamp,
-            status: 'email_failed'
-        });
-        localStorage.setItem('savedInsuranceForms', JSON.stringify(savedForms));
-        
-        // Still return success to user but log the error
-        return { 
-            success: true, 
-            messageId: `local_${Date.now()}`,
-            note: 'Email service unavailable, form saved locally'
-        };
     }
 }
 
 /**
- * Generate PDF from the beautiful email HTML template
+ * Generate PDF from the beautiful email HTML template with fallback endpoints
  */
 async function generateQuotePDF(htmlContent, filename) {
     console.log('📄 Generating PDF from beautiful template...');
     
-    try {
-        const response = await fetch('http://localhost:3000/api/generate-pdf', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                htmlContent: htmlContent,
-                filename: filename || `insurance_quote_${Date.now()}.pdf`
-            })
-        });
+    // List of possible endpoints to try
+    const endpoints = [
+        'http://localhost:8080/api/generate-pdf',              // Local development
+        'https://webappinsurance.vercel.app/api/generate-pdf',  // Production Vercel
+        'http://localhost:3000/api/generate-pdf'               // Fallback endpoint
+    ];
+    
+    for (let i = 0; i < endpoints.length; i++) {
+        const endpoint = endpoints[i];
+        console.log(`📄 Trying PDF endpoint ${i + 1}/${endpoints.length}: ${endpoint}`);
         
-        const result = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(result.message || 'Failed to generate PDF');
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    htmlContent: htmlContent,
+                    filename: filename || `insurance_quote_${Date.now()}.pdf`
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.message || `Failed to generate PDF (${response.status})`);
+            }
+            
+            console.log(`✅ PDF generated successfully via ${endpoint}:`, result);
+            
+            // Download the PDF
+            downloadPDFFromBase64(result.pdf, result.filename);
+            
+            return result;
+            
+        } catch (error) {
+            console.warn(`❌ Failed to generate PDF via ${endpoint}:`, error.message);
+            
+            // If this is the last endpoint, handle the final failure
+            if (i === endpoints.length - 1) {
+                console.error('❌ All PDF endpoints failed');
+                
+                // Show user-friendly message about PDF failure
+                showNotification('warning', 
+                    `📄 לא הצלחנו ליצור קובץ PDF<br>
+                    שירות יצירת ה-PDF זמנית לא זמין.<br>
+                    הליד נשלח במייל בהצלחה!`
+                );
+                
+                throw new Error('All PDF generation endpoints failed');
+            }
+            
+            // Continue to next endpoint
+            continue;
         }
-        
-        console.log('✅ PDF generated successfully:', result);
-        
-        // Download the PDF
-        downloadPDFFromBase64(result.pdf, result.filename);
-        
-        return result;
-        
-    } catch (error) {
-        console.error('❌ Error generating PDF:', error);
-        throw error;
     }
 }
 
@@ -6568,8 +6624,8 @@ async function sendEmailAndGeneratePDF(formData) {
         // Send email and generate PDF in parallel for better performance
         const [emailResult, pdfResult] = await Promise.allSettled([
             sendEmailToAgent({
-                to: 'roi@admon-agency.co.il',
-                replyTo: formData.email || 'noreply@admon-agency.co.il',
+                to: 'royadmon23@gmail.com',
+                replyTo: formData.email || 'royadmon23@gmail.com',
                 subject: `🏠 בקשה חדשה להצעת ביטוח דירה - ${formData.firstName || ''} ${formData.lastName || ''}`,
                 html: htmlContent
             }),
