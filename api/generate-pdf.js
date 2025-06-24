@@ -497,20 +497,8 @@ export default async function handler(req, res) {
         // Generate HTML content from form data
         const htmlContent = formatEmailContent(formData);
         
-        // Generate PDF
+        // Generate PDF (validation is done inside generatePdf function)
         const pdfBuffer = await generatePdf(htmlContent);
-        
-        // Validate PDF
-        if (!pdfBuffer || pdfBuffer.length === 0) {
-            throw new Error('Failed to generate PDF - empty buffer');
-        }
-        
-        // Check PDF header
-        const pdfHeader = pdfBuffer.slice(0, 5).toString();
-        if (pdfHeader !== '%PDF-') {
-            console.error('❌ Invalid PDF header:', pdfHeader);
-            throw new Error('Generated file is not a valid PDF');
-        }
         
         // Convert buffer to base64
         const base64Pdf = pdfBuffer.toString('base64');
