@@ -492,7 +492,7 @@ async function generatePdf(htmlContent) {
         });
         
         // Wait a bit for fonts and styles to load
-        await page.waitForTimeout(1000);
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Validate that content loaded
         const bodyContent = await page.evaluate(() => document.body.textContent);
