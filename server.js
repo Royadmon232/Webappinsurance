@@ -563,7 +563,7 @@ app.post('/api/send-email', async (req, res) => {
         // Create email message
         const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
         const messageParts = [
-            `From: "אדמון סוכנות לביטוח" <${process.env.GMAIL_USER || 'insurance@admon-agency.co.il'}>`,
+            `From: "אדמון סוכנות לביטוח" <royadmon23@gmail.com>`,
             `To: ${to}`,
             `Reply-To: ${replyTo || 'noreply@admon-agency.co.il'}`,
             `Subject: ${utf8Subject}`,
@@ -687,7 +687,7 @@ app.post('/api/generate-pdf', async (req, res) => {
                 const utf8Subject = `=?utf-8?B?${Buffer.from(emailSubject).toString('base64')}?=`;
                 
                 const messageParts = [
-                    `From: "אדמון סוכנות לביטוח" <${process.env.GMAIL_USER || 'insurance@admon-agency.co.il'}>`,
+                    `From: "אדמון סוכנות לביטוח" <royadmon23@gmail.com>`,
                     `To: ${emailTo}`,
                     `Reply-To: noreply@admon-agency.co.il`,
                     `Subject: ${utf8Subject}`,
@@ -847,15 +847,15 @@ function formatEmailContent(data) {
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>כתובת:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.street || ''} ${data.houseNumber || ''}, ${data.city || ''}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${(data.address?.street || data.street || '')} ${(data.address?.houseNumber || data.houseNumber || '')}, ${(data.address?.city || data.city || '')}</td>
                         </tr>
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>מיקוד:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.postalCode || 'לא צוין'}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${(data.address?.postalCode || data.postalCode || 'לא צוין')}</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>גינה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.hasGarden ? '✅ כן' : '❌ לא'}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${(data.address?.hasGarden || data.hasGarden) ? '✅ כן' : '❌ לא'}</td>
                         </tr>
                     </table>
                 </div>

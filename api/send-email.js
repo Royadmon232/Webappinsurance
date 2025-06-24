@@ -50,9 +50,9 @@ export default async function handler(req, res) {
     // Create email message
     const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
     const messageParts = [
-      `From: "אדמון סוכנות לביטוח" <${process.env.GMAIL_USER || 'insurance@admon-agency.co.il'}>`,
+      `From: "אדמון סוכנות לביטוח" <royadmon23@gmail.com>`,
       `To: ${to}`,
-      `Reply-To: ${replyTo || 'noreply@admon-agency.co.il'}`,
+      `Reply-To: ${replyTo || 'royadmon23@gmail.com'}`,
       `Subject: ${utf8Subject}`,
       'MIME-Version: 1.0',
       'Content-Type: text/html; charset=utf-8',

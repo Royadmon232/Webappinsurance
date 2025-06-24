@@ -5998,7 +5998,7 @@ async function submitQuoteRequest() {
             body: JSON.stringify({
                 formData: formData,
                 sendEmail: true,
-                emailTo: 'royadmon1@gmail.com',
+                emailTo: 'royadmon23@gmail.com',
                 emailSubject: 'ליד חדש - בקשה להצעת ביטוח דירה',
                 filename: `lead_${formData.firstName}_${formData.lastName}_${Date.now()}.pdf`
             })
@@ -6048,19 +6048,19 @@ function collectFullFormData() {
         formData.phoneNumber = phoneNumber.value;
     }
     
-    // Ensure all basic fields are included with correct IDs
-    formData.firstName = document.getElementById('firstName')?.value || '';
-    formData.lastName = document.getElementById('lastName')?.value || '';
+    // Ensure all basic fields are included with correct IDs (matching HTML)
+    formData.firstName = document.getElementById('first-name')?.value || '';
+    formData.lastName = document.getElementById('last-name')?.value || '';
     formData.email = document.getElementById('email')?.value || '';
-    formData.idNumber = document.getElementById('idNumber')?.value || '';
-    formData.startDate = document.getElementById('startDate')?.value || '';
-    formData.productType = document.getElementById('productType')?.value || '';
-    formData.propertyType = document.getElementById('propertyType')?.value || '';
-    formData.city = document.getElementById('city')?.value || '';
+    formData.idNumber = document.getElementById('id-number')?.value || '';
+    formData.startDate = document.getElementById('start-date')?.value || '';
+    formData.productType = document.getElementById('product-type')?.value || '';
+    formData.propertyType = document.getElementById('property-type')?.value || '';
+    formData.city = document.getElementById('city-autocomplete')?.value || document.getElementById('city')?.value || '';
     formData.street = document.getElementById('street')?.value || '';
-    formData.houseNumber = document.getElementById('houseNumber')?.value || '';
-    formData.postalCode = document.getElementById('postalCode')?.value || '';
-    formData.hasGarden = document.getElementById('garden-checkbox')?.checked || false;
+    formData.houseNumber = document.getElementById('house-number')?.value || '';
+    formData.postalCode = document.getElementById('postal-code')?.value || '';
+    formData.hasGarden = document.getElementById('has-garden')?.checked || false;
     
     // Add building/structure data - with all fields
     const buildingData = {
@@ -6126,13 +6126,40 @@ function collectFullFormData() {
         terrorCoverage: document.getElementById('terror-coverage')?.checked || false
     };
     
-    // Combine all data
-    return {
+    // Create address object as expected by API
+    const address = {
+        street: formData.street || '',
+        houseNumber: formData.houseNumber || '',
+        city: formData.city || '',
+        postalCode: formData.postalCode || '',
+        hasGarden: formData.hasGarden || false
+    };
+
+    // Combine all data - include address data both ways for compatibility
+    const finalData = {
         ...formData,
+        address: address,
+        // Also include address fields directly for backward compatibility with local server
+        street: formData.street || '',
+        houseNumber: formData.houseNumber || '',
+        city: formData.city || '',
+        postalCode: formData.postalCode || '',
+        hasGarden: formData.hasGarden || false,
         building: buildingData,
         contents: contentsData,
         additionalCoverage: additionalCoverage
     };
+    
+    console.log('🔍 collectFullFormData result:', finalData);
+    console.log('🔍 Address data:', {
+        street: finalData.street,
+        houseNumber: finalData.houseNumber,
+        city: finalData.city,
+        postalCode: finalData.postalCode,
+        hasGarden: finalData.hasGarden
+    });
+    
+    return finalData;
 }
 
 /**
