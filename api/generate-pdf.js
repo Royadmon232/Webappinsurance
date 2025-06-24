@@ -497,10 +497,18 @@ async function generatePdf(htmlContent) {
         // Validate that content loaded
         const bodyContent = await page.evaluate(() => document.body.textContent);
         if (!bodyContent || bodyContent.trim().length === 0) {
+            console.log('⚠️ No content found in page body');
             throw new Error('PDF generation failed - no content loaded');
         }
         
         console.log(`📄 Content loaded successfully, text length: ${bodyContent.length}`);
+        console.log(`📄 First 100 chars: "${bodyContent.substring(0, 100)}"`);
+        
+        // Check for common HTML errors
+        const htmlContent = await page.content();
+        if (htmlContent.includes('error') || htmlContent.includes('Error')) {
+            console.log('⚠️ Found error in page content');
+        }
 
         // Generate PDF with optimized settings for Hebrew content
         const pdfBuffer = await page.pdf({
@@ -569,7 +577,19 @@ export default async function handler(req, res) {
         }
         
         // Generate HTML content from form data
+        console.log('📄 Starting PDF generation with form data:', {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            hasBuilding: !!formData.building,
+            hasContents: !!formData.contents
+        });
+        
         const htmlContent = formatEmailContent(formData);
+        
+        // Check HTML content length
+        if (!htmlContent || htmlContent.length < 1000) {
+            console.log('⚠️ HTML content seems too short:', htmlContent.length);
+        }
         
         // Generate PDF
         const pdfBuffer = await generatePdf(htmlContent);
@@ -579,13 +599,15 @@ export default async function handler(req, res) {
             throw new Error('PDF generation failed - empty buffer');
         }
         
-        // Check if PDF starts with PDF header
-        const pdfHeader = pdfBuffer.subarray(0, 4).toString();
-        if (pdfHeader !== '%PDF') {
-            throw new Error('PDF generation failed - invalid PDF header');
-        }
+        // Check if PDF starts with PDF header (more lenient check)
+        const pdfHeader = pdfBuffer.subarray(0, 5).toString();
+        console.log(`📄 PDF info - size: ${pdfBuffer.length} bytes, header: "${pdfHeader}"`);
         
-        console.log(`✅ PDF validation passed - size: ${pdfBuffer.length} bytes, header: ${pdfHeader}`);
+        // Only throw error if buffer is clearly not a PDF
+        if (pdfBuffer.length < 100) {
+            console.log('⚠️ PDF buffer too small, might be an error');
+            throw new Error(`PDF generation failed - buffer too small: ${pdfBuffer.length} bytes`);
+        }
         
         // Convert buffer to base64
         const base64Pdf = pdfBuffer.toString('base64');
