@@ -289,13 +289,27 @@ let resendTimer = null;
  * Send verification code
  */
 window.HomeInsuranceApp.sendVerificationCode = async function() {
-    const phoneInput = document.getElementById('phone-number');
-    const sendBtn = document.getElementById('send-code-btn');
-    const smsMessage = document.getElementById('sms-message');
-    
-    // Validate phone number using the new validation function
-    const phoneValue = phoneInput.value.trim();
-    const validation = validateIsraeliPhone(phoneValue);
+    try {
+        const phoneInput = document.getElementById('phone-number');
+        const sendBtn = document.getElementById('send-code-btn');
+        const smsMessage = document.getElementById('sms-message');
+        
+        // Add safety checks
+        if (!phoneInput) {
+            console.error('Phone input element not found');
+            alert('שגיאה: שדה הטלפון לא נמצא. אנא רענן את הדף ונסה שוב.');
+            return;
+        }
+        
+        if (!sendBtn) {
+            console.error('Send button element not found');
+            alert('שגיאה: כפתור השליחה לא נמצא. אנא רענן את הדף ונסה שוב.');
+            return;
+        }
+        
+        // Validate phone number using the new validation function
+        const phoneValue = phoneInput.value.trim();
+        const validation = validateIsraeliPhone(phoneValue);
     
     if (!phoneValue) {
         showPhoneMessage('error', 'אנא הזן מספר טלפון נייד');
@@ -376,6 +390,10 @@ window.HomeInsuranceApp.sendVerificationCode = async function() {
         sendBtn.querySelector('.btn-text').style.display = 'inline';
         sendBtn.querySelector('.btn-loader').style.display = 'none';
     }
+    } catch (globalError) {
+        console.error('Critical error in sendVerificationCode:', globalError);
+        alert('שגיאה קריטית. אנא רענן את הדף ונסה שוב.');
+    }
 };
 
 /**
@@ -441,12 +459,21 @@ function initializeCodeInputs() {
  * Setup code digit inputs (legacy version - kept for compatibility)
  */
 function setupCodeInputs() {
-    const codeInputs = document.querySelectorAll('.code-digit');
-    
-    codeInputs.forEach((input, index) => {
+    try {
+        const codeInputs = document.querySelectorAll('.code-digit');
+        
+        if (!codeInputs || codeInputs.length === 0) {
+            console.error('Code input elements not found');
+            return;
+        }
+        
+        codeInputs.forEach((input, index) => {
         input.addEventListener('input', function(e) {
-            // Clear error state
-            document.getElementById('verification-error').style.display = 'none';
+            // Clear error state safely
+            const errorElement = document.getElementById('verification-error');
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
             codeInputs.forEach(inp => inp.classList.remove('error'));
             
             // Only allow digits
@@ -489,6 +516,9 @@ function setupCodeInputs() {
             }
         });
     });
+    } catch (error) {
+        console.error('Error in setupCodeInputs:', error);
+    }
 }
 
 /**
