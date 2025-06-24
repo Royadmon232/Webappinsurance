@@ -5279,54 +5279,26 @@ async function submitQuoteRequest() {
         // Collect all form data
         const formData = collectFullFormData();
         
+        // Debug: log the collected form data
+        console.log('📋 Collected form data:', JSON.stringify(formData, null, 2));
+        
         // Add timestamp and metadata
         formData.submittedAt = new Date().toISOString();
         formData.formVersion = '2.0';
         formData.source = 'ביטוח דירה - אדמון סוכנות לביטוח';
         
-        // Determine the correct endpoint based on environment
-        const isDevelopment = window.location.hostname === 'localhost' || 
-                             window.location.hostname === '127.0.0.1' || 
-                             window.location.href.includes('localhost') ||
-                             window.location.href.includes('localhost') ||
-                             window.location.href.includes(':8080');
+        // Use the sendEmailAndGeneratePDF function that handles everything
+        const result = await sendEmailAndGeneratePDF(formData);
         
-        const endpoint = isDevelopment ? 'http://localhost:8080/api/generate-pdf' : '/api/generate-pdf';
-        
-        console.log('🔗 Using endpoint:', endpoint, 'isDevelopment:', isDevelopment);
-        
-        // Call the PDF generation API endpoint
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                formData: formData,
-                sendEmail: true,
-                emailTo: 'royadmon23@gmail.com',
-                emailSubject: 'ליד חדש - בקשה להצעת ביטוח דירה',
-                filename: `lead_${formData.firstName}_${formData.lastName}_${Date.now()}.pdf`
-            })
-        });
-
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-            // Success - PDF generated and sent via Gmail
+        if (result && result.emailSuccess) {
             console.log('✅ Quote request processed successfully:', result);
-            showNotification('success', 
-                `🎉 הליד נשלח בהצלחה!<br>
-                📧 PDF נוצר ונשלח למייל הסוכן<br>
-                📄 קובץ: ${result.filename || 'ביטוח_דירה.pdf'}`
-            );
             
             // Close modal after showing success message
             setTimeout(() => {
                 closeGeneralDetailsModal();
             }, 4000);
         } else {
-            throw new Error(result.message || 'שגיאה בעיבוד הבקשה');
+            throw new Error('שגיאה בעיבוד הבקשה');
         }
         
     } catch (error) {
@@ -6208,17 +6180,22 @@ async function sendLeadPDFToServer(pdfBase64, formData) {
             ? 'http://localhost:8080/api/generate-pdf'  // Local
             : 'https://webappinsurance.vercel.app/api/generate-pdf';  // Vercel
         
+        // Debug: log the data being sent
+        const requestData = {
+            formData: formData,
+            sendEmail: true,
+            emailTo: 'royadmon23@gmail.com',
+            emailSubject: `🏠 ליד חדש להצעת ביטוח דירה - ${formData.firstName || ''} ${formData.lastName || ''}`
+        };
+        
+        console.log('📤 Sending data to API:', JSON.stringify(requestData, null, 2));
+        
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                formData: formData,
-                sendEmail: true,
-                emailTo: 'royadmon23@gmail.com',
-                emailSubject: `🏠 ליד חדש להצעת ביטוח דירה - ${formData.firstName || ''} ${formData.lastName || ''}`
-            })
+            body: JSON.stringify(requestData)
         });
         
         const result = await response.json();
@@ -6273,16 +6250,19 @@ function downloadPDFFromBase64(base64Data, filename) {
 async function sendEmailAndGeneratePDF(formData) {
     console.log('📧📄 Sending email and generating PDF...');
     
-    // Generate the beautiful HTML content first, outside of try blocks
-    const htmlContent = generateEmailHTML(formData);
-    
     try {
+        // Generate the beautiful HTML content
+        const htmlContent = generateEmailHTML(formData);
+        
         // Generate filename based on customer data
         const timestamp = new Date().toISOString().slice(0, 10);
         const customerName = `${formData.firstName || ''}_${formData.lastName || ''}`.replace(/\s+/g, '_') || 'customer';
         const filename = `ביטוח_דירה_${customerName}_${timestamp}.pdf`;
         
         try {
+            // Debug: log form data before generating PDF
+            console.log('📝 Form data before PDF generation:', JSON.stringify(formData, null, 2));
+            
             // Generate PDF using client-side jsPDF and send to server
             const pdfResult = generateLeadPDF(formData);
             const emailResult = await sendLeadPDFToServer(pdfResult.pdfBase64, formData);
