@@ -310,11 +310,8 @@ async function sendEmailWithPdf(to, subject, htmlContent, pdfBuffer, filename) {
         console.log('📧📄 Sending email with PDF attachment via Gmail API...');
         
         // Create multipart email message with PDF attachment
-        const boundary = `boundary_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+        const boundary = `boundary_${Date.now()}`;
         const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
-        
-        // Ensure PDF buffer is clean base64 without line breaks
-        const pdfBase64 = pdfBuffer.toString('base64').replace(/\r?\n|\r/g, '');
         
         const messageParts = [
             `From: "אדמון סוכנות לביטוח" <royadmon23@gmail.com>`,
@@ -328,14 +325,15 @@ async function sendEmailWithPdf(to, subject, htmlContent, pdfBuffer, filename) {
             'Content-Type: text/html; charset=utf-8',
             'Content-Transfer-Encoding: base64',
             '',
-            Buffer.from(htmlContent).toString('base64').replace(/\r?\n|\r/g, ''),
+            Buffer.from(htmlContent).toString('base64'),
             '',
             `--${boundary}`,
-            'Content-Type: application/pdf',
+            `Content-Type: application/pdf; name="${filename}"`,
             `Content-Disposition: attachment; filename="${filename}"`,
             'Content-Transfer-Encoding: base64',
             '',
-            pdfBase64,
+            pdfBuffer.toString('base64'),
+            '',
             `--${boundary}--`
         ];
         
@@ -400,7 +398,7 @@ async function generatePdf(htmlContent) {
         const page = await browser.newPage();
         console.log('📄 New page created');
         
-        // Set viewport for better PDF rendering
+        // Set viewport for consistent rendering
         await page.setViewport({
             width: 1200,
             height: 1600,
@@ -409,56 +407,44 @@ async function generatePdf(htmlContent) {
         
         // Set content with the beautiful HTML template
         await page.setContent(htmlContent, {
-            waitUntil: ['domcontentloaded', 'networkidle0'],
-            timeout: 30000
+            waitUntil: ['domcontentloaded', 'networkidle0']
         });
         console.log('✅ HTML content set');
 
-        // Wait for fonts and images to load
+        // Wait a bit for fonts to load
         await page.evaluateHandle('document.fonts.ready');
-        await page.waitForTimeout(2000); // Give extra time for content to render
 
-        // Generate PDF with optimized settings for Hebrew content and better compatibility
+        // Generate PDF with optimized settings for Hebrew content
         const pdfBuffer = await page.pdf({
             format: 'A4',
             printBackground: true,
             margin: {
-                top: '20mm',
-                bottom: '20mm',
-                left: '15mm',
-                right: '15mm'
+                top: '0.5in',
+                bottom: '0.5in',
+                left: '0.5in',
+                right: '0.5in'
             },
             preferCSSPageSize: false,
             displayHeaderFooter: false,
-            tagged: true,
+            tagged: false,
             outline: false
         });
 
         console.log(`✅ PDF generated successfully, size: ${pdfBuffer.length} bytes`);
         
-        // Enhanced PDF validation with detailed logging
+        // Enhanced PDF validation
         if (!pdfBuffer || pdfBuffer.length === 0) {
             throw new Error('PDF buffer is empty');
         }
         
         // Validate minimum PDF size (should be at least a few KB for a real PDF)
-        if (pdfBuffer.length < 1000) {
-            throw new Error(`PDF too small: ${pdfBuffer.length} bytes`);
+        if (pdfBuffer.length < 500) {
+            throw new Error(`PDF too small: ${pdfBuffer.length} bytes - likely corrupted`);
         }
         
-        // Validate that it starts with PDF header
-        const pdfStart = pdfBuffer.slice(0, 8).toString();
-        console.log('📄 PDF header check (first 8 bytes):', pdfStart);
-        console.log('📄 PDF header as hex:', pdfBuffer.slice(0, 8).toString('hex'));
-        
-        // Check if it's a valid PDF by looking for PDF signature
-        const pdfSignature = pdfBuffer.slice(0, 4).toString();
-        if (!pdfSignature.includes('PDF')) {
-            console.warn('⚠️ PDF signature not found in expected location');
-            // Let's check a bit further
-            const firstLine = pdfBuffer.slice(0, 20).toString();
-            console.log('📄 First 20 characters:', firstLine);
-        }
+        // Log first few bytes for debugging (without causing errors)
+        const pdfStart = pdfBuffer.slice(0, 8);
+        console.log('📄 PDF first 8 bytes:', Array.from(pdfStart));
         
         console.log('✅ PDF validation passed');
         return pdfBuffer;
@@ -534,6 +520,12 @@ export default async function handler(req, res) {
         // Validate base64 encoding
         if (!base64Pdf || base64Pdf.length === 0) {
             throw new Error('Failed to convert PDF to base64');
+        }
+        
+        // Ensure base64 string is properly formatted (no line breaks, valid characters)
+        const cleanBase64 = base64Pdf.replace(/[^A-Za-z0-9+/=]/g, '');
+        if (cleanBase64.length !== base64Pdf.length) {
+            console.warn('⚠️ Base64 had invalid characters, cleaned');
         }
         
         console.log(`📄 PDF base64 size: ${base64Pdf.length} characters`);
