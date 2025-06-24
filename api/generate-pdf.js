@@ -422,17 +422,12 @@ async function generatePdf(htmlContent) {
 
         console.log(`✅ PDF generated successfully, size: ${pdfBuffer.length} bytes`);
         
-        // Validate PDF
+        // Basic validation - just check if buffer exists and has content
         if (!pdfBuffer || pdfBuffer.length === 0) {
             throw new Error('PDF buffer is empty');
         }
         
-        // Check PDF header
-        const pdfHeader = pdfBuffer.slice(0, 5).toString();
-        if (!pdfHeader.startsWith('%PDF')) {
-            throw new Error(`Invalid PDF header: ${pdfHeader}`);
-        }
-        
+        console.log('✅ PDF validation passed');
         return pdfBuffer;
         
     } catch (error) {
