@@ -802,7 +802,7 @@ app.use((req, res) => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
     console.log('SIGTERM signal received: closing HTTP server');
-    app.close(() => {
+    server.close(() => {
         console.log('HTTP server closed');
         mongoose.connection.close(false, () => {
             console.log('MongoDB connection closed');
