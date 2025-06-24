@@ -6273,10 +6273,10 @@ function downloadPDFFromBase64(base64Data, filename) {
 async function sendEmailAndGeneratePDF(formData) {
     console.log('📧📄 Sending email and generating PDF...');
     
+    // Generate the beautiful HTML content first, outside of try blocks
+    const htmlContent = generateEmailHTML(formData);
+    
     try {
-        // Generate the beautiful HTML content
-        const htmlContent = generateEmailHTML(formData);
-        
         // Generate filename based on customer data
         const timestamp = new Date().toISOString().slice(0, 10);
         const customerName = `${formData.firstName || ''}_${formData.lastName || ''}`.replace(/\s+/g, '_') || 'customer';
