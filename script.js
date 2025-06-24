@@ -5982,8 +5982,9 @@ async function submitQuoteRequest() {
         // Determine the correct endpoint based on environment
         const isDevelopment = window.location.hostname === 'localhost' || 
                              window.location.hostname === '127.0.0.1' || 
-                             window.location.port === '8080' ||
-                             window.location.href.includes('localhost');
+                             window.location.href.includes('localhost') ||
+                             window.location.href.includes('localhost') ||
+                             window.location.href.includes(':8080');
         
         const endpoint = isDevelopment ? 'http://localhost:8080/api/generate-pdf' : '/api/generate-pdf';
         
@@ -6609,7 +6610,6 @@ async function sendEmailToAgent(emailData) {
     // Determine the correct endpoint based on environment
     const isDevelopment = window.location.hostname === 'localhost' || 
                          window.location.hostname === '127.0.0.1' || 
-                         window.location.port === '8080' ||
                          window.location.href.includes('localhost');
     
     // List of possible endpoints to try based on environment
@@ -6897,7 +6897,6 @@ async function sendLeadPDFToServer(pdfBase64, formData) {
         // Determine the correct endpoint (Local or Vercel)
         const isDevelopment = window.location.hostname === 'localhost' || 
                              window.location.hostname === '127.0.0.1' || 
-                             window.location.port === '8080' ||
                              window.location.href.includes('localhost');
         
         const endpoint = isDevelopment 

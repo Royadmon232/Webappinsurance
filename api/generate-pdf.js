@@ -359,8 +359,8 @@ async function generatePdf(htmlContent) {
     try {
         console.log('📄 Starting PDF generation...');
         
-        // Launch puppeteer browser
-        const browser = await puppeteer.launch({
+        // Configure browser options for Vercel
+        const browserOptions = {
             headless: 'new',
             args: [
                 '--no-sandbox',
@@ -370,9 +370,19 @@ async function generatePdf(htmlContent) {
                 '--no-first-run',
                 '--no-zygote',
                 '--single-process',
-                '--disable-gpu'
+                '--disable-gpu',
+                '--disable-web-security',
+                '--disable-features=VizDisplayCompositor'
             ]
-        });
+        };
+
+        // Use Chrome executable path if available (for Vercel)
+        if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+            browserOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+        }
+
+        // Launch puppeteer browser
+        const browser = await puppeteer.launch(browserOptions);
 
         const page = await browser.newPage();
         
