@@ -2231,17 +2231,25 @@ function submitGeneralDetails() {
  * @returns {Object} - Structured form data object
  */
 function collectFormData() {
-    // Collect basic form fields
-    const idNumber = document.getElementById('idNumber').value.trim();
-    const startDate = document.getElementById('startDate').value;
-    const productType = document.getElementById('productType').value;
-    const coverageType = document.getElementById('coverageType').value;
-    const propertyType = document.getElementById('propertyType').value;
-    const floorCount = document.getElementById('floorCount').value;
-    const city = document.getElementById('city').value;
-    const street = document.getElementById('street').value.trim();
-    const houseNumber = document.getElementById('houseNumber').value;
-    const postalCode = document.getElementById('postalCode').value;
+    // Collect basic form fields - FIX IDs to match HTML
+    const firstName = document.getElementById('first-name')?.value?.trim() || '';
+    const lastName = document.getElementById('last-name')?.value?.trim() || '';
+    const email = document.getElementById('email')?.value?.trim() || '';
+    const idNumber = document.getElementById('id-number')?.value?.trim() || '';
+    const startDate = document.getElementById('start-date')?.value || '';
+    const productType = document.getElementById('product-type')?.value || '';
+    const coverageType = document.getElementById('coverage-type')?.value || '';
+    const propertyType = document.getElementById('property-type')?.value || '';
+    const floorCount = document.getElementById('floor-count')?.value || '';
+    
+    // Get city from the autocomplete input
+    const cityInput = document.getElementById('city-autocomplete') || document.getElementById('city');
+    const city = cityInput?.value?.trim() || '';
+    
+    const street = document.getElementById('street')?.value?.trim() || '';
+    const houseNumber = document.getElementById('house-number')?.value || '';
+    const postalCode = document.getElementById('postal-code')?.value || '';
+    const hasGarden = document.getElementById('has-garden')?.checked || false;
     
     // Collect selected product sections
     const selectedProducts = [];
@@ -2253,6 +2261,9 @@ function collectFormData() {
     // Create structured data object
     const formData = {
         // Personal Information
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
         idNumber: idNumber,
         
         // Policy Information
@@ -2260,23 +2271,26 @@ function collectFormData() {
         productType: productType,
         
         // Coverage Information (only if visible)
-        ...(coverageType && !document.querySelector('#coverageType').closest('.form-group').classList.contains('hidden') && {
+        ...(coverageType && {
             coverageType: coverageType
         }),
         
         // Property Information
-        assetType: propertyType,
+        propertyType: propertyType,
+        assetType: propertyType, // Keep for backward compatibility
         
-        // Floor Information (only if visible)
-        ...(floorCount && !document.querySelector('#floorCount').closest('.form-group').classList.contains('hidden') && {
+        // Floor Information (only if visible and has value)
+        ...(floorCount && {
             floorsNumber: parseInt(floorCount, 10)
         }),
         
         // Address Information
         city: city,
         street: street,
-        houseNumber: parseInt(houseNumber, 10),
-        postalCode: postalCode,
+        houseNumber: houseNumber,
+        zipCode: postalCode,
+        postalCode: postalCode, // Both names for compatibility
+        hasGarden: hasGarden,
         
         // Selected Insurance Products
         selectedProducts: selectedProducts
@@ -2305,6 +2319,45 @@ function submitFormData(formData) {
  */
 function validateGeneralDetailsForm() {
     let isValid = true;
+    
+    // Validate First Name
+    const firstName = document.getElementById('first-name');
+    if (firstName) {
+        const firstNameValue = firstName.value.trim();
+        if (!firstNameValue) {
+            showFormError(firstName, 'שדה חובה - יש להזין שם פרטי');
+            isValid = false;
+        } else if (firstNameValue.length < 2) {
+            showFormError(firstName, 'שם פרטי חייב להכיל לפחות 2 תווים');
+            isValid = false;
+        }
+    }
+    
+    // Validate Last Name
+    const lastName = document.getElementById('last-name');
+    if (lastName) {
+        const lastNameValue = lastName.value.trim();
+        if (!lastNameValue) {
+            showFormError(lastName, 'שדה חובה - יש להזין שם משפחה');
+            isValid = false;
+        } else if (lastNameValue.length < 2) {
+            showFormError(lastName, 'שם משפחה חייב להכיל לפחות 2 תווים');
+            isValid = false;
+        }
+    }
+    
+    // Validate Email
+    const email = document.getElementById('email');
+    if (email) {
+        const emailValue = email.value.trim();
+        if (!emailValue) {
+            showFormError(email, 'שדה חובה - יש להזין כתובת אימייל');
+            isValid = false;
+        } else if (!isValidEmail(emailValue)) {
+            showFormError(email, 'כתובת אימייל אינה תקינה - יש להזין כתובת מייל חוקית');
+            isValid = false;
+        }
+    }
     
     // Validate ID Number
     const idNumber = document.getElementById('idNumber');
@@ -2460,6 +2513,76 @@ function clearFormErrors() {
  * Add input event listeners for real-time validation
  */
 function addFormInputListeners() {
+    // First Name - real-time validation
+    const firstName = document.getElementById('first-name');
+    if (firstName) {
+        firstName.addEventListener('input', function(e) {
+            const value = this.value.trim();
+            if (value.length >= 2) {
+                this.classList.remove('error');
+                const errorMsg = this.closest('.form-group').querySelector('.form-error-message');
+                if (errorMsg) errorMsg.remove();
+            }
+        });
+        
+        firstName.addEventListener('blur', function(e) {
+            const value = this.value.trim();
+            if (!value) {
+                showFormError(this, 'שדה חובה - יש להזין שם פרטי');
+            } else if (value.length < 2) {
+                showFormError(this, 'שם פרטי חייב להכיל לפחות 2 תווים');
+            }
+        });
+    }
+    
+    // Last Name - real-time validation
+    const lastName = document.getElementById('last-name');
+    if (lastName) {
+        lastName.addEventListener('input', function(e) {
+            const value = this.value.trim();
+            if (value.length >= 2) {
+                this.classList.remove('error');
+                const errorMsg = this.closest('.form-group').querySelector('.form-error-message');
+                if (errorMsg) errorMsg.remove();
+            }
+        });
+        
+        lastName.addEventListener('blur', function(e) {
+            const value = this.value.trim();
+            if (!value) {
+                showFormError(this, 'שדה חובה - יש להזין שם משפחה');
+            } else if (value.length < 2) {
+                showFormError(this, 'שם משפחה חייב להכיל לפחות 2 תווים');
+            }
+        });
+    }
+    
+    // Email - real-time validation
+    const email = document.getElementById('email');
+    if (email) {
+        email.addEventListener('input', function(e) {
+            const value = this.value.trim();
+            if (value && isValidEmail(value)) {
+                this.classList.remove('error');
+                this.classList.add('valid');
+                const errorMsg = this.closest('.form-group').querySelector('.form-error-message');
+                if (errorMsg) errorMsg.remove();
+            } else if (value) {
+                this.classList.add('error');
+                this.classList.remove('valid');
+            }
+        });
+        
+        email.addEventListener('blur', function(e) {
+            const value = this.value.trim();
+            if (!value) {
+                showFormError(this, 'שדה חובה - יש להזין כתובת אימייל');
+            } else if (!isValidEmail(value)) {
+                showFormError(this, 'כתובת אימייל אינה תקינה - יש להזין כתובת מייל חוקית');
+            }
+        });
+    }
+    
     // ID Number - allow only digits and limit to 9
     const idNumber = document.getElementById('idNumber');
     if (idNumber) {
@@ -5731,14 +5854,14 @@ function initializeAdditionalCoverageEnhancements() {
  * Submit quote request - sends all collected data to agent
  */
 async function submitQuoteRequest() {
-    console.log('📧 Submitting quote request...');
+    console.log('📧📄 Submitting quote request with email and PDF generation...');
     
     // Get the submit button
-        const submitBtn = document.querySelector('.btn-submit-quote');
-        if (submitBtn) {
-            submitBtn.disabled = true;
+    const submitBtn = document.querySelector('.btn-submit-quote');
+    if (submitBtn) {
+        submitBtn.disabled = true;
         submitBtn.classList.add('loading');
-        }
+    }
 
     try {
         // Collect all form data
@@ -5749,36 +5872,25 @@ async function submitQuoteRequest() {
         formData.formVersion = '2.0';
         formData.source = 'ביטוח דירה - אדמון סוכנות לביטוח';
         
-        // Prepare email content
-        const emailData = {
-            to: 'royadmon23@gmail.com', // Agent email
-            subject: `בקשה חדשה להצעת ביטוח דירה - ${formData.idNumber}`,
-            replyTo: formData.email || 'noreply@admon-agency.co.il',
-            html: generateEmailHTML(formData),
-            formData: formData
-        };
+        // Send email and generate PDF with the beautiful design
+        const result = await sendEmailAndGeneratePDF(formData);
         
-        // Send to backend/email service
-        const response = await sendEmailToAgent(emailData);
-        
-        if (response && response.success) {
-            // Show success notification
-            showNotification('success', 'הבקשה נשלחה בהצלחה! נציג יצור איתך קשר בקרוב.');
+        if (result.emailSuccess || result.pdfSuccess) {
+            // Log success details
+            console.log('✅ Quote request processed:', result);
             
-            // Log success
-            console.log('✅ Quote request sent successfully');
-            
-            // Close modal after 3 seconds
+            // Close modal after showing success message
             setTimeout(() => {
                 closeGeneralDetailsModal();
-            }, 3000);
+            }, 4000);
         } else {
-            throw new Error('Failed to send email');
+            // Both failed
+            throw new Error('נכשל בשליחת המייל וביצירת PDF');
         }
         
     } catch (error) {
         console.error('❌ Error submitting quote request:', error);
-        showNotification('error', 'אירעה שגיאה בשליחת הבקשה. אנא נסה שוב.');
+        showNotification('error', `אירעה שגיאה בשליחת הבקשה: ${error.message}`);
     } finally {
         // Re-enable button
         if (submitBtn) {
@@ -5801,7 +5913,7 @@ function collectFullFormData() {
         formData.phoneNumber = phoneNumber.value;
     }
     
-    // Add building/structure data
+    // Add building/structure data - with all fields
     const buildingData = {
         insuranceAmount: document.getElementById('insurance-amount')?.value || '',
         buildingAge: document.getElementById('building-age')?.value || '',
@@ -5810,6 +5922,20 @@ function collectFullFormData() {
         constructionStandard: document.getElementById('construction-standard')?.value || '',
         mortgaged: document.getElementById('mortgaged-property')?.checked || false,
         renewals: document.getElementById('renewals')?.value || '',
+        // Water damage fields
+        waterDamageType: document.getElementById('water-damage-type')?.value || '',
+        waterDeductible: document.getElementById('water-deductible')?.value || '',
+        // Burglary field  
+        burglaryBuilding: document.getElementById('burglary-building')?.checked || false,
+        
+        // Mortgage water damage (if applicable)
+        mortgageWaterDamage: document.getElementById('mortgage-water-damage')?.value || '',
+        // Earthquake fields
+        earthquakeCoverage: document.getElementById('earthquake-coverage')?.value || '',
+        earthquakeDeductible: document.getElementById('earthquake-deductible')?.value || '',
+        // Additional shared property insurance
+        additionalSharedInsurance: document.getElementById('additional-shared-insurance')?.value || '',
+        // Extensions
         buildingContentsInsurance: document.getElementById('building-contents-insurance')?.value || '',
         storageInsurance: document.getElementById('storage-insurance')?.value || '',
         swimmingPoolInsurance: document.getElementById('swimming-pool-insurance')?.value || '',
@@ -5922,6 +6048,10 @@ function generateEmailHTML(data) {
                         <h2>👤 פרטים אישיים</h2>
                         <div class="info-grid">
                             <div class="info-item">
+                                <strong>שם מלא:</strong>
+                                <span>${data.firstName || ''} ${data.lastName || ''}</span>
+                            </div>
+                            <div class="info-item">
                                 <strong>מספר ת.ז:</strong>
                                 <span>${data.idNumber || 'לא צוין'}</span>
                             </div>
@@ -5929,16 +6059,16 @@ function generateEmailHTML(data) {
                                 <strong>מספר טלפון:</strong>
                                 <span>${data.phoneNumber || 'לא צוין'}</span>
                             </div>
-                            <div class="info-item">
-                                <strong>תאריך התחלת ביטוח:</strong>
-                                <span>${formatDate(data.startDate)}</span>
-                            </div>
                             ${data.email ? `
                             <div class="info-item">
                                 <strong>אימייל:</strong>
                                 <span>${data.email}</span>
                             </div>
                             ` : ''}
+                            <div class="info-item">
+                                <strong>תאריך התחלת ביטוח:</strong>
+                                <span>${formatDate(data.startDate)}</span>
+                            </div>
                         </div>
                     </div>
                     
@@ -6062,6 +6192,12 @@ function generateEmailHTML(data) {
                             <div class="value-item">
                                 <span>השתתפות עצמית נזקי מים:</span>
                                 <strong>${data.building.waterDeductible}</strong>
+                            </div>
+                            ` : ''}
+                            ${data.building.mortgageWaterDamage ? `
+                            <div class="value-item">
+                                <span>נזקי מים משכנתא:</span>
+                                <strong>${data.building.mortgageWaterDamage}</strong>
                             </div>
                             ` : ''}
                             <div class="value-item">
@@ -6276,7 +6412,7 @@ async function sendEmailToAgent(emailData) {
         // Get auth token if available
         const authToken = localStorage.getItem('authToken');
         
-        const response = await fetch('/api/send-email', {
+        const response = await fetch('http://localhost:3000/api/send-email', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -6313,6 +6449,144 @@ async function sendEmailToAgent(emailData) {
             messageId: `local_${Date.now()}`,
             note: 'Email service unavailable, form saved locally'
         };
+    }
+}
+
+/**
+ * Generate PDF from the beautiful email HTML template
+ */
+async function generateQuotePDF(htmlContent, filename) {
+    console.log('📄 Generating PDF from beautiful template...');
+    
+    try {
+        const response = await fetch('http://localhost:3000/api/generate-pdf', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                htmlContent: htmlContent,
+                filename: filename || `insurance_quote_${Date.now()}.pdf`
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to generate PDF');
+        }
+        
+        console.log('✅ PDF generated successfully:', result);
+        
+        // Download the PDF
+        downloadPDFFromBase64(result.pdf, result.filename);
+        
+        return result;
+        
+    } catch (error) {
+        console.error('❌ Error generating PDF:', error);
+        throw error;
+    }
+}
+
+/**
+ * Download PDF from base64 data
+ */
+function downloadPDFFromBase64(base64Data, filename) {
+    try {
+        // Convert base64 to blob
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        console.log('✅ PDF downloaded successfully:', filename);
+    } catch (error) {
+        console.error('❌ Error downloading PDF:', error);
+        throw error;
+    }
+}
+
+/**
+ * Send email and generate PDF for quote request
+ */
+async function sendEmailAndGeneratePDF(formData) {
+    console.log('📧📄 Sending email and generating PDF...');
+    
+    try {
+        // Generate the beautiful HTML content
+        const htmlContent = generateEmailHTML(formData);
+        
+        // Generate filename based on customer data
+        const timestamp = new Date().toISOString().slice(0, 10);
+        const customerName = `${formData.firstName || ''}_${formData.lastName || ''}`.replace(/\s+/g, '_') || 'customer';
+        const filename = `ביטוח_דירה_${customerName}_${timestamp}.pdf`;
+        
+        // Send email and generate PDF in parallel for better performance
+        const [emailResult, pdfResult] = await Promise.allSettled([
+            sendEmailToAgent({
+                to: 'roi@admon-agency.co.il',
+                replyTo: formData.email || 'noreply@admon-agency.co.il',
+                subject: `🏠 בקשה חדשה להצעת ביטוח דירה - ${formData.firstName || ''} ${formData.lastName || ''}`,
+                html: htmlContent
+            }),
+            generateQuotePDF(htmlContent, filename)
+        ]);
+        
+        // Log results
+        if (emailResult.status === 'fulfilled') {
+            console.log('✅ Email sent successfully');
+        } else {
+            console.error('❌ Email failed:', emailResult.reason);
+        }
+        
+        if (pdfResult.status === 'fulfilled') {
+            console.log('✅ PDF generated and downloaded successfully');
+            
+            // Show success notification with PDF info
+            showNotification('success', 
+                `הליד נשלח בהצלחה במייל וכקובץ PDF! 📧📄<br>
+                קובץ PDF: ${filename}<br>
+                נשמר בהורדות שלך`
+            );
+        } else {
+            console.error('❌ PDF generation failed:', pdfResult.reason);
+            
+            // Show partial success notification
+            showNotification('warning', 
+                `הליד נשלח בהצלחה במייל! 📧<br>
+                שגיאה ביצירת PDF: ${pdfResult.reason?.message || 'שגיאה לא ידועה'}`
+            );
+        }
+        
+        return {
+            emailSuccess: emailResult.status === 'fulfilled',
+            pdfSuccess: pdfResult.status === 'fulfilled',
+            emailResult: emailResult.status === 'fulfilled' ? emailResult.value : null,
+            pdfResult: pdfResult.status === 'fulfilled' ? pdfResult.value : null,
+            errors: {
+                email: emailResult.status === 'rejected' ? emailResult.reason : null,
+                pdf: pdfResult.status === 'rejected' ? pdfResult.reason : null
+            }
+        };
+        
+    } catch (error) {
+        console.error('❌ Error in sendEmailAndGeneratePDF:', error);
+        showNotification('error', `שגיאה בשליחת הליד: ${error.message}`);
+        throw error;
     }
 }
 
