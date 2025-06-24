@@ -6,7 +6,8 @@
  * הנתיב הזה יוצר PDF מנתוני הטופס ושולח אותו למייל
  */
 
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 import { google } from 'googleapis';
 
 // Gmail OAuth2 client setup
@@ -361,8 +362,10 @@ async function generatePdf(htmlContent) {
         
         // Configure browser options for Vercel
         const browserOptions = {
-            headless: 'new',
+            headless: chromium.headless,
+            executablePath: await chromium.executablePath(),
             args: [
+                ...chromium.args,
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
@@ -375,11 +378,6 @@ async function generatePdf(htmlContent) {
                 '--disable-features=VizDisplayCompositor'
             ]
         };
-
-        // Use Chrome executable path if available (for Vercel)
-        if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-            browserOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
-        }
 
         // Launch puppeteer browser
         const browser = await puppeteer.launch(browserOptions);
