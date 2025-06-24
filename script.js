@@ -1,3 +1,66 @@
+// =============================================================================
+// GLOBAL ERROR HANDLERS - Enhanced Error Management  
+// =============================================================================
+// These handlers catch uncaught promises and JavaScript errors to prevent
+// console errors and provide graceful degradation
+
+// Handle uncaught promise rejections (main source of fetch errors)
+window.addEventListener('unhandledrejection', function(event) {
+    console.warn('🔥 Uncaught Promise Rejection:', event.reason);
+    
+    // Check if this is a fetch error
+    if (event.reason && event.reason.name === 'TypeError' && 
+        event.reason.message.includes('fetch')) {
+        console.warn('🌐 Network fetch error handled globally');
+        
+        // Show user-friendly notification only for critical operations
+        if (event.reason.message.includes('/api/generate-pdf') || 
+            event.reason.message.includes('/api/send-verification')) {
+            if (typeof showNotification === 'function') {
+                showNotification('warning', 
+                    '⚠️ בעיית תקשורת זמנית<br>אנא בדוק את החיבור לאינטרנט ונסה שוב'
+                );
+            }
+        }
+        
+        // Prevent the default unhandled rejection behavior
+        event.preventDefault();
+        return;
+    }
+    
+    // Handle Service Worker related errors
+    if (event.reason && event.reason.message && 
+        event.reason.message.includes('ServiceWorker')) {
+        console.warn('🔧 Service Worker error handled globally');
+        event.preventDefault();
+        return;
+    }
+    
+    // For other types of promise rejections, just log them
+    console.warn('⚠️ Unhandled promise rejection:', event.reason);
+    event.preventDefault();
+});
+
+// Handle JavaScript runtime errors
+window.addEventListener('error', function(event) {
+    console.warn('❌ JavaScript Error:', event.error);
+    
+    // Check if this is a Service Worker error
+    if (event.filename && event.filename.includes('sw.js')) {
+        console.warn('🔧 Service Worker script error handled globally');
+        return;
+    }
+    
+    // For critical errors in main application
+    if (event.error && event.error.name === 'ReferenceError') {
+        console.error('🚨 Critical JavaScript error:', event.error.message);
+    }
+});
+
+// =============================================================================
+// END GLOBAL ERROR HANDLERS
+// =============================================================================
+
 // Home Insurance Landing Page JavaScript
 // Initialized and ready for development
 
@@ -3008,9 +3071,23 @@ function smoothScroll(target) {
         try {
             while (true) {
                 const url = `${API_URL}?resource_id=${RESOURCE_ID}&limit=${limit}&offset=${start}`;
-                const res = await fetch(url);
-                if (!res.ok) throw new Error('API error');
-                const data = await res.json();
+                let res;
+                try {
+                    res = await fetch(url);
+                    if (!res.ok) throw new Error(`API error: ${res.status}`);
+                } catch (fetchError) {
+                    console.warn('[Cities API] Fetch failed:', fetchError.message);
+                    throw new Error('Failed to load cities data');
+                }
+                
+                let data;
+                try {
+                    data = await res.json();
+                } catch (jsonError) {
+                    console.warn('[Cities API] JSON parsing failed:', jsonError.message);
+                    throw new Error('Invalid cities data received');
+                }
+                
                 if (!data.result || !data.result.records) break;
                 const batch = data.result.records.map(r => r[CITY_FIELD]).filter(Boolean);
                 cities = cities.concat(batch);
@@ -5902,20 +5979,32 @@ async function submitQuoteRequest() {
         formData.formVersion = '2.0';
         formData.source = 'ביטוח דירה - אדמון סוכנות לביטוח';
         
-        // Send email and generate PDF with the beautiful design
-        const result = await sendEmailAndGeneratePDF(formData);
-        
-        if (result.emailSuccess || result.pdfSuccess) {
-            // Log success details
-            console.log('✅ Quote request processed:', result);
+        // Call the new PDF generation API endpoint
+        const response = await fetch('/api/generate-pdf', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            // Success - PDF generated and sent via Gmail
+            console.log('✅ Quote request processed successfully:', result);
+            showNotification('success', 
+                `🎉 הליד נשלח בהצלחה!<br>
+                📧 PDF נוצר ונשלח למייל הסוכן<br>
+                📄 קובץ: ${result.filename || 'ביטוח_דירה.pdf'}`
+            );
             
             // Close modal after showing success message
             setTimeout(() => {
                 closeGeneralDetailsModal();
             }, 4000);
         } else {
-            // Both failed
-            throw new Error('נכשל בשליחת המייל וביצירת PDF');
+            throw new Error(result.message || 'שגיאה בעיבוד הבקשה');
         }
         
     } catch (error) {
@@ -5943,14 +6032,32 @@ function collectFullFormData() {
         formData.phoneNumber = phoneNumber.value;
     }
     
+    // Ensure all basic fields are included with correct IDs
+    formData.firstName = document.getElementById('firstName')?.value || '';
+    formData.lastName = document.getElementById('lastName')?.value || '';
+    formData.email = document.getElementById('email')?.value || '';
+    formData.idNumber = document.getElementById('idNumber')?.value || '';
+    formData.startDate = document.getElementById('startDate')?.value || '';
+    formData.productType = document.getElementById('productType')?.value || '';
+    formData.propertyType = document.getElementById('propertyType')?.value || '';
+    formData.city = document.getElementById('city')?.value || '';
+    formData.street = document.getElementById('street')?.value || '';
+    formData.houseNumber = document.getElementById('houseNumber')?.value || '';
+    formData.postalCode = document.getElementById('postalCode')?.value || '';
+    formData.hasGarden = document.getElementById('garden-checkbox')?.checked || false;
+    
     // Add building/structure data - with all fields
     const buildingData = {
         insuranceAmount: document.getElementById('insurance-amount')?.value || '',
+        buildingInsuranceAmount: document.getElementById('insurance-amount')?.value || '',
         buildingAge: document.getElementById('building-age')?.value || '',
+        age: document.getElementById('building-age')?.value || '',
         buildingArea: document.getElementById('building-area')?.value || '',
+        area: document.getElementById('building-area')?.value || '',
         constructionType: document.getElementById('construction-type')?.value || '',
         constructionStandard: document.getElementById('construction-standard')?.value || '',
         mortgaged: document.getElementById('mortgaged-property')?.checked || false,
+        mortgagedProperty: document.getElementById('mortgaged-property')?.checked || false,
         renewals: document.getElementById('renewals')?.value || '',
         // Water damage fields
         waterDamageType: document.getElementById('water-damage-type')?.value || '',
@@ -5976,6 +6083,7 @@ function collectFullFormData() {
     // Add contents data
     const contentsData = {
         contentsInsuranceAmount: document.getElementById('contents-insurance-amount')?.value || '',
+        insuranceAmount: document.getElementById('contents-insurance-amount')?.value || '',
         contentsBuildingAge: document.getElementById('contents-building-age')?.value || '',
         jewelryAmount: document.getElementById('jewelry-amount')?.value || '',
         jewelryCoverage: document.getElementById('jewelry-coverage')?.value || '',

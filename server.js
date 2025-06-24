@@ -361,15 +361,129 @@ app.post('/api/submit-form', async (req, res) => {
         formData.phoneNumber = decoded.phoneNumber;
         await formData.save();
         
-        // Send email to agency
+        // Generate email content
         const emailContent = formatEmailContent(formData);
         
-        await sendEmail(
-            'royadmon23@gmail.com',
-            'הצעת ביטוח דירה חדשה',
-            emailContent,
-            'הצעת ביטוח דירה חדשה - ראה מייל HTML'
-        );
+        // Generate PDF from the same email content
+        let pdfResult = null;
+        try {
+            console.log('📄 Generating PDF for lead...');
+            
+            // Launch puppeteer browser
+            const browser = await puppeteer.launch({
+                headless: 'new',
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-accelerated-2d-canvas',
+                    '--no-first-run',
+                    '--no-zygote',
+                    '--single-process',
+                    '--disable-gpu'
+                ]
+            });
+
+            const page = await browser.newPage();
+            
+            // Set content with the email HTML
+            await page.setContent(emailContent, {
+                waitUntil: 'networkidle0'
+            });
+
+            // Generate PDF with optimized settings for Hebrew content
+            const pdfBuffer = await page.pdf({
+                format: 'A4',
+                printBackground: true,
+                margin: {
+                    top: '0.5in',
+                    bottom: '0.5in',
+                    left: '0.5in',
+                    right: '0.5in'
+                },
+                preferCSSPageSize: true
+            });
+
+            // Close browser
+            await browser.close();
+            
+            console.log(`✅ PDF generated successfully, size: ${pdfBuffer.length} bytes`);
+            
+            // Send email to agency with PDF attachment
+            const filename = `lead_${formData.firstName}_${formData.lastName}_${Date.now()}.pdf`;
+            
+            console.log('📧📄 Sending email with PDF attachment to agency...');
+            
+            // Create multipart email message with PDF attachment
+            const boundary = `boundary_${Date.now()}`;
+            const utf8Subject = `=?utf-8?B?${Buffer.from('הצעת ביטוח דירה חדשה').toString('base64')}?=`;
+            
+            const messageParts = [
+                `From: "אדמון סוכנות לביטוח" <royadmon23@gmail.com>`,
+                `To: royadmon23@gmail.com`,
+                `Reply-To: noreply@admon-agency.co.il`,
+                `Subject: ${utf8Subject}`,
+                'MIME-Version: 1.0',
+                `Content-Type: multipart/mixed; boundary="${boundary}"`,
+                '',
+                `--${boundary}`,
+                'Content-Type: text/html; charset=utf-8',
+                'Content-Transfer-Encoding: quoted-printable',
+                '',
+                emailContent,
+                '',
+                `--${boundary}`,
+                'Content-Type: application/pdf',
+                `Content-Disposition: attachment; filename="${filename}"`,
+                'Content-Transfer-Encoding: base64',
+                '',
+                pdfBuffer.toString('base64'),
+                `--${boundary}--`
+            ];
+            
+            const message = messageParts.join('\n');
+            
+            // Encode message in base64
+            const encodedMessage = Buffer.from(message)
+                .toString('base64')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '');
+            
+            // Send email via Gmail API
+            const response = await gmail.users.messages.send({
+                userId: 'me',
+                requestBody: {
+                    raw: encodedMessage
+                }
+            });
+            
+            console.log('✅ Email with PDF attachment sent successfully:', response.data.id);
+            
+            pdfResult = {
+                success: true,
+                messageId: response.data.id,
+                filename: filename,
+                pdfSize: pdfBuffer.length
+            };
+            
+        } catch (pdfError) {
+            console.error('❌ Error generating/sending PDF:', pdfError);
+            
+            // Fallback: send email without PDF
+            await sendEmail(
+                'royadmon23@gmail.com',
+                'הצעת ביטוח דירה חדשה',
+                emailContent,
+                'הצעת ביטוח דירה חדשה - ראה מייל HTML'
+            );
+            
+            pdfResult = {
+                success: false,
+                error: 'PDF generation failed, email sent without attachment',
+                message: pdfError.message
+            };
+        }
         
         // Send confirmation email to customer
         if (formData.email) {
@@ -394,7 +508,8 @@ app.post('/api/submit-form', async (req, res) => {
         res.json({ 
             success: true, 
             message: 'Form submitted successfully',
-            formId: formData._id 
+            formId: formData._id,
+            pdf: pdfResult
         });
         
     } catch (error) {
@@ -559,7 +674,7 @@ app.post('/api/send-lead-pdf', async (req, res) => {
 // Generate PDF from HTML content - kept for local development
 app.post('/api/generate-pdf', async (req, res) => {
     try {
-        const { htmlContent, filename } = req.body;
+        const { htmlContent, filename, sendEmail, emailTo, emailSubject, emailHtml } = req.body;
         
         // Validate required fields
         if (!htmlContent) {
@@ -614,12 +729,80 @@ app.post('/api/generate-pdf', async (req, res) => {
         
         console.log(`✅ PDF generated successfully, size: ${pdfBuffer.length} bytes`);
         
+        // Send email with PDF if requested
+        let emailResult = null;
+        if (sendEmail && emailTo && emailSubject && emailHtml) {
+            try {
+                console.log('📧📄 Sending email with PDF attachment...');
+                
+                // Create multipart email message with PDF attachment
+                const boundary = `boundary_${Date.now()}`;
+                const utf8Subject = `=?utf-8?B?${Buffer.from(emailSubject).toString('base64')}?=`;
+                
+                const messageParts = [
+                    `From: "אדמון סוכנות לביטוח" <${process.env.GMAIL_USER || 'insurance@admon-agency.co.il'}>`,
+                    `To: ${emailTo}`,
+                    `Reply-To: noreply@admon-agency.co.il`,
+                    `Subject: ${utf8Subject}`,
+                    'MIME-Version: 1.0',
+                    `Content-Type: multipart/mixed; boundary="${boundary}"`,
+                    '',
+                    `--${boundary}`,
+                    'Content-Type: text/html; charset=utf-8',
+                    'Content-Transfer-Encoding: quoted-printable',
+                    '',
+                    emailHtml,
+                    '',
+                    `--${boundary}`,
+                    'Content-Type: application/pdf',
+                    `Content-Disposition: attachment; filename="${filename || `insurance_quote_${Date.now()}.pdf`}"`,
+                    'Content-Transfer-Encoding: base64',
+                    '',
+                    base64Pdf,
+                    `--${boundary}--`
+                ];
+                
+                const message = messageParts.join('\n');
+                
+                // Encode message in base64
+                const encodedMessage = Buffer.from(message)
+                    .toString('base64')
+                    .replace(/\+/g, '-')
+                    .replace(/\//g, '_')
+                    .replace(/=+$/, '');
+                
+                // Send email via Gmail API
+                const response = await gmail.users.messages.send({
+                    userId: 'me',
+                    requestBody: {
+                        raw: encodedMessage
+                    }
+                });
+                
+                console.log('✅ Email with PDF attachment sent successfully:', response.data.id);
+                emailResult = {
+                    success: true,
+                    messageId: response.data.id,
+                    message: 'Email with PDF attachment sent successfully'
+                };
+                
+            } catch (emailError) {
+                console.error('❌ Error sending email with PDF:', emailError);
+                emailResult = {
+                    success: false,
+                    error: 'Failed to send email with PDF',
+                    message: emailError.message
+                };
+            }
+        }
+        
         res.json({
             success: true,
             filename: filename || `insurance_quote_${Date.now()}.pdf`,
             pdf: base64Pdf,
             size: pdfBuffer.length,
-            message: 'PDF generated successfully'
+            message: 'PDF generated successfully',
+            email: emailResult
         });
         
     } catch (error) {
