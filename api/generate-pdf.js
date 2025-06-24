@@ -29,7 +29,10 @@ const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
 
 // Helper function to format email content (same as in server.js)
 function formatEmailContent(data) {
+    console.log('📋 formatEmailContent received data:', JSON.stringify(data, null, 2));
+    
     const formatDate = (date) => {
+        if (!date) return 'לא צוין';
         return new Date(date).toLocaleDateString('he-IL', {
             day: '2-digit',
             month: '2-digit', 
@@ -45,6 +48,75 @@ function formatEmailContent(data) {
             maximumFractionDigits: 0
         }).format(amount || 0);
     };
+
+    // Normalize data structure to match template expectations
+    const normalizedData = {
+        firstName: data.firstName || '',
+        lastName: data.lastName || '',
+        phoneNumber: data.phoneNumber || '',
+        email: data.email || '',
+        idNumber: data.idNumber || '',
+        startDate: data.startDate || '',
+        productType: data.productType || '',
+        propertyType: data.propertyType || '',
+        submittedAt: data.submittedAt || new Date().toISOString(),
+        
+        // Address data - handle both formats
+        address: {
+            street: data.address?.street || data.street || '',
+            houseNumber: data.address?.houseNumber || data.houseNumber || '',
+            city: data.address?.city || data.city || '',
+            postalCode: data.address?.postalCode || data.postalCode || '',
+            hasGarden: data.address?.hasGarden || data.hasGarden || false
+        },
+        
+        // Building data - normalize field names
+        building: data.building ? {
+            insuranceAmount: data.building.insuranceAmount || data.building.buildingInsuranceAmount || data.building.buildingInsuranceAmount || '',
+            age: data.building.age || data.building.buildingAge || '',
+            area: data.building.area || data.building.buildingArea || '',
+            constructionType: data.building.constructionType || '',
+            constructionStandard: data.building.constructionStandard || '',
+            mortgagedProperty: data.building.mortgagedProperty || data.building.mortgaged || false,
+            renewals: data.building.renewals || '',
+            waterDamageType: data.building.waterDamageType || '',
+            waterDeductible: data.building.waterDeductible || '',
+            burglary: data.building.burglary || data.building.burglaryBuilding || false,
+            earthquakeCoverage: data.building.earthquakeCoverage || '',
+            earthquakeDeductible: data.building.earthquakeDeductible || '',
+            extensions: data.building.extensions || {}
+        } : null,
+        
+        // Contents data - normalize field names
+        contents: data.contents ? {
+            insuranceAmount: data.contents.insuranceAmount || data.contents.contentsInsuranceAmount || '',
+            jewelry: data.contents.jewelry || data.contents.jewelryAmount || '',
+            electronics: data.contents.electronics || data.contents.electronicsAmount || '',
+            furniture: data.contents.furniture || '',
+            other: data.contents.other || '',
+            waterDamage: data.contents.waterDamage || data.contents.contentsWaterDamage || false,
+            burglary: data.contents.burglary || data.contents.contentsBurglary || false,
+            fire: data.contents.fire || false,
+            earthquake: data.contents.earthquake || data.contents.contentsEarthquake || false,
+            extensions: data.contents.extensions || {}
+        } : null,
+        
+        // Liability data - handle third party liability
+        liability: data.additionalCoverage?.thirdPartyCoverage ? {
+            insuranceAmount: '1000000', // Default amount
+            hasEmployees: data.additionalCoverage.businessEmployers || false,
+            hasPets: false, // Will need to add this field to form
+            hasSwimmingPool: false, // Will need to add this field to form
+            extensions: {}
+        } : null
+    };
+    
+    console.log('📋 Normalized data for template:', JSON.stringify(normalizedData, null, 2));
+    
+    // Add timestamp if not present
+    if (!normalizedData.submittedAt) {
+        normalizedData.submittedAt = new Date().toISOString();
+    }
 
     const emailHtml = `
     <!DOCTYPE html>
@@ -66,10 +138,10 @@ function formatEmailContent(data) {
                 <!-- Summary Box -->
                 <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-right: 4px solid #0052cc;">
                     <h2 style="margin: 0 0 10px 0; color: #0052cc;">📊 סיכום בקשה</h2>
-                    <p style="margin: 5px 0;"><strong>שם הלקוח:</strong> ${data.firstName} ${data.lastName}</p>
-                    <p style="margin: 5px 0;"><strong>סוג ביטוח:</strong> ${data.productType}</p>
-                    <p style="margin: 5px 0;"><strong>תאריך התחלה מבוקש:</strong> ${formatDate(data.startDate)}</p>
-                    <p style="margin: 5px 0;"><strong>תאריך קבלת הבקשה:</strong> ${formatDate(data.submittedAt)}</p>
+                    <p style="margin: 5px 0;"><strong>שם הלקוח:</strong> ${normalizedData.firstName} ${normalizedData.lastName}</p>
+                    <p style="margin: 5px 0;"><strong>סוג ביטוח:</strong> ${normalizedData.productType}</p>
+                    <p style="margin: 5px 0;"><strong>תאריך התחלה מבוקש:</strong> ${formatDate(normalizedData.startDate)}</p>
+                    <p style="margin: 5px 0;"><strong>תאריך קבלת הבקשה:</strong> ${formatDate(normalizedData.submittedAt)}</p>
                 </div>
 
                 <!-- Personal Details -->
@@ -78,19 +150,19 @@ function formatEmailContent(data) {
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0; width: 30%;"><strong>שם מלא:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.firstName} ${data.lastName}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.firstName} ${normalizedData.lastName}</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>טלפון:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.phoneNumber}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.phoneNumber}</td>
                         </tr>
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>אימייל:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.email}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.email}</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>תעודת זהות:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">[מוצפן בבסיס הנתונים]</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.idNumber ? '[מוצפן]' : 'לא צוין'}</td>
                         </tr>
                     </table>
                 </div>
@@ -101,56 +173,64 @@ function formatEmailContent(data) {
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0; width: 30%;"><strong>סוג נכס:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.propertyType}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.propertyType}</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>כתובת:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.address.street} ${data.address.houseNumber}, ${data.address.city}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.address.street} ${normalizedData.address.houseNumber}, ${normalizedData.address.city}</td>
                         </tr>
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>מיקוד:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.address.postalCode}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.address.postalCode}</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>גינה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.address.hasGarden ? '✅ כן' : '❌ לא'}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.address.hasGarden ? '✅ כן' : '❌ לא'}</td>
                         </tr>
                     </table>
                 </div>
 
-                ${data.building ? `
+                ${normalizedData.building ? `
                 <!-- Building Insurance Details -->
                 <div style="margin-bottom: 30px;">
                     <h3 style="color: #0052cc; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">🏗️ ביטוח מבנה</h3>
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr style="background: #fff3cd;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0; width: 30%;"><strong>סכום ביטוח:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0; font-size: 18px; color: #0052cc;"><strong>${formatCurrency(data.building.insuranceAmount)}</strong></td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0; font-size: 18px; color: #0052cc;"><strong>${formatCurrency(normalizedData.building.insuranceAmount)}</strong></td>
                         </tr>
+                        ${normalizedData.building.age ? `
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>גיל המבנה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.age} שנים</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.building.age} שנים</td>
                         </tr>
+                        ` : ''}
+                        ${normalizedData.building.area ? `
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>שטח:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.area} מ"ר</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.building.area} מ"ר</td>
                         </tr>
+                        ` : ''}
+                        ${normalizedData.building.constructionType ? `
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>סוג בניה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.constructionType}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.building.constructionType}</td>
                         </tr>
+                        ` : ''}
+                        ${normalizedData.building.constructionStandard ? `
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>סטנדרט בניה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.constructionStandard}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.building.constructionStandard}</td>
                         </tr>
+                        ` : ''}
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>משועבד/מוטב:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.mortgagedProperty ? '✅ כן' : '❌ לא'}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.building.mortgagedProperty ? '✅ כן' : '❌ לא'}</td>
                         </tr>
-                        ${data.building.renewals ? `
+                        ${normalizedData.building.renewals ? `
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>חידושים:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.renewals}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.building.renewals}</td>
                         </tr>
                         ` : ''}
                     </table>
@@ -158,117 +238,125 @@ function formatEmailContent(data) {
                     <!-- Building Coverages -->
                     <h4 style="margin-top: 20px; color: #333;">כיסויים:</h4>
                     <ul style="background: #f8f9fa; padding: 15px 30px; border-radius: 5px; list-style: none;">
-                        <li style="padding: 5px 0;">${data.building.waterDamageType ? '💧 ' + data.building.waterDamageType : '❌ ללא נזקי מים'}</li>
-                        ${data.building.waterDeductible ? `<li style="padding: 5px 0;">💰 השתתפות עצמית: ${data.building.waterDeductible}</li>` : ''}
-                        <li style="padding: 5px 0;">${data.building.burglary ? '🔒 פריצה גניבה ושוד' : '❌ ללא כיסוי פריצה'}</li>
-                        <li style="padding: 5px 0;">${data.building.earthquakeCoverage === 'כן' ? '🌍 רעידת אדמה' : '❌ ללא כיסוי רעידת אדמה'}</li>
-                        ${data.building.earthquakeDeductible ? `<li style="padding: 5px 0;">💰 השתתפות עצמית רעידת אדמה: ${data.building.earthquakeDeductible}</li>` : ''}
+                        <li style="padding: 5px 0;">${normalizedData.building.waterDamageType ? '💧 ' + normalizedData.building.waterDamageType : '❌ ללא נזקי מים'}</li>
+                        ${normalizedData.building.waterDeductible ? `<li style="padding: 5px 0;">💰 השתתפות עצמית: ${normalizedData.building.waterDeductible}</li>` : ''}
+                        <li style="padding: 5px 0;">${normalizedData.building.burglary ? '🔒 פריצה גניבה ושוד' : '❌ ללא כיסוי פריצה'}</li>
+                        <li style="padding: 5px 0;">${normalizedData.building.earthquakeCoverage === 'כן' ? '🌍 רעידת אדמה' : '❌ ללא כיסוי רעידת אדמה'}</li>
+                        ${normalizedData.building.earthquakeDeductible ? `<li style="padding: 5px 0;">💰 השתתפות עצמית רעידת אדמה: ${normalizedData.building.earthquakeDeductible}</li>` : ''}
                     </ul>
 
-                    ${data.building.extensions && Object.values(data.building.extensions).some(v => v) ? `
+                    ${normalizedData.building.extensions && Object.values(normalizedData.building.extensions).some(v => v) ? `
                     <h4 style="margin-top: 20px; color: #333;">הרחבות:</h4>
                     <ul style="background: #e8f5e9; padding: 15px 30px; border-radius: 5px; list-style: none;">
-                        ${data.building.extensions.terrorism ? '<li style="padding: 5px 0;">💥 טרור</li>' : ''}
-                        ${data.building.extensions.personalAccident ? '<li style="padding: 5px 0;">🚑 תאונות אישיות</li>' : ''}
-                        ${data.building.extensions.lossOfRent ? '<li style="padding: 5px 0;">🏠 אובדן שכר דירה</li>' : ''}
-                        ${data.building.extensions.alternativeAccommodation ? '<li style="padding: 5px 0;">🏨 לינה חלופית</li>' : ''}
-                        ${data.building.extensions.keyReplacement ? '<li style="padding: 5px 0;">🔑 החלפת מנעולים</li>' : ''}
-                        ${data.building.extensions.debris ? '<li style="padding: 5px 0;">🗑️ פינוי הריסות</li>' : ''}
-                        ${data.building.extensions.professionalFees ? '<li style="padding: 5px 0;">💼 שכר מקצועי</li>' : ''}
-                        ${data.building.extensions.rentReduction ? '<li style="padding: 5px 0;">📉 הפחתת שכר דירה</li>' : ''}
-                        ${data.building.extensions.governmentFees ? '<li style="padding: 5px 0;">🏛️ אגרות רשויות</li>' : ''}
-                        ${data.building.extensions.upgrades ? '<li style="padding: 5px 0;">⬆️ שיפורים ושדרוגים</li>' : ''}
+                        ${normalizedData.building.extensions.terrorism ? '<li style="padding: 5px 0;">💥 טרור</li>' : ''}
+                        ${normalizedData.building.extensions.personalAccident ? '<li style="padding: 5px 0;">🚑 תאונות אישיות</li>' : ''}
+                        ${normalizedData.building.extensions.lossOfRent ? '<li style="padding: 5px 0;">🏠 אובדן שכר דירה</li>' : ''}
+                        ${normalizedData.building.extensions.alternativeAccommodation ? '<li style="padding: 5px 0;">🏨 לינה חלופית</li>' : ''}
+                        ${normalizedData.building.extensions.keyReplacement ? '<li style="padding: 5px 0;">🔑 החלפת מנעולים</li>' : ''}
+                        ${normalizedData.building.extensions.debris ? '<li style="padding: 5px 0;">🗑️ פינוי הריסות</li>' : ''}
+                        ${normalizedData.building.extensions.professionalFees ? '<li style="padding: 5px 0;">💼 שכר מקצועי</li>' : ''}
+                        ${normalizedData.building.extensions.rentReduction ? '<li style="padding: 5px 0;">📉 הפחתת שכר דירה</li>' : ''}
+                        ${normalizedData.building.extensions.governmentFees ? '<li style="padding: 5px 0;">🏛️ אגרות רשויות</li>' : ''}
+                        ${normalizedData.building.extensions.upgrades ? '<li style="padding: 5px 0;">⬆️ שיפורים ושדרוגים</li>' : ''}
                     </ul>
                     ` : ''}
                 </div>
                 ` : ''}
 
-                ${data.contents ? `
+                ${normalizedData.contents ? `
                 <!-- Contents Insurance Details -->
                 <div style="margin-bottom: 30px;">
                     <h3 style="color: #0052cc; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">🛋️ ביטוח תוכן</h3>
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr style="background: #fff3cd;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0; width: 30%;"><strong>סכום ביטוח:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0; font-size: 18px; color: #0052cc;"><strong>${formatCurrency(data.contents.insuranceAmount)}</strong></td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0; font-size: 18px; color: #0052cc;"><strong>${formatCurrency(normalizedData.contents.insuranceAmount)}</strong></td>
                         </tr>
+                        ${normalizedData.contents.jewelry ? `
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>תכשיטים:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${formatCurrency(data.contents.jewelry)}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${formatCurrency(normalizedData.contents.jewelry)}</td>
                         </tr>
+                        ` : ''}
+                        ${normalizedData.contents.electronics ? `
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>מכשירים אלקטרוניים:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${formatCurrency(data.contents.electronics)}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${formatCurrency(normalizedData.contents.electronics)}</td>
                         </tr>
+                        ` : ''}
+                        ${normalizedData.contents.furniture ? `
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>ריהוט:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${formatCurrency(data.contents.furniture)}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${formatCurrency(normalizedData.contents.furniture)}</td>
                         </tr>
+                        ` : ''}
+                        ${normalizedData.contents.other ? `
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>אחר:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${formatCurrency(data.contents.other)}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${formatCurrency(normalizedData.contents.other)}</td>
                         </tr>
+                        ` : ''}
                     </table>
 
                     <!-- Contents Coverages -->
                     <h4 style="margin-top: 20px; color: #333;">כיסויים:</h4>
                     <ul style="background: #f8f9fa; padding: 15px 30px; border-radius: 5px; list-style: none;">
-                        <li style="padding: 5px 0;">${data.contents.waterDamage ? '💧 נזקי מים' : '❌ ללא נזקי מים'}</li>
-                        <li style="padding: 5px 0;">${data.contents.burglary ? '🔒 פריצה גניבה ושוד' : '❌ ללא כיסוי פריצה'}</li>
-                        <li style="padding: 5px 0;">${data.contents.fire ? '🔥 שריפה' : '❌ ללא כיסוי שריפה'}</li>
-                        <li style="padding: 5px 0;">${data.contents.earthquake ? '🌍 רעידת אדמה' : '❌ ללא כיסוי רעידת אדמה'}</li>
+                        <li style="padding: 5px 0;">${normalizedData.contents.waterDamage ? '💧 נזקי מים' : '❌ ללא נזקי מים'}</li>
+                        <li style="padding: 5px 0;">${normalizedData.contents.burglary ? '🔒 פריצה גניבה ושוד' : '❌ ללא כיסוי פריצה'}</li>
+                        <li style="padding: 5px 0;">${normalizedData.contents.fire ? '🔥 שריפה' : '❌ ללא כיסוי שריפה'}</li>
+                        <li style="padding: 5px 0;">${normalizedData.contents.earthquake ? '🌍 רעידת אדמה' : '❌ ללא כיסוי רעידת אדמה'}</li>
                     </ul>
 
-                    ${data.contents.extensions && Object.values(data.contents.extensions).some(v => v) ? `
+                    ${normalizedData.contents.extensions && Object.values(normalizedData.contents.extensions).some(v => v) ? `
                     <h4 style="margin-top: 20px; color: #333;">הרחבות:</h4>
                     <ul style="background: #e8f5e9; padding: 15px 30px; border-radius: 5px; list-style: none;">
-                        ${data.contents.extensions.terrorism ? '<li style="padding: 5px 0;">💥 טרור</li>' : ''}
-                        ${data.contents.extensions.personalAccident ? '<li style="padding: 5px 0;">🚑 תאונות אישיות</li>' : ''}
-                        ${data.contents.extensions.temporaryAccommodation ? '<li style="padding: 5px 0;">🏨 לינה זמנית</li>' : ''}
-                        ${data.contents.extensions.refrigeratorContents ? '<li style="padding: 5px 0;">❄️ תכולת מקרר</li>' : ''}
-                        ${data.contents.extensions.personalBelongings ? '<li style="padding: 5px 0;">🎒 חפצים אישיים מחוץ לבית</li>' : ''}
-                        ${data.contents.extensions.identityTheft ? '<li style="padding: 5px 0;">🆔 גניבת זהות</li>' : ''}
-                        ${data.contents.extensions.computerData ? '<li style="padding: 5px 0;">💻 מידע ממוחשב</li>' : ''}
-                        ${data.contents.extensions.creditCards ? '<li style="padding: 5px 0;">💳 כרטיסי אשראי</li>' : ''}
-                        ${data.contents.extensions.cashAndDocuments ? '<li style="padding: 5px 0;">💰 כסף ומסמכים</li>' : ''}
+                        ${normalizedData.contents.extensions.terrorism ? '<li style="padding: 5px 0;">💥 טרור</li>' : ''}
+                        ${normalizedData.contents.extensions.personalAccident ? '<li style="padding: 5px 0;">🚑 תאונות אישיות</li>' : ''}
+                        ${normalizedData.contents.extensions.temporaryAccommodation ? '<li style="padding: 5px 0;">🏨 לינה זמנית</li>' : ''}
+                        ${normalizedData.contents.extensions.refrigeratorContents ? '<li style="padding: 5px 0;">❄️ תכולת מקרר</li>' : ''}
+                        ${normalizedData.contents.extensions.personalBelongings ? '<li style="padding: 5px 0;">🎒 חפצים אישיים מחוץ לבית</li>' : ''}
+                        ${normalizedData.contents.extensions.identityTheft ? '<li style="padding: 5px 0;">🆔 גניבת זהות</li>' : ''}
+                        ${normalizedData.contents.extensions.computerData ? '<li style="padding: 5px 0;">💻 מידע ממוחשב</li>' : ''}
+                        ${normalizedData.contents.extensions.creditCards ? '<li style="padding: 5px 0;">💳 כרטיסי אשראי</li>' : ''}
+                        ${normalizedData.contents.extensions.cashAndDocuments ? '<li style="padding: 5px 0;">💰 כסף ומסמכים</li>' : ''}
                     </ul>
                     ` : ''}
                 </div>
                 ` : ''}
 
-                ${data.liability ? `
+                ${normalizedData.liability ? `
                 <!-- Liability Insurance Details -->
                 <div style="margin-bottom: 30px;">
                     <h3 style="color: #0052cc; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">🛡️ ביטוח צד ג'</h3>
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr style="background: #fff3cd;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0; width: 30%;"><strong>סכום ביטוח:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0; font-size: 18px; color: #0052cc;"><strong>${formatCurrency(data.liability.insuranceAmount)}</strong></td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0; font-size: 18px; color: #0052cc;"><strong>${formatCurrency(normalizedData.liability.insuranceAmount)}</strong></td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>עובדים:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.liability.hasEmployees ? '✅ כן' : '❌ לא'}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.liability.hasEmployees ? '✅ כן' : '❌ לא'}</td>
                         </tr>
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>חיות מחמד:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.liability.hasPets ? '✅ כן' : '❌ לא'}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.liability.hasPets ? '✅ כן' : '❌ לא'}</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>בריכה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.liability.hasSwimmingPool ? '✅ כן' : '❌ לא'}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${normalizedData.liability.hasSwimmingPool ? '✅ כן' : '❌ לא'}</td>
                         </tr>
                     </table>
 
-                    ${data.liability.extensions && Object.values(data.liability.extensions).some(v => v) ? `
+                    ${normalizedData.liability.extensions && Object.values(normalizedData.liability.extensions).some(v => v) ? `
                     <h4 style="margin-top: 20px; color: #333;">הרחבות:</h4>
                     <ul style="background: #e8f5e9; padding: 15px 30px; border-radius: 5px; list-style: none;">
-                        ${data.liability.extensions.personalAccident ? '<li style="padding: 5px 0;">🚑 תאונות אישיות</li>' : ''}
-                        ${data.liability.extensions.employerLiability ? '<li style="padding: 5px 0;">👨‍💼 אחריות מעבידים</li>' : ''}
-                        ${data.liability.extensions.tenantLiability ? '<li style="padding: 5px 0;">🏠 אחריות שוכרים</li>' : ''}
-                        ${data.liability.extensions.keysLiability ? '<li style="padding: 5px 0;">🔑 אחריות מפתחות</li>' : ''}
-                        ${data.liability.extensions.elevatorLiability ? '<li style="padding: 5px 0;">🛗 אחריות מעלית</li>' : ''}
-                        ${data.liability.extensions.emergencyExpenses ? '<li style="padding: 5px 0;">🚨 הוצאות חירום</li>' : ''}
-                        ${data.liability.extensions.professionalLiability ? '<li style="padding: 5px 0;">💼 אחריות מקצועית</li>' : ''}
+                        ${normalizedData.liability.extensions.personalAccident ? '<li style="padding: 5px 0;">🚑 תאונות אישיות</li>' : ''}
+                        ${normalizedData.liability.extensions.employerLiability ? '<li style="padding: 5px 0;">👨‍💼 אחריות מעבידים</li>' : ''}
+                        ${normalizedData.liability.extensions.tenantLiability ? '<li style="padding: 5px 0;">🏠 אחריות שוכרים</li>' : ''}
+                        ${normalizedData.liability.extensions.keysLiability ? '<li style="padding: 5px 0;">🔑 אחריות מפתחות</li>' : ''}
+                        ${normalizedData.liability.extensions.elevatorLiability ? '<li style="padding: 5px 0;">🛗 אחריות מעלית</li>' : ''}
+                        ${normalizedData.liability.extensions.emergencyExpenses ? '<li style="padding: 5px 0;">🚨 הוצאות חירום</li>' : ''}
+                        ${normalizedData.liability.extensions.professionalLiability ? '<li style="padding: 5px 0;">💼 אחריות מקצועית</li>' : ''}
                     </ul>
                     ` : ''}
                 </div>
