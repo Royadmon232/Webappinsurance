@@ -6438,10 +6438,10 @@ function generateEmailHTML(data) {
 async function sendEmailToAgent(emailData) {
     console.log('📮 Sending email via Gmail API...', emailData);
     
-    // List of possible endpoints to try
+    // List of possible endpoints to try (Vercel first!)
     const endpoints = [
-        'http://localhost:8080/api/send-email',              // Local development (as seen in OAuth config)
-        'https://webappinsurance.vercel.app/api/send-email',  // Production Vercel
+        'https://webappinsurance.vercel.app/api/send-email',  // Production Vercel (PRIMARY)
+        'http://localhost:8080/api/send-email',              // Local development fallback
         'http://localhost:3000/api/send-email'               // Fallback endpoint
     ];
     
@@ -6516,11 +6516,10 @@ async function sendEmailToAgent(emailData) {
 async function generateQuotePDF(htmlContent, filename) {
     console.log('📄 Generating PDF from beautiful template...');
     
-    // List of possible endpoints to try
+    // List of possible endpoints to try (local only - Vercel doesn't support Puppeteer)
     const endpoints = [
-        'http://localhost:8080/api/generate-pdf',              // Local development
-        'https://webappinsurance.vercel.app/api/generate-pdf',  // Production Vercel
-        'http://localhost:3000/api/generate-pdf'               // Fallback endpoint
+        'http://localhost:8080/api/generate-pdf',              // Local development only
+        'http://localhost:3000/api/generate-pdf'               // Local fallback
     ];
     
     for (let i = 0; i < endpoints.length; i++) {
@@ -6560,10 +6559,10 @@ async function generateQuotePDF(htmlContent, filename) {
                 console.error('❌ All PDF endpoints failed');
                 
                 // Show user-friendly message about PDF failure
-                showNotification('warning', 
-                    `📄 לא הצלחנו ליצור קובץ PDF<br>
-                    שירות יצירת ה-PDF זמנית לא זמין.<br>
-                    הליד נשלח במייל בהצלחה!`
+                showNotification('info', 
+                    `📄 יצירת PDF זמינה רק בפיתוח מקומי<br>
+                    📧 הליד נשלח במייל בהצלחה ל-royadmon23@gmail.com!<br>
+                    כל הפרטים נמצאים במייל עם עיצוב מלא.`
                 );
                 
                 throw new Error('All PDF generation endpoints failed');
@@ -6812,7 +6811,7 @@ function showNotification(type, message) {
     notification.className = `notification notification-${type}`;
     notification.innerHTML = `
         <div class="notification-content">
-            <span class="notification-icon">${type === 'success' ? '✅' : '❌'}</span>
+            <span class="notification-icon">${type === 'success' ? '✅' : type === 'info' ? 'ℹ️' : type === 'warning' ? '⚠️' : '❌'}</span>
             <span class="notification-message">${message}</span>
         </div>
     `;
