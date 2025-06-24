@@ -372,37 +372,39 @@ async function sendEmailWithPdf(to, subject, htmlContent, pdfBuffer, filename) {
 
 // Generate PDF from HTML content
 async function generatePdf(htmlContent) {
+    let browser;
     try {
         console.log('📄 Starting PDF generation...');
         
+        // Set chromium to headless mode
+        chromium.setHeadlessMode = true;
+        
         // Configure browser options for Vercel
         const browserOptions = {
-            headless: chromium.headless,
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
             executablePath: await chromium.executablePath(),
-            args: [
-                ...chromium.args,
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-accelerated-2d-canvas',
-                '--no-first-run',
-                '--no-zygote',
-                '--single-process',
-                '--disable-gpu',
-                '--disable-web-security',
-                '--disable-features=VizDisplayCompositor'
-            ]
+            headless: chromium.headless,
+            ignoreHTTPSErrors: true
         };
 
+        console.log('🚀 Launching browser with options:', JSON.stringify(browserOptions, null, 2));
+
         // Launch puppeteer browser
-        const browser = await puppeteer.launch(browserOptions);
+        browser = await puppeteer.launch(browserOptions);
+        console.log('✅ Browser launched successfully');
 
         const page = await browser.newPage();
+        console.log('📄 New page created');
         
         // Set content with the beautiful HTML template
         await page.setContent(htmlContent, {
-            waitUntil: 'networkidle0'
+            waitUntil: ['domcontentloaded', 'networkidle0']
         });
+        console.log('✅ HTML content set');
+
+        // Wait a bit for fonts to load
+        await page.evaluateHandle('document.fonts.ready');
 
         // Generate PDF with optimized settings for Hebrew content
         const pdfBuffer = await page.pdf({
@@ -418,15 +420,35 @@ async function generatePdf(htmlContent) {
             displayHeaderFooter: false
         });
 
-        // Close browser
-        await browser.close();
-
         console.log(`✅ PDF generated successfully, size: ${pdfBuffer.length} bytes`);
+        
+        // Validate PDF
+        if (!pdfBuffer || pdfBuffer.length === 0) {
+            throw new Error('PDF buffer is empty');
+        }
+        
+        // Check PDF header
+        const pdfHeader = pdfBuffer.slice(0, 5).toString();
+        if (!pdfHeader.startsWith('%PDF')) {
+            throw new Error(`Invalid PDF header: ${pdfHeader}`);
+        }
+        
         return pdfBuffer;
         
     } catch (error) {
         console.error('❌ Error generating PDF:', error);
+        console.error('Error stack:', error.stack);
         throw error;
+    } finally {
+        // Always close browser
+        if (browser) {
+            try {
+                await browser.close();
+                console.log('🔒 Browser closed');
+            } catch (closeError) {
+                console.error('Error closing browser:', closeError);
+            }
+        }
     }
 }
 
