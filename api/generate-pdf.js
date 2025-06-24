@@ -42,12 +42,13 @@ function formatEmailContent(data) {
     };
 
     const formatCurrency = (amount) => {
+        if (!amount || amount === 0) return null;
         return new Intl.NumberFormat('he-IL', {
             style: 'currency',
             currency: 'ILS',
             minimumFractionDigits: 0,
             maximumFractionDigits: 0
-        }).format(amount || 0);
+        }).format(amount);
     };
 
     // Make sure we have a valid submittedAt date
@@ -55,6 +56,11 @@ function formatEmailContent(data) {
         data.submittedAt = new Date().toISOString();
     }
 
+    // Determine which sections to show based on productType
+    const productType = data.productType || '';
+    const showBuilding = productType.includes('מבנה');
+    const showContents = productType.includes('תכולה') || productType.includes('תוכן');
+    
     const emailHtml = `
     <!DOCTYPE html>
     <html dir="rtl" lang="he">
@@ -75,7 +81,7 @@ function formatEmailContent(data) {
                 <!-- Summary Box -->
                 <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-right: 4px solid #0052cc;">
                     <h2 style="margin: 0 0 10px 0; color: #0052cc;">📊 סיכום בקשה</h2>
-                    <p style="margin: 5px 0;"><strong>שם הלקוח:</strong> ${data.firstName || 'לא צוין'} ${data.lastName || ''}</p>
+                    <p style="margin: 5px 0;"><strong>שם הלקוח:</strong> ${data.firstName || ''} ${data.lastName || ''}</p>
                     <p style="margin: 5px 0;"><strong>סוג ביטוח:</strong> ${data.productType || 'לא צוין'}</p>
                     <p style="margin: 5px 0;"><strong>תאריך התחלה מבוקש:</strong> ${formatDate(data.startDate)}</p>
                     <p style="margin: 5px 0;"><strong>תאריך קבלת הבקשה:</strong> ${formatDate(data.submittedAt)}</p>
@@ -87,20 +93,26 @@ function formatEmailContent(data) {
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0; width: 30%;"><strong>שם מלא:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.firstName || 'לא צוין'} ${data.lastName || ''}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.firstName || ''} ${data.lastName || ''}</td>
                         </tr>
+                        ${data.phoneNumber ? `
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>טלפון:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.phoneNumber || 'לא צוין'}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.phoneNumber}</td>
                         </tr>
+                        ` : ''}
+                        ${data.email ? `
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>אימייל:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.email || 'לא צוין'}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.email}</td>
                         </tr>
+                        ` : ''}
+                        ${data.idNumber ? `
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>תעודת זהות:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.idNumber || '[מוצפן בבסיס הנתונים]'}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.idNumber}</td>
                         </tr>
+                        ` : ''}
                     </table>
                 </div>
 
@@ -108,29 +120,34 @@ function formatEmailContent(data) {
                 <div style="margin-bottom: 30px;">
                     <h3 style="color: #0052cc; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">🏠 פרטי הנכס</h3>
                     <table style="width: 100%; border-collapse: collapse;">
+                        ${data.propertyType ? `
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0; width: 30%;"><strong>סוג נכס:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.propertyType || 'לא צוין'}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.propertyType}</td>
                         </tr>
+                        ` : ''}
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>כתובת:</strong></td>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;">
-                                ${data.address ? `${data.address.street || data.street || ''} ${data.address.houseNumber || data.houseNumber || ''}, ${data.address.city || data.city || ''}` : 
-                                 `${data.street || ''} ${data.houseNumber || ''}, ${data.city || ''}`}
+                                ${data.street || ''} ${data.houseNumber || ''}, ${data.city || ''}
                             </td>
                         </tr>
+                        ${data.postalCode ? `
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>מיקוד:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.address?.postalCode || data.postalCode || 'לא צוין'}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.postalCode}</td>
                         </tr>
+                        ` : ''}
+                        ${typeof data.hasGarden !== 'undefined' ? `
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>גינה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${(data.address?.hasGarden || data.hasGarden) ? '✅ כן' : '❌ לא'}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.hasGarden ? '✅ כן' : '❌ לא'}</td>
                         </tr>
+                        ` : ''}
                     </table>
                 </div>
 
-                ${data.building && (data.building.insuranceAmount || data.building.buildingInsuranceAmount) ? `
+                ${showBuilding && data.building && (data.building.insuranceAmount || data.building.buildingInsuranceAmount) ? `
                 <!-- Building Insurance Details -->
                 <div style="margin-bottom: 30px;">
                     <h3 style="color: #0052cc; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">🏗️ ביטוח מבנה</h3>
@@ -139,26 +156,36 @@ function formatEmailContent(data) {
                             <td style="padding: 10px; border: 1px solid #e0e0e0; width: 30%;"><strong>סכום ביטוח:</strong></td>
                             <td style="padding: 10px; border: 1px solid #e0e0e0; font-size: 18px; color: #0052cc;"><strong>${formatCurrency(data.building.insuranceAmount || data.building.buildingInsuranceAmount)}</strong></td>
                         </tr>
+                        ${data.building.age || data.building.buildingAge ? `
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>גיל המבנה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.age || data.building.buildingAge || 'לא צוין'} שנים</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.age || data.building.buildingAge} שנים</td>
                         </tr>
+                        ` : ''}
+                        ${data.building.area || data.building.buildingArea ? `
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>שטח:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.area || data.building.buildingArea || 'לא צוין'} מ"ר</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.area || data.building.buildingArea} מ"ר</td>
                         </tr>
+                        ` : ''}
+                        ${data.building.constructionType ? `
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>סוג בניה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.constructionType || 'לא צוין'}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.constructionType}</td>
                         </tr>
+                        ` : ''}
+                        ${data.building.constructionStandard ? `
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>סטנדרט בניה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.constructionStandard || 'לא צוין'}</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.constructionStandard}</td>
                         </tr>
+                        ` : ''}
+                        ${typeof (data.building.mortgagedProperty || data.building.mortgaged) !== 'undefined' ? `
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>משועבד/מוטב:</strong></td>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;">${(data.building.mortgagedProperty || data.building.mortgaged) ? '✅ כן' : '❌ לא'}</td>
                         </tr>
+                        ` : ''}
                         ${data.building.renewals ? `
                         <tr style="background: #f8f9fa;">
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>חידושים:</strong></td>
@@ -167,32 +194,37 @@ function formatEmailContent(data) {
                         ` : ''}
                     </table>
 
-                    <!-- Building Coverages -->
+                    <!-- Building Coverages - Only if they exist -->
+                    ${data.building.waterDamageType || data.building.earthquakeCoverage || 
+                      (typeof data.building.burglaryBuilding !== 'undefined') ? `
                     <h4 style="margin-top: 20px; color: #333;">כיסויים:</h4>
                     <ul style="background: #f8f9fa; padding: 15px 30px; border-radius: 5px; list-style: none;">
-                        <li style="padding: 5px 0;">${data.building.waterDamageType ? '💧 ' + data.building.waterDamageType : '❌ ללא נזקי מים'}</li>
-                        ${data.building.waterDeductible ? `<li style="padding: 5px 0;">💰 השתתפות עצמית: ${data.building.waterDeductible}</li>` : ''}
-                        <li style="padding: 5px 0;">${(data.building.burglary || data.building.burglaryBuilding) ? '🔒 פריצה גניבה ושוד' : '❌ ללא כיסוי פריצה'}</li>
-                        <li style="padding: 5px 0;">${data.building.earthquakeCoverage === 'כן' ? '🌍 רעידת אדמה' : '❌ ללא כיסוי רעידת אדמה'}</li>
+                        ${data.building.waterDamageType ? `<li style="padding: 5px 0;">💧 ${data.building.waterDamageType}</li>` : ''}
+                        ${data.building.waterDeductible ? `<li style="padding: 5px 0;">💰 השתתפות עצמית נזקי מים: ${data.building.waterDeductible}</li>` : ''}
+                        ${typeof data.building.burglaryBuilding !== 'undefined' ? `<li style="padding: 5px 0;">${data.building.burglaryBuilding ? '🔒 פריצה גניבה ושוד' : '❌ ללא כיסוי פריצה'}</li>` : ''}
+                        ${data.building.earthquakeCoverage ? `<li style="padding: 5px 0;">${data.building.earthquakeCoverage === 'כן' ? '🌍 רעידת אדמה' : '❌ ללא כיסוי רעידת אדמה'}</li>` : ''}
                         ${data.building.earthquakeDeductible ? `<li style="padding: 5px 0;">💰 השתתפות עצמית רעידת אדמה: ${data.building.earthquakeDeductible}</li>` : ''}
                     </ul>
+                    ` : ''}
 
-                    <!-- Additional Building Amounts -->
+                    <!-- Additional Building Amounts - Only if they exist -->
                     ${(data.building.buildingContentsInsurance || data.building.storageInsurance || 
-                       data.building.swimmingPoolInsurance || data.building.glassBreakageInsurance) ? `
+                       data.building.swimmingPoolInsurance || data.building.glassBreakageInsurance ||
+                       data.building.additionalSharedInsurance || data.building.boilersCoverage) ? `
                     <h4 style="margin-top: 20px; color: #333;">סכומים נוספים:</h4>
                     <ul style="background: #f8f9fa; padding: 15px 30px; border-radius: 5px; list-style: none;">
                         ${data.building.buildingContentsInsurance ? `<li style="padding: 5px 0;">📦 תכולת מבנה: ${formatCurrency(data.building.buildingContentsInsurance)}</li>` : ''}
                         ${data.building.storageInsurance ? `<li style="padding: 5px 0;">🏚️ מחסן: ${formatCurrency(data.building.storageInsurance)}</li>` : ''}
                         ${data.building.swimmingPoolInsurance ? `<li style="padding: 5px 0;">🏊 בריכת שחייה: ${formatCurrency(data.building.swimmingPoolInsurance)}</li>` : ''}
                         ${data.building.glassBreakageInsurance ? `<li style="padding: 5px 0;">🪟 שבר זכוכית: ${formatCurrency(data.building.glassBreakageInsurance)}</li>` : ''}
+                        ${data.building.additionalSharedInsurance ? `<li style="padding: 5px 0;">🏢 רכוש משותף נוסף: ${formatCurrency(data.building.additionalSharedInsurance)}</li>` : ''}
                         ${data.building.boilersCoverage ? '<li style="padding: 5px 0;">♨️ דודי חימום: כלול</li>' : ''}
                     </ul>
                     ` : ''}
                 </div>
                 ` : ''}
 
-                ${data.contents && (data.contents.insuranceAmount || data.contents.contentsInsuranceAmount) ? `
+                ${showContents && data.contents && (data.contents.insuranceAmount || data.contents.contentsInsuranceAmount) ? `
                 <!-- Contents Insurance Details -->
                 <div style="margin-bottom: 30px;">
                     <h3 style="color: #0052cc; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">🛋️ ביטוח תוכן</h3>
@@ -209,7 +241,7 @@ function formatEmailContent(data) {
                         ` : ''}
                     </table>
 
-                    <!-- Valuable Items -->
+                    <!-- Valuable Items - Only if they exist -->
                     ${(data.contents.jewelryAmount || data.contents.watchesAmount || data.contents.camerasAmount ||
                        data.contents.electronicsAmount || data.contents.bicyclesAmount || data.contents.musicalInstrumentsAmount) ? `
                     <h4 style="margin-top: 20px; color: #333;">פריטי ערך:</h4>
@@ -223,20 +255,25 @@ function formatEmailContent(data) {
                     </ul>
                     ` : ''}
 
-                    <!-- Contents Coverages -->
+                    <!-- Contents Coverages - Only if they exist -->
+                    ${(typeof data.contents.contentsWaterDamage !== 'undefined' || 
+                       typeof data.contents.contentsBurglary !== 'undefined' ||
+                       data.contents.contentsEarthquake) ? `
                     <h4 style="margin-top: 20px; color: #333;">כיסויים:</h4>
                     <ul style="background: #f8f9fa; padding: 15px 30px; border-radius: 5px; list-style: none;">
-                        <li style="padding: 5px 0;">${data.contents.contentsWaterDamage ? '💧 נזקי מים' : '❌ ללא נזקי מים'}</li>
-                        <li style="padding: 5px 0;">${data.contents.contentsBurglary ? '🔒 פריצה גניבה ושוד' : '❌ ללא כיסוי פריצה'}</li>
-                        <li style="padding: 5px 0;">${data.contents.contentsEarthquake === 'כן' ? '🌍 רעידת אדמה' : '❌ ללא כיסוי רעידת אדמה'}</li>
+                        ${typeof data.contents.contentsWaterDamage !== 'undefined' ? `<li style="padding: 5px 0;">${data.contents.contentsWaterDamage ? '💧 נזקי מים' : '❌ ללא נזקי מים'}</li>` : ''}
+                        ${typeof data.contents.contentsBurglary !== 'undefined' ? `<li style="padding: 5px 0;">${data.contents.contentsBurglary ? '🔒 פריצה גניבה ושוד' : '❌ ללא כיסוי פריצה'}</li>` : ''}
+                        ${data.contents.contentsEarthquake ? `<li style="padding: 5px 0;">${data.contents.contentsEarthquake === 'כן' ? '🌍 רעידת אדמה' : '❌ ללא כיסוי רעידת אדמה'}</li>` : ''}
                         ${data.contents.contentsEarthquakeDeductible ? `<li style="padding: 5px 0;">💰 השתתפות עצמית רעידת אדמה: ${data.contents.contentsEarthquakeDeductible}</li>` : ''}
                     </ul>
+                    ` : ''}
                 </div>
                 ` : ''}
 
                 ${data.additionalCoverage && (data.additionalCoverage.businessContentsAmount || 
                    data.additionalCoverage.thirdPartyCoverage || data.additionalCoverage.employersLiability || 
-                   data.additionalCoverage.cyberCoverage || data.additionalCoverage.terrorCoverage) ? `
+                   data.additionalCoverage.cyberCoverage || data.additionalCoverage.terrorCoverage ||
+                   data.additionalCoverage.businessEmployers || data.additionalCoverage.businessThirdParty) ? `
                 <!-- Additional Coverages -->
                 <div style="margin-bottom: 30px;">
                     <h3 style="color: #0052cc; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">🛡️ כיסויים נוספים</h3>
@@ -286,13 +323,13 @@ async function sendEmailWithPdf(to, subject, htmlContent, pdfBuffer, filename) {
             '',
             `--${boundary}`,
             'Content-Type: text/html; charset=utf-8',
-            'Content-Transfer-Encoding: quoted-printable',
+            'Content-Transfer-Encoding: base64',
             '',
-            htmlContent,
+            Buffer.from(htmlContent).toString('base64'),
             '',
             `--${boundary}`,
             'Content-Type: application/pdf',
-            `Content-Disposition: attachment; filename="${filename}"`,
+            `Content-Disposition: attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
             'Content-Transfer-Encoding: base64',
             '',
             pdfBuffer.toString('base64'),
@@ -377,7 +414,8 @@ async function generatePdf(htmlContent) {
                 left: '0.5in',
                 right: '0.5in'
             },
-            preferCSSPageSize: true
+            preferCSSPageSize: false,
+            displayHeaderFooter: false
         });
 
         // Close browser
@@ -431,11 +469,26 @@ export default async function handler(req, res) {
             });
         }
         
+        // Log received data
+        console.log('📥 API received formData:', JSON.stringify(formData, null, 2));
+        
         // Generate HTML content from form data
         const htmlContent = formatEmailContent(formData);
         
         // Generate PDF
         const pdfBuffer = await generatePdf(htmlContent);
+        
+        // Validate PDF
+        if (!pdfBuffer || pdfBuffer.length === 0) {
+            throw new Error('Failed to generate PDF - empty buffer');
+        }
+        
+        // Check PDF header
+        const pdfHeader = pdfBuffer.slice(0, 5).toString();
+        if (pdfHeader !== '%PDF-') {
+            console.error('❌ Invalid PDF header:', pdfHeader);
+            throw new Error('Generated file is not a valid PDF');
+        }
         
         // Convert buffer to base64
         const base64Pdf = pdfBuffer.toString('base64');
@@ -451,7 +504,11 @@ export default async function handler(req, res) {
                     message: 'Gmail API credentials not configured'
                 };
             } else {
-                const filename = `lead_${formData.firstName}_${formData.lastName}_${Date.now()}.pdf`;
+                // Create a safe filename without special characters
+                const firstName = (formData.firstName || 'customer').replace(/[^a-zA-Zא-ת0-9]/g, '');
+                const lastName = (formData.lastName || '').replace(/[^a-zA-Zא-ת0-9]/g, '');
+                const timestamp = Date.now();
+                const filename = `lead_${firstName}${lastName ? '_' + lastName : ''}_${timestamp}.pdf`;
                 emailResult = await sendEmailWithPdf(
                     emailTo,
                     emailSubject,
@@ -463,9 +520,13 @@ export default async function handler(req, res) {
         }
         
         // Return success response
+        const firstName = (formData.firstName || 'customer').replace(/[^a-zA-Zא-ת0-9]/g, '');
+        const lastName = (formData.lastName || '').replace(/[^a-zA-Zא-ת0-9]/g, '');
+        const timestamp = Date.now();
+        
         res.status(200).json({
             success: true,
-            filename: `lead_${formData.firstName}_${formData.lastName}_${Date.now()}.pdf`,
+            filename: `lead_${firstName}${lastName ? '_' + lastName : ''}_${timestamp}.pdf`,
             pdf: base64Pdf,
             size: pdfBuffer.length,
             message: 'PDF generated successfully',
