@@ -124,6 +124,16 @@ function formatEmailContent(data) {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <style>
+            @page {
+                size: A4;
+                margin: 0.5in;
+            }
+            * {
+                box-sizing: border-box;
+            }
+        </style>
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; direction: rtl; text-align: right; margin: 0; padding: 0; background-color: #f4f4f4;">
         <div style="max-width: 800px; margin: 20px auto; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
@@ -401,11 +411,11 @@ async function sendEmailWithPdf(to, subject, htmlContent, pdfBuffer, filename) {
             htmlContent,
             '',
             `--${boundary}`,
-            'Content-Type: application/pdf',
-            `Content-Disposition: attachment; filename="${filename}"`,
+            'Content-Type: application/pdf; name="lead_attachment.pdf"',
+            'Content-Disposition: attachment; filename="lead_attachment.pdf"',
             'Content-Transfer-Encoding: base64',
             '',
-            pdfBuffer.toString('base64'),
+            pdfBuffer.toString('base64').match(/.{1,76}/g).join('\r\n'),
             `--${boundary}--`
         ];
         
@@ -472,10 +482,25 @@ async function generatePdf(htmlContent) {
 
         const page = await browser.newPage();
         
+        // Set viewport for consistent rendering
+        await page.setViewport({ width: 1200, height: 800 });
+        
         // Set content with the beautiful HTML template
         await page.setContent(htmlContent, {
-            waitUntil: 'networkidle0'
+            waitUntil: 'networkidle0',
+            timeout: 30000
         });
+        
+        // Wait a bit for fonts and styles to load
+        await page.waitForTimeout(1000);
+        
+        // Validate that content loaded
+        const bodyContent = await page.evaluate(() => document.body.textContent);
+        if (!bodyContent || bodyContent.trim().length === 0) {
+            throw new Error('PDF generation failed - no content loaded');
+        }
+        
+        console.log(`📄 Content loaded successfully, text length: ${bodyContent.length}`);
 
         // Generate PDF with optimized settings for Hebrew content
         const pdfBuffer = await page.pdf({
@@ -487,7 +512,9 @@ async function generatePdf(htmlContent) {
                 left: '0.5in',
                 right: '0.5in'
             },
-            preferCSSPageSize: true
+            preferCSSPageSize: true,
+            displayHeaderFooter: false,
+            timeout: 30000
         });
 
         // Close browser
@@ -547,6 +574,19 @@ export default async function handler(req, res) {
         // Generate PDF
         const pdfBuffer = await generatePdf(htmlContent);
         
+        // Validate PDF buffer
+        if (!pdfBuffer || pdfBuffer.length === 0) {
+            throw new Error('PDF generation failed - empty buffer');
+        }
+        
+        // Check if PDF starts with PDF header
+        const pdfHeader = pdfBuffer.subarray(0, 4).toString();
+        if (pdfHeader !== '%PDF') {
+            throw new Error('PDF generation failed - invalid PDF header');
+        }
+        
+        console.log(`✅ PDF validation passed - size: ${pdfBuffer.length} bytes, header: ${pdfHeader}`);
+        
         // Convert buffer to base64
         const base64Pdf = pdfBuffer.toString('base64');
         
@@ -561,7 +601,11 @@ export default async function handler(req, res) {
                     message: 'Gmail API credentials not configured'
                 };
             } else {
-                const filename = `lead_${formData.firstName}_${formData.lastName}_${Date.now()}.pdf`;
+                // Use simple filename without special characters
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+                const safeName = `${formData.firstName || 'unknown'}_${formData.lastName || 'customer'}`.replace(/[^a-zA-Z0-9_]/g, '');
+                const filename = `lead_${safeName}_${timestamp}.pdf`;
+                
                 emailResult = await sendEmailWithPdf(
                     emailTo,
                     emailSubject,
@@ -573,9 +617,13 @@ export default async function handler(req, res) {
         }
         
         // Return success response
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+        const safeName = `${formData.firstName || 'unknown'}_${formData.lastName || 'customer'}`.replace(/[^a-zA-Z0-9_]/g, '');
+        const responseFilename = `lead_${safeName}_${timestamp}.pdf`;
+        
         res.status(200).json({
             success: true,
-            filename: `lead_${formData.firstName}_${formData.lastName}_${Date.now()}.pdf`,
+            filename: responseFilename,
             pdf: base64Pdf,
             size: pdfBuffer.length,
             message: 'PDF generated successfully',
