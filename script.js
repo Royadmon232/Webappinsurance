@@ -5979,8 +5979,18 @@ async function submitQuoteRequest() {
         formData.formVersion = '2.0';
         formData.source = 'ביטוח דירה - אדמון סוכנות לביטוח';
         
-        // Call the new PDF generation API endpoint
-        const response = await fetch('/api/generate-pdf', {
+        // Determine the correct endpoint based on environment
+        const isDevelopment = window.location.hostname === 'localhost' || 
+                             window.location.hostname === '127.0.0.1' || 
+                             window.location.port === '8080' ||
+                             window.location.href.includes('localhost');
+        
+        const endpoint = isDevelopment ? 'http://localhost:8080/api/generate-pdf' : '/api/generate-pdf';
+        
+        console.log('🔗 Using endpoint:', endpoint, 'isDevelopment:', isDevelopment);
+        
+        // Call the PDF generation API endpoint
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -6552,11 +6562,19 @@ function generateEmailHTML(data) {
 async function sendEmailToAgent(emailData) {
     console.log('📮 Sending email via Gmail API...', emailData);
     
-    // List of possible endpoints to try (Vercel first!)
-    const endpoints = [
-        'https://webappinsurance.vercel.app/api/send-email',  // Production Vercel (PRIMARY)
-        'http://localhost:8080/api/send-email',              // Local development fallback
-        'http://localhost:3000/api/send-email'               // Fallback endpoint
+    // Determine the correct endpoint based on environment
+    const isDevelopment = window.location.hostname === 'localhost' || 
+                         window.location.hostname === '127.0.0.1' || 
+                         window.location.port === '8080' ||
+                         window.location.href.includes('localhost');
+    
+    // List of possible endpoints to try based on environment
+    const endpoints = isDevelopment ? [
+        'http://localhost:8080/api/send-email',              // Local development (PRIMARY)
+        'https://webappinsurance.vercel.app/api/send-email'  // Vercel fallback
+    ] : [
+        'https://webappinsurance.vercel.app/api/send-email', // Production Vercel (PRIMARY)
+        'http://localhost:8080/api/send-email'               // Local fallback
     ];
     
     for (let i = 0; i < endpoints.length; i++) {
@@ -6832,9 +6850,14 @@ async function sendLeadPDFToServer(pdfBase64, formData) {
         // Generate the beautiful HTML content for email body
         const htmlContent = generateEmailHTML(formData);
         
-        // Determine the correct endpoint (Vercel or local)
-        const endpoint = window.location.hostname === 'localhost' 
-            ? '/api/generate-pdf'  // Local
+        // Determine the correct endpoint (Local or Vercel)
+        const isDevelopment = window.location.hostname === 'localhost' || 
+                             window.location.hostname === '127.0.0.1' || 
+                             window.location.port === '8080' ||
+                             window.location.href.includes('localhost');
+        
+        const endpoint = isDevelopment 
+            ? 'http://localhost:8080/api/generate-pdf'  // Local
             : 'https://webappinsurance.vercel.app/api/generate-pdf';  // Vercel
         
         const response = await fetch(endpoint, {
