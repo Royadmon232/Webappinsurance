@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const validator = require('validator');
+const puppeteer = require('puppeteer');
 require('dotenv').config();
 
 const app = express();
@@ -465,6 +466,82 @@ app.post('/api/send-email', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Failed to send email',
+            message: error.message
+        });
+    }
+});
+
+// Generate PDF from HTML content
+app.post('/api/generate-pdf', async (req, res) => {
+    try {
+        const { htmlContent, filename } = req.body;
+        
+        // Validate required fields
+        if (!htmlContent) {
+            return res.status(400).json({ 
+                error: 'Missing required fields',
+                message: 'Please provide htmlContent field' 
+            });
+        }
+
+        console.log('📄 Starting PDF generation...');
+
+        // Launch puppeteer browser
+        const browser = await puppeteer.launch({
+            headless: 'new',
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--no-first-run',
+                '--no-zygote',
+                '--single-process',
+                '--disable-gpu'
+            ]
+        });
+
+        const page = await browser.newPage();
+        
+        // Set content with the beautiful HTML template
+        await page.setContent(htmlContent, {
+            waitUntil: 'networkidle0'
+        });
+
+        // Generate PDF with optimized settings for Hebrew content
+        const pdfBuffer = await page.pdf({
+            format: 'A4',
+            printBackground: true,
+            margin: {
+                top: '0.5in',
+                bottom: '0.5in',
+                left: '0.5in',
+                right: '0.5in'
+            },
+            preferCSSPageSize: true
+        });
+
+        // Close browser
+        await browser.close();
+
+        // Convert buffer to base64
+        const base64Pdf = pdfBuffer.toString('base64');
+        
+        console.log(`✅ PDF generated successfully, size: ${pdfBuffer.length} bytes`);
+        
+        res.json({
+            success: true,
+            filename: filename || `insurance_quote_${Date.now()}.pdf`,
+            pdf: base64Pdf,
+            size: pdfBuffer.length,
+            message: 'PDF generated successfully'
+        });
+        
+    } catch (error) {
+        console.error('❌ Error generating PDF:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to generate PDF',
             message: error.message
         });
     }
