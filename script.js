@@ -5985,7 +5985,13 @@ async function submitQuoteRequest() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(formData)
+            body: JSON.stringify({
+                formData: formData,
+                sendEmail: true,
+                emailTo: 'royadmon1@gmail.com',
+                emailSubject: 'ליד חדש - בקשה להצעת ביטוח דירה',
+                filename: `lead_${formData.firstName}_${formData.lastName}_${Date.now()}.pdf`
+            })
         });
 
         const result = await response.json();
