@@ -475,7 +475,88 @@ app.post('/api/send-email', async (req, res) => {
     }
 });
 
-// Generate PDF from HTML content
+// Send email with PDF attachment - new endpoint for client-side PDF generation
+app.post('/api/send-lead-pdf', async (req, res) => {
+    try {
+        const { pdfBase64, filename, to, subject, html, replyTo } = req.body;
+        
+        // Validate required fields
+        if (!pdfBase64 || !filename || !to || !subject || !html) {
+            return res.status(400).json({ 
+                error: 'Missing required fields',
+                message: 'Please provide pdfBase64, filename, to, subject, and html fields' 
+            });
+        }
+
+        console.log('📧📄 Sending email with PDF attachment...');
+
+        // Create PDF buffer from base64
+        const pdfBuffer = Buffer.from(pdfBase64, 'base64');
+        
+        // Create multipart email message with PDF attachment
+        const boundary = `boundary_${Date.now()}`;
+        const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
+        
+        const messageParts = [
+            `From: "אדמון סוכנות לביטוח" <${process.env.GMAIL_USER || 'insurance@admon-agency.co.il'}>`,
+            `To: ${to}`,
+            `Reply-To: ${replyTo || 'noreply@admon-agency.co.il'}`,
+            `Subject: ${utf8Subject}`,
+            'MIME-Version: 1.0',
+            `Content-Type: multipart/mixed; boundary="${boundary}"`,
+            '',
+            `--${boundary}`,
+            'Content-Type: text/html; charset=utf-8',
+            'Content-Transfer-Encoding: quoted-printable',
+            '',
+            html,
+            '',
+            `--${boundary}`,
+            'Content-Type: application/pdf',
+            `Content-Disposition: attachment; filename="${filename}"`,
+            'Content-Transfer-Encoding: base64',
+            '',
+            pdfBuffer.toString('base64'),
+            `--${boundary}--`
+        ];
+        
+        const message = messageParts.join('\n');
+        
+        // Encode message in base64
+        const encodedMessage = Buffer.from(message)
+            .toString('base64')
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
+        
+        // Send email via Gmail API
+        const response = await gmail.users.messages.send({
+            userId: 'me',
+            requestBody: {
+                raw: encodedMessage
+            }
+        });
+        
+        console.log('✅ Email with PDF attachment sent successfully:', response.data.id);
+        
+        res.json({
+            success: true,
+            messageId: response.data.id,
+            message: 'Email with PDF attachment sent successfully',
+            pdfSize: pdfBuffer.length
+        });
+        
+    } catch (error) {
+        console.error('❌ Error sending email with PDF:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to send email with PDF',
+            message: error.message
+        });
+    }
+});
+
+// Generate PDF from HTML content - kept for local development
 app.post('/api/generate-pdf', async (req, res) => {
     try {
         const { htmlContent, filename } = req.body;

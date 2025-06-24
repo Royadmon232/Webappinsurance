@@ -6511,66 +6511,245 @@ async function sendEmailToAgent(emailData) {
 }
 
 /**
- * Generate PDF from the beautiful email HTML template with fallback endpoints
+ * Generate PDF using jsPDF from form data - client-side generation
  */
-async function generateQuotePDF(htmlContent, filename) {
-    console.log('📄 Generating PDF from beautiful template...');
+function generateLeadPDF(formData) {
+    console.log('📄 Generating PDF with jsPDF...');
     
-    // List of possible endpoints to try (local only - Vercel doesn't support Puppeteer)
-    const endpoints = [
-        'http://localhost:8080/api/generate-pdf',              // Local development only
-        'http://localhost:3000/api/generate-pdf'               // Local fallback
-    ];
-    
-    for (let i = 0; i < endpoints.length; i++) {
-        const endpoint = endpoints[i];
-        console.log(`📄 Trying PDF endpoint ${i + 1}/${endpoints.length}: ${endpoint}`);
+    try {
+        const { jsPDF } = window.jspdf;
         
-        try {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    htmlContent: htmlContent,
-                    filename: filename || `insurance_quote_${Date.now()}.pdf`
-                })
+        // Create PDF document in A4 format
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+        
+        // Set RTL and Hebrew support
+        doc.setLanguage('he');
+        
+        // Colors
+        const primaryColor = [0, 82, 204]; // #0052cc
+        const textColor = [51, 51, 51]; // #333
+        const grayColor = [102, 102, 102]; // #666
+        
+        let yPosition = 20;
+        const margin = 20;
+        const pageWidth = 210;
+        const contentWidth = pageWidth - (2 * margin);
+        
+        // Header
+        doc.setFillColor(...primaryColor);
+        doc.rect(0, 0, pageWidth, 40, 'F');
+        
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(22);
+        doc.setFont('helvetica', 'bold');
+        doc.text('הצעת ביטוח דירה - אדמון סוכנות לביטוח', pageWidth / 2, 20, { align: 'center' });
+        
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text('ליד חדש מהאתר', pageWidth / 2, 30, { align: 'center' });
+        
+        yPosition = 50;
+        
+        // Helper function to add section
+        const addSection = (title, items) => {
+            if (yPosition > 250) {
+                doc.addPage();
+                yPosition = 20;
+            }
+            
+            // Section title
+            doc.setTextColor(...primaryColor);
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text(title, margin, yPosition);
+            yPosition += 10;
+            
+            // Section content
+            doc.setTextColor(...textColor);
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            
+            items.forEach(item => {
+                if (yPosition > 270) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                
+                if (item.label && item.value !== undefined && item.value !== null && item.value !== '') {
+                    const text = `${item.label}: ${item.value}`;
+                    doc.text(text, margin + 5, yPosition);
+                    yPosition += 6;
+                }
             });
             
-            const result = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(result.message || `Failed to generate PDF (${response.status})`);
+            yPosition += 5;
+        };
+        
+        // Format date helper
+        const formatDate = (dateStr) => {
+            if (!dateStr) return 'לא צוין';
+            try {
+                return new Date(dateStr).toLocaleDateString('he-IL');
+            } catch {
+                return dateStr;
             }
+        };
+        
+        // Format currency helper
+        const formatCurrency = (amount) => {
+            if (!amount) return '0 ₪';
+            return new Intl.NumberFormat('he-IL').format(amount) + ' ₪';
+        };
+        
+        // Format boolean helper
+        const formatBoolean = (value) => value ? 'כן' : 'לא';
+        
+        // Personal Information
+        addSection('פרטים אישיים', [
+            { label: 'שם מלא', value: `${formData.firstName || ''} ${formData.lastName || ''}`.trim() },
+            { label: 'מספר ת.ז', value: formData.idNumber },
+            { label: 'טלפון', value: formData.phoneNumber },
+            { label: 'אימייל', value: formData.email },
+            { label: 'תאריך התחלת ביטוח', value: formatDate(formData.startDate) }
+        ]);
+        
+        // Property Information
+        addSection('פרטי הנכס', [
+            { label: 'סוג מוצר', value: formData.productType },
+            { label: 'סוג נכס', value: formData.assetType || formData.propertyType },
+            { label: 'עיר', value: formData.city },
+            { label: 'רחוב', value: formData.street },
+            { label: 'מספר בית', value: formData.houseNumber },
+            { label: 'מיקוד', value: formData.zipCode || formData.postalCode },
+            { label: 'גינה', value: formatBoolean(formData.hasGarden) }
+        ]);
+        
+        // Building Insurance
+        if (formData.building && formData.building.buildingInsuranceAmount) {
+            const buildingItems = [
+                { label: 'סכום ביטוח מבנה', value: formatCurrency(formData.building.buildingInsuranceAmount) },
+                { label: 'גיל המבנה', value: formData.building.buildingAge ? `${formData.building.buildingAge} שנים` : null },
+                { label: 'שטח', value: formData.building.buildingArea ? `${formData.building.buildingArea} מ"ר` : null },
+                { label: 'סוג בניה', value: formData.building.constructionType },
+                { label: 'סטנדרט בניה', value: formData.building.constructionStandard },
+                { label: 'משועבד/מוטב', value: formatBoolean(formData.building.mortgagedProperty) },
+                { label: 'חידושים', value: formData.building.renewals }
+            ].filter(item => item.value);
             
-            console.log(`✅ PDF generated successfully via ${endpoint}:`, result);
-            
-            // Download the PDF
-            downloadPDFFromBase64(result.pdf, result.filename);
-            
-            return result;
-            
-        } catch (error) {
-            console.warn(`❌ Failed to generate PDF via ${endpoint}:`, error.message);
-            
-            // If this is the last endpoint, handle the final failure
-            if (i === endpoints.length - 1) {
-                console.error('❌ All PDF endpoints failed');
-                
-                // Show user-friendly message about PDF failure
-                showNotification('info', 
-                    `📄 יצירת PDF זמינה רק בפיתוח מקומי<br>
-                    📧 הליד נשלח במייל בהצלחה ל-royadmon23@gmail.com!<br>
-                    כל הפרטים נמצאים במייל עם עיצוב מלא.`
-                );
-                
-                throw new Error('All PDF generation endpoints failed');
-            }
-            
-            // Continue to next endpoint
-            continue;
+            addSection('ביטוח מבנה', buildingItems);
         }
+        
+        // Contents Insurance
+        if (formData.contents && formData.contents.contentsInsuranceAmount) {
+            const contentsItems = [
+                { label: 'סכום ביטוח תכולה', value: formatCurrency(formData.contents.contentsInsuranceAmount) },
+                { label: 'תכשיטים', value: formData.contents.jewelryAmount ? formatCurrency(formData.contents.jewelryAmount) : null },
+                { label: 'שעונים', value: formData.contents.watchesAmount ? formatCurrency(formData.contents.watchesAmount) : null },
+                { label: 'מצלמות', value: formData.contents.camerasAmount ? formatCurrency(formData.contents.camerasAmount) : null },
+                { label: 'ציוד אלקטרוני', value: formData.contents.electronicsAmount ? formatCurrency(formData.contents.electronicsAmount) : null },
+                { label: 'אופניים', value: formData.contents.bicyclesAmount ? formatCurrency(formData.contents.bicyclesAmount) : null },
+                { label: 'כלי נגינה', value: formData.contents.musicalInstrumentsAmount ? formatCurrency(formData.contents.musicalInstrumentsAmount) : null }
+            ].filter(item => item.value);
+            
+            addSection('ביטוח תכולה', contentsItems);
+        }
+        
+        // Additional Coverage
+        if (formData.additionalCoverage) {
+            const additionalItems = [
+                { label: 'תכולה עסקית', value: formData.additionalCoverage.businessContentsAmount ? formatCurrency(formData.additionalCoverage.businessContentsAmount) : null },
+                { label: 'חבות מעבידים עסקית', value: formData.additionalCoverage.businessEmployers ? 'כן' : null },
+                { label: 'צד ג\' עסקי', value: formData.additionalCoverage.businessThirdParty ? 'כן' : null },
+                { label: 'צד שלישי', value: formData.additionalCoverage.thirdPartyCoverage ? 'כן' : null },
+                { label: 'חבות מעבידים', value: formData.additionalCoverage.employersLiability ? 'כן' : null },
+                { label: 'סייבר למשפחה', value: formData.additionalCoverage.cyberCoverage ? 'כן' : null },
+                { label: 'טרור', value: formData.additionalCoverage.terrorCoverage ? 'כן' : null }
+            ].filter(item => item.value);
+            
+            if (additionalItems.length > 0) {
+                addSection('כיסויים נוספים', additionalItems);
+            }
+        }
+        
+        // Footer
+        if (yPosition > 250) {
+            doc.addPage();
+            yPosition = 20;
+        }
+        
+        yPosition = Math.max(yPosition, 250);
+        doc.setTextColor(...grayColor);
+        doc.setFontSize(10);
+        doc.text('נוצר על ידי: אדמון סוכנות לביטוח', pageWidth / 2, yPosition, { align: 'center' });
+        doc.text(`תאריך יצירה: ${new Date().toLocaleDateString('he-IL')} ${new Date().toLocaleTimeString('he-IL')}`, pageWidth / 2, yPosition + 5, { align: 'center' });
+        
+        // Get PDF as base64
+        const pdfBase64 = doc.output('datauristring').split(',')[1];
+        
+        console.log('✅ PDF generated successfully with jsPDF');
+        
+        return {
+            pdfBase64: pdfBase64,
+            size: pdfBase64.length
+        };
+        
+    } catch (error) {
+        console.error('❌ Error generating PDF with jsPDF:', error);
+        throw error;
+    }
+}
+
+/**
+ * Send lead PDF to server to be emailed to agent
+ */
+async function sendLeadPDFToServer(pdfBase64, formData) {
+    console.log('📧📄 Sending PDF to server...');
+    
+    try {
+        // Generate filename based on customer data
+        const timestamp = new Date().toISOString().slice(0, 10);
+        const customerName = `${formData.firstName || ''}_${formData.lastName || ''}`.replace(/\s+/g, '_') || 'customer';
+        const filename = `ביטוח_דירה_${customerName}_${timestamp}.pdf`;
+        
+        // Generate the beautiful HTML content for email body
+        const htmlContent = generateEmailHTML(formData);
+        
+        // Determine the correct endpoint (Vercel or local)
+        const endpoint = window.location.hostname === 'localhost' 
+            ? '/api/send-lead-pdf'  // Local
+            : 'https://webappinsurance.vercel.app/api/send-lead-pdf';  // Vercel
+        
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                pdfBase64: pdfBase64,
+                filename: filename,
+                to: 'royadmon23@gmail.com',
+                subject: `🏠 ליד חדש להצעת ביטוח דירה - ${formData.firstName || ''} ${formData.lastName || ''}`,
+                html: htmlContent,
+                replyTo: formData.email || 'royadmon23@gmail.com'
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.message || `Failed to send PDF email (${response.status})`);
+        }
+        
+        console.log('✅ PDF email sent successfully:', result);
+        return result;
+        
+    } catch (error) {
+        console.error('❌ Error sending PDF to server:', error);
+        throw error;
     }
 }
 
@@ -6620,53 +6799,71 @@ async function sendEmailAndGeneratePDF(formData) {
         const customerName = `${formData.firstName || ''}_${formData.lastName || ''}`.replace(/\s+/g, '_') || 'customer';
         const filename = `ביטוח_דירה_${customerName}_${timestamp}.pdf`;
         
-        // Send email and generate PDF in parallel for better performance
-        const [emailResult, pdfResult] = await Promise.allSettled([
-            sendEmailToAgent({
-                to: 'royadmon23@gmail.com',
-                replyTo: formData.email || 'royadmon23@gmail.com',
-                subject: `🏠 בקשה חדשה להצעת ביטוח דירה - ${formData.firstName || ''} ${formData.lastName || ''}`,
-                html: htmlContent
-            }),
-            generateQuotePDF(htmlContent, filename)
-        ]);
-        
-        // Log results
-        if (emailResult.status === 'fulfilled') {
-            console.log('✅ Email sent successfully');
-        } else {
-            console.error('❌ Email failed:', emailResult.reason);
-        }
-        
-        if (pdfResult.status === 'fulfilled') {
-            console.log('✅ PDF generated and downloaded successfully');
+        try {
+            // Generate PDF using client-side jsPDF and send to server
+            const pdfResult = generateLeadPDF(formData);
+            const emailResult = await sendLeadPDFToServer(pdfResult.pdfBase64, formData);
             
-            // Show success notification with PDF info
+            // Log results
+            console.log('✅ Email with PDF sent successfully:', emailResult);
+            console.log('✅ PDF generated successfully:', pdfResult);
+            
+            // Show success notification
             showNotification('success', 
-                `הליד נשלח בהצלחה במייל וכקובץ PDF! 📧📄<br>
-                קובץ PDF: ${filename}<br>
-                נשמר בהורדות שלך`
+                `🎉 הליד נשלח בהצלחה!<br>
+                📧 נשלח מייל לסוכן עם קובץ PDF מצורף<br>
+                ✨ כל הפרטים נכללו במייל בעיצוב מלא`
             );
-        } else {
-            console.error('❌ PDF generation failed:', pdfResult.reason);
             
-            // Show partial success notification
-            showNotification('warning', 
-                `הליד נשלח בהצלחה במייל! 📧<br>
-                שגיאה ביצירת PDF: ${pdfResult.reason?.message || 'שגיאה לא ידועה'}`
-            );
-        }
-        
-        return {
-            emailSuccess: emailResult.status === 'fulfilled',
-            pdfSuccess: pdfResult.status === 'fulfilled',
-            emailResult: emailResult.status === 'fulfilled' ? emailResult.value : null,
-            pdfResult: pdfResult.status === 'fulfilled' ? pdfResult.value : null,
-            errors: {
-                email: emailResult.status === 'rejected' ? emailResult.reason : null,
-                pdf: pdfResult.status === 'rejected' ? pdfResult.reason : null
+            return {
+                emailSuccess: true,
+                pdfSuccess: true,
+                emailResult: emailResult,
+                pdfResult: pdfResult,
+                errors: {
+                    email: null,
+                    pdf: null
+                }
+            };
+            
+        } catch (pdfError) {
+            console.error('❌ PDF generation or sending failed:', pdfError);
+            
+            // Fallback: try to send just email without PDF
+            try {
+                console.log('🔄 Attempting fallback: sending email without PDF...');
+                
+                const fallbackResult = await sendEmailToAgent({
+                    to: 'royadmon23@gmail.com',
+                    replyTo: formData.email || 'royadmon23@gmail.com',
+                    subject: `🏠 ליד חדש להצעת ביטוח דירה - ${formData.firstName || ''} ${formData.lastName || ''}`,
+                    html: htmlContent
+                });
+                
+                console.log('✅ Fallback email sent successfully');
+                
+                showNotification('warning', 
+                    `📧 הליד נשלח בהצלחה במייל!<br>
+                    ⚠️ לא ניתן היה לצרף PDF, אבל כל הפרטים נמצאים במייל<br>
+                    🎨 המייל כולל עיצוב מלא עם כל הפרטים`
+                );
+                
+                return {
+                    emailSuccess: true,
+                    pdfSuccess: false,
+                    emailResult: fallbackResult,
+                    pdfResult: null,
+                    errors: {
+                        email: null,
+                        pdf: pdfError
+                    }
+                };
+                
+            } catch (fallbackError) {
+                console.error('❌ Fallback email also failed:', fallbackError);
+                throw fallbackError;
             }
-        };
+        }
         
     } catch (error) {
         console.error('❌ Error in sendEmailAndGeneratePDF:', error);
