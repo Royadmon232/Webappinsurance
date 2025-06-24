@@ -6828,8 +6828,8 @@ async function sendLeadPDFToServer(pdfBase64, formData) {
         
         // Determine the correct endpoint (Vercel or local)
         const endpoint = window.location.hostname === 'localhost' 
-            ? '/api/send-lead-pdf'  // Local
-            : 'https://webappinsurance.vercel.app/api/send-lead-pdf';  // Vercel
+            ? '/api/generate-pdf'  // Local
+            : 'https://webappinsurance.vercel.app/api/generate-pdf';  // Vercel
         
         const response = await fetch(endpoint, {
             method: 'POST',
@@ -6837,12 +6837,10 @@ async function sendLeadPDFToServer(pdfBase64, formData) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                pdfBase64: pdfBase64,
-                filename: filename,
-                to: 'royadmon23@gmail.com',
-                subject: `🏠 ליד חדש להצעת ביטוח דירה - ${formData.firstName || ''} ${formData.lastName || ''}`,
-                html: htmlContent,
-                replyTo: formData.email || 'royadmon23@gmail.com'
+                formData: formData,
+                sendEmail: true,
+                emailTo: 'royadmon23@gmail.com',
+                emailSubject: `🏠 ליד חדש להצעת ביטוח דירה - ${formData.firstName || ''} ${formData.lastName || ''}`
             })
         });
         
