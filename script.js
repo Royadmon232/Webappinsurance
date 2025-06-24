@@ -6039,8 +6039,8 @@ async function submitQuoteRequest() {
  * Collect complete form data from all steps
  */
 function collectFullFormData() {
-    // Start with basic form data
-    const formData = collectFormData();
+    // Collect all basic fields directly with correct IDs
+    const formData = {};
     
     // Add phone number if verified
     const phoneNumber = document.getElementById('phone-number');
@@ -6048,19 +6048,27 @@ function collectFullFormData() {
         formData.phoneNumber = phoneNumber.value;
     }
     
-    // Ensure all basic fields are included with correct IDs (matching HTML)
+    // Collect all basic fields with correct IDs (matching HTML)
+    console.log('🔍 Checking DOM elements:');
+    console.log('- first-name element:', document.getElementById('first-name'));
+    console.log('- street element:', document.getElementById('street'));
+    console.log('- city-autocomplete element:', document.getElementById('city-autocomplete'));
+    console.log('- houseNumber element:', document.getElementById('houseNumber'));
+    console.log('- postalCode element:', document.getElementById('postalCode'));
+    console.log('- garden-checkbox element:', document.getElementById('garden-checkbox'));
+    
     formData.firstName = document.getElementById('first-name')?.value || '';
     formData.lastName = document.getElementById('last-name')?.value || '';
     formData.email = document.getElementById('email')?.value || '';
-    formData.idNumber = document.getElementById('id-number')?.value || '';
-    formData.startDate = document.getElementById('start-date')?.value || '';
-    formData.productType = document.getElementById('product-type')?.value || '';
-    formData.propertyType = document.getElementById('property-type')?.value || '';
+    formData.idNumber = document.getElementById('idNumber')?.value || '';
+    formData.startDate = document.getElementById('startDate')?.value || '';
+    formData.productType = document.getElementById('productType')?.value || '';
+    formData.propertyType = document.getElementById('propertyType')?.value || '';
     formData.city = document.getElementById('city-autocomplete')?.value || document.getElementById('city')?.value || '';
     formData.street = document.getElementById('street')?.value || '';
-    formData.houseNumber = document.getElementById('house-number')?.value || '';
-    formData.postalCode = document.getElementById('postal-code')?.value || '';
-    formData.hasGarden = document.getElementById('has-garden')?.checked || false;
+    formData.houseNumber = document.getElementById('houseNumber')?.value || '';
+    formData.postalCode = document.getElementById('postalCode')?.value || '';
+    formData.hasGarden = document.getElementById('garden-checkbox')?.checked || false;
     
     // Add building/structure data - with all fields
     const buildingData = {
@@ -6151,6 +6159,15 @@ function collectFullFormData() {
     };
     
     console.log('🔍 collectFullFormData result:', finalData);
+    console.log('🔍 Basic form data:', {
+        firstName: finalData.firstName,
+        lastName: finalData.lastName,
+        email: finalData.email,
+        idNumber: finalData.idNumber,
+        startDate: finalData.startDate,
+        productType: finalData.productType,
+        propertyType: finalData.propertyType
+    });
     console.log('🔍 Address data:', {
         street: finalData.street,
         houseNumber: finalData.houseNumber,
@@ -7225,3 +7242,35 @@ document.addEventListener('DOMContentLoaded', () => {
     showSuccessSectionAlways();
 });
 // ... existing code ...
+
+// Debug function - can be called from browser console
+function debugFormCollection() {
+    console.log("🧪 DEBUG: Testing form data collection...");
+    
+    // Test if elements exist
+    const elements = {
+        "first-name": document.getElementById("first-name"),
+        "last-name": document.getElementById("last-name"),
+        "email": document.getElementById("email"),
+        "street": document.getElementById("street"),
+        "city-autocomplete": document.getElementById("city-autocomplete"),
+        "houseNumber": document.getElementById("houseNumber"),
+        "postalCode": document.getElementById("postalCode"),
+        "garden-checkbox": document.getElementById("garden-checkbox")
+    };
+    
+    console.log("🔍 DOM Elements:", elements);
+    
+    // Test collectFullFormData function
+    try {
+        const formData = collectFullFormData();
+        console.log("✅ Form data collected successfully:", formData);
+        return formData;
+    } catch (error) {
+        console.error("❌ Error collecting form data:", error);
+        return null;
+    }
+}
+
+// Make it globally available
+window.debugFormCollection = debugFormCollection;
