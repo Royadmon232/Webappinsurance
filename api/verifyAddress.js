@@ -213,16 +213,6 @@ const calculateSimilarity = (str1, str2) => {
 
 // Helper function to check if two Hebrew words are similar
 const areWordsSimilar = (word1, word2) => {
-    // Safety check: if words are very different in length, they're probably not the same
-    if (Math.abs(word1.length - word2.length) > 3) {
-        return false;
-    }
-    
-    // Safety check: if words are too short, be more strict
-    if (word1.length < 3 || word2.length < 3) {
-        return word1 === word2;
-    }
-    
     // Handle common Hebrew variations
     const variations = [
         // י/ה endings
@@ -246,71 +236,16 @@ const areWordsSimilar = (word1, word2) => {
         [word1, word2.replace(/ביצ/g, 'בי')],
         [word1.replace(/בי/g, 'ביצ'), word2],
         [word1, word2.replace(/בי/g, 'ביצ')],
-        // Handle צ/ץ variations (final forms)
+        // Handle צ/ץ variations
         [word1.replace(/צ/g, 'ץ'), word2],
         [word1, word2.replace(/צ/g, 'ץ')],
         [word1.replace(/ץ/g, 'צ'), word2],
         [word1, word2.replace(/ץ/g, 'צ')],
-        // Handle כ/ך variations (final forms)
-        [word1.replace(/כ/g, 'ך'), word2],
-        [word1, word2.replace(/כ/g, 'ך')],
-        [word1.replace(/ך/g, 'כ'), word2],
-        [word1, word2.replace(/ך/g, 'כ')],
-        // Handle מ/ם variations (final forms)
-        [word1.replace(/מ/g, 'ם'), word2],
-        [word1, word2.replace(/מ/g, 'ם')],
-        [word1.replace(/ם/g, 'מ'), word2],
-        [word1, word2.replace(/ם/g, 'מ')],
-        // Handle נ/ן variations (final forms)
-        [word1.replace(/נ/g, 'ן'), word2],
-        [word1, word2.replace(/נ/g, 'ן')],
-        [word1.replace(/ן/g, 'נ'), word2],
-        [word1, word2.replace(/ן/g, 'נ')],
-        // Handle פ/ף variations (final forms)
-        [word1.replace(/פ/g, 'ף'), word2],
-        [word1, word2.replace(/פ/g, 'ף')],
-        [word1.replace(/ף/g, 'פ'), word2],
-        [word1, word2.replace(/ף/g, 'פ')],
         // Handle ו/וו variations (double vav)
         [word1.replace(/וו/g, 'ו'), word2],
         [word1, word2.replace(/וו/g, 'ו')],
         [word1.replace(/ו/g, 'וו'), word2],
-        [word1, word2.replace(/ו/g, 'וו')],
-        // Handle common spelling variations in names
-        // Like אברהם vs אברם, יהושע vs יהושוע
-        [word1.replace(/אברהם/g, 'אברם'), word2],
-        [word1, word2.replace(/אברהם/g, 'אברם')],
-        [word1.replace(/אברם/g, 'אברהם'), word2],
-        [word1, word2.replace(/אברם/g, 'אברהם')],
-        [word1.replace(/יהושע/g, 'יהושוע'), word2],
-        [word1, word2.replace(/יהושע/g, 'יהושוע')],
-        [word1.replace(/יהושוע/g, 'יהושע'), word2],
-        [word1, word2.replace(/יהושוע/g, 'יהושע')],
-        // Handle ח/כ confusion (common in transliteration)
-        [word1.replace(/ח/g, 'כ'), word2],
-        [word1, word2.replace(/ח/g, 'כ')],
-        [word1.replace(/כ/g, 'ח'), word2],
-        [word1, word2.replace(/כ/g, 'ח')],
-        // Handle ב/ו confusion in some names (but only for specific patterns)
-        [word1.replace(/ביצ/g, 'ויצ'), word2],
-        [word1, word2.replace(/ביצ/g, 'ויצ')],
-        [word1.replace(/ויצ/g, 'ביצ'), word2],
-        [word1, word2.replace(/ויצ/g, 'ביצ')],
-        // Handle ט/ת confusion (common in names)
-        [word1.replace(/ט/g, 'ת'), word2],
-        [word1, word2.replace(/ט/g, 'ת')],
-        [word1.replace(/ת/g, 'ט'), word2],
-        [word1, word2.replace(/ת/g, 'ט')],
-        // Handle ק/כ confusion (common in names)
-        [word1.replace(/ק/g, 'כ'), word2],
-        [word1, word2.replace(/ק/g, 'כ')],
-        [word1.replace(/כ/g, 'ק'), word2],
-        [word1, word2.replace(/כ/g, 'ק')],
-        // Handle ש/ס confusion (common in names)
-        [word1.replace(/ש/g, 'ס'), word2],
-        [word1, word2.replace(/ש/g, 'ס')],
-        [word1.replace(/ס/g, 'ש'), word2],
-        [word1, word2.replace(/ס/g, 'ש')]
+        [word1, word2.replace(/ו/g, 'וו')]
     ];
     
     for (const [v1, v2] of variations) {
@@ -318,10 +253,9 @@ const areWordsSimilar = (word1, word2) => {
     }
     
     // Additional check: calculate character-level similarity for close matches
-    // Only for words that are reasonably long and close in length
-    if (word1.length >= 4 && word2.length >= 4 && Math.abs(word1.length - word2.length) <= 2) {
+    if (Math.abs(word1.length - word2.length) <= 2) {
         const similarity = calculateCharacterSimilarity(word1, word2);
-        if (similarity >= 0.75) return true; // Lowered threshold as requested
+        if (similarity >= 0.8) return true;
     }
     
     return false;
