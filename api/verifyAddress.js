@@ -108,21 +108,24 @@ export default async function handler(req, res) {
         const SIMILARITY_THRESHOLD = 0.7; // 70% similarity required
         const HOUSE_SIMILARITY_THRESHOLD = 0.8; // 80% similarity required for house numbers
         
+        // If Google found the exact location (ROOFTOP), be more lenient with street name matching
+        // This handles cases where Google finds the exact address but with slight name variations
+        const LENIENT_STREET_THRESHOLD = isPreciseLocation ? 0.5 : SIMILARITY_THRESHOLD;
+        
         const cityMatches = citySimilarity >= SIMILARITY_THRESHOLD;
-        const streetMatches = streetSimilarity >= SIMILARITY_THRESHOLD;
+        const streetMatches = streetSimilarity >= LENIENT_STREET_THRESHOLD;
         
         // STRICT: House number must be found by Google AND match the user's input
         const houseMatches = streetNumberComponent && houseSimilarity >= HOUSE_SIMILARITY_THRESHOLD;
         
-        // SIMPLE LOGIC: If Google found the exact location (ROOFTOP), trust it!
-        // This overrides the complex similarity checks
-        const isValidAddress = isPreciseLocation ? true : (cityMatches && streetMatches && houseMatches);
+        const isValidAddress = cityMatches && streetMatches && houseMatches;
         
         console.log(`[API] Similarity scores - City: ${citySimilarity}, Street: ${streetSimilarity}, House: ${houseSimilarity}`);
+        console.log(`[API] Street comparison: User="${street}" vs Google="${streetComponent?.long_name || 'NOT FOUND'}"`);
+        console.log(`[API] Street threshold: ${LENIENT_STREET_THRESHOLD} (lenient due to ROOFTOP: ${isPreciseLocation})`);
         console.log(`[API] Google returned house number:`, streetNumberComponent?.long_name || 'NOT FOUND');
         console.log(`[API] User entered house number:`, house);
         console.log(`[API] House matches: ${houseMatches} (requires Google to find the exact house number)`);
-        console.log(`[API] ROOFTOP validation: ${isPreciseLocation ? 'TRUSTED - Google found exact location' : 'Not precise, using similarity checks'}`);
         console.log(`[API] Address valid: ${isValidAddress}`);
 
         return res.status(200).json({
@@ -149,8 +152,7 @@ export default async function handler(req, res) {
                 preciseLocation: isPreciseLocation
             },
             ...((!isValidAddress) && {
-                reason: isPreciseLocation ? 'Address validated by Google precise location' :
-                        !cityMatches ? 'City does not match' : 
+                reason: !cityMatches ? 'City does not match' : 
                         !streetMatches ? 'Street does not match' : 
                         !houseMatches ? (streetNumberComponent ? 'House number does not match' : 'House number not found by Google') : 
                         'Unknown validation error'
@@ -219,37 +221,89 @@ const calculateSimilarity = (str1, str2) => {
 const areWordsSimilar = (word1, word2) => {
     // Handle common Hebrew variations
     const variations = [
-        // י/ה endings
+        // Basic comparison
         [word1, word2],
+        
+        // י/ה endings
         [word1 + 'ה', word2],
         [word1, word2 + 'ה'],
         [word1 + 'י', word2],
         [word1, word2 + 'י'],
         [word1.replace(/ה$/, ''), word2.replace(/ה$/, '')],
         [word1.replace(/י$/, ''), word2.replace(/י$/, '')],
+        
         // Common letter substitutions
         [word1.replace(/י/g, 'ו'), word2],
         [word1, word2.replace(/י/g, 'ו')],
         [word1.replace(/ו/g, 'י'), word2],
         [word1, word2.replace(/ו/g, 'י')],
-        // Common name variations like פינחס vs פנחס
-        [word1.replace(/ינ/g, 'נ'), word2],
-        [word1, word2.replace(/ינ/g, 'נ')],
-        // Handle ביצ/בי variations (like שדרוביצקי vs שדרובצקי)
-        [word1.replace(/ביצ/g, 'בי'), word2],
-        [word1, word2.replace(/ביצ/g, 'בי')],
-        [word1.replace(/בי/g, 'ביצ'), word2],
-        [word1, word2.replace(/בי/g, 'ביצ')],
-        // Handle צ/ץ variations
+        
+        // צ/ץ variations (final forms)
         [word1.replace(/צ/g, 'ץ'), word2],
         [word1, word2.replace(/צ/g, 'ץ')],
         [word1.replace(/ץ/g, 'צ'), word2],
         [word1, word2.replace(/ץ/g, 'צ')],
-        // Handle ו/וו variations (double vav)
+        
+        // כ/ך variations (final forms)
+        [word1.replace(/כ/g, 'ך'), word2],
+        [word1, word2.replace(/כ/g, 'ך')],
+        [word1.replace(/ך/g, 'כ'), word2],
+        [word1, word2.replace(/ך/g, 'כ')],
+        
+        // מ/ם variations (final forms)
+        [word1.replace(/מ/g, 'ם'), word2],
+        [word1, word2.replace(/מ/g, 'ם')],
+        [word1.replace(/ם/g, 'מ'), word2],
+        [word1, word2.replace(/ם/g, 'מ')],
+        
+        // נ/ן variations (final forms)
+        [word1.replace(/נ/g, 'ן'), word2],
+        [word1, word2.replace(/נ/g, 'ן')],
+        [word1.replace(/ן/g, 'נ'), word2],
+        [word1, word2.replace(/ן/g, 'נ')],
+        
+        // פ/ף variations (final forms)
+        [word1.replace(/פ/g, 'ף'), word2],
+        [word1, word2.replace(/פ/g, 'ף')],
+        [word1.replace(/ף/g, 'פ'), word2],
+        [word1, word2.replace(/ף/g, 'פ')],
+        
+        // Common name variations
+        [word1.replace(/ינ/g, 'נ'), word2],
+        [word1, word2.replace(/ינ/g, 'נ')],
+        
+        // Specific street name variations found in Israel
+        // שדרוביצקי variations
+        [word1.replace(/ביצק/g, 'בוצק'), word2],
+        [word1, word2.replace(/ביצק/g, 'בוצק')],
+        [word1.replace(/בוצק/g, 'ביצק'), word2],
+        [word1, word2.replace(/בוצק/g, 'ביצק')],
+        [word1.replace(/ביצ/g, 'בו'), word2],
+        [word1, word2.replace(/ביצ/g, 'בו')],
+        [word1.replace(/בו/g, 'ביצ'), word2],
+        [word1, word2.replace(/בו/g, 'ביצ')],
+        
+        // Double letters variations
         [word1.replace(/וו/g, 'ו'), word2],
         [word1, word2.replace(/וו/g, 'ו')],
         [word1.replace(/ו/g, 'וו'), word2],
-        [word1, word2.replace(/ו/g, 'וו')]
+        [word1, word2.replace(/ו/g, 'וו')],
+        [word1.replace(/לל/g, 'ל'), word2],
+        [word1, word2.replace(/לל/g, 'ל')],
+        [word1.replace(/ל/g, 'לל'), word2],
+        [word1, word2.replace(/ל/g, 'לל')],
+        
+        // Common abbreviations and full forms
+        [word1.replace(/בן /g, 'בן־'), word2],
+        [word1, word2.replace(/בן /g, 'בן־')],
+        [word1.replace(/בן־/g, 'בן '), word2],
+        [word1, word2.replace(/בן־/g, 'בן ')],
+        
+        // ש vs שר variations
+        [word1.replace(/^ש /g, 'שר '), word2],
+        [word1, word2.replace(/^ש /g, 'שר ')],
+        [word1.replace(/^שר /g, 'ש '), word2],
+        [word1, word2.replace(/^שר /g, 'ש ')]
     ];
     
     for (const [v1, v2] of variations) {
@@ -257,9 +311,9 @@ const areWordsSimilar = (word1, word2) => {
     }
     
     // Additional check: calculate character-level similarity for close matches
-    if (Math.abs(word1.length - word2.length) <= 2) {
+    if (Math.abs(word1.length - word2.length) <= 3) {
         const similarity = calculateCharacterSimilarity(word1, word2);
-        if (similarity >= 0.8) return true;
+        if (similarity >= 0.75) return true; // Lowered threshold slightly
     }
     
     return false;
