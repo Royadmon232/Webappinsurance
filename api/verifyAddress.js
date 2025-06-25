@@ -114,12 +114,15 @@ export default async function handler(req, res) {
         // STRICT: House number must be found by Google AND match the user's input
         const houseMatches = streetNumberComponent && houseSimilarity >= HOUSE_SIMILARITY_THRESHOLD;
         
-        const isValidAddress = cityMatches && streetMatches && houseMatches;
+        // SIMPLE LOGIC: If Google found the exact location (ROOFTOP), trust it!
+        // This overrides the complex similarity checks
+        const isValidAddress = isPreciseLocation ? true : (cityMatches && streetMatches && houseMatches);
         
         console.log(`[API] Similarity scores - City: ${citySimilarity}, Street: ${streetSimilarity}, House: ${houseSimilarity}`);
         console.log(`[API] Google returned house number:`, streetNumberComponent?.long_name || 'NOT FOUND');
         console.log(`[API] User entered house number:`, house);
         console.log(`[API] House matches: ${houseMatches} (requires Google to find the exact house number)`);
+        console.log(`[API] ROOFTOP validation: ${isPreciseLocation ? 'TRUSTED - Google found exact location' : 'Not precise, using similarity checks'}`);
         console.log(`[API] Address valid: ${isValidAddress}`);
 
         return res.status(200).json({
@@ -146,7 +149,8 @@ export default async function handler(req, res) {
                 preciseLocation: isPreciseLocation
             },
             ...((!isValidAddress) && {
-                reason: !cityMatches ? 'City does not match' : 
+                reason: isPreciseLocation ? 'Address validated by Google precise location' :
+                        !cityMatches ? 'City does not match' : 
                         !streetMatches ? 'Street does not match' : 
                         !houseMatches ? (streetNumberComponent ? 'House number does not match' : 'House number not found by Google') : 
                         'Unknown validation error'
