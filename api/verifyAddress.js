@@ -53,21 +53,9 @@ export default async function handler(req, res) {
         // Check if this is a precise address (not interpolated)
         const locationType = result.geometry.location_type;
         const isPreciseLocation = locationType === 'ROOFTOP';
-        const isAcceptableLocation = isPreciseLocation || locationType === 'RANGE_INTERPOLATED';
+        const isAcceptableLocation = locationType === 'ROOFTOP' || locationType === 'RANGE_INTERPOLATED';
         
-        console.log(`[API] Location precision: ${locationType} (${isPreciseLocation ? 'PRECISE' : isAcceptableLocation ? 'ACCEPTABLE' : 'ESTIMATED/INTERPOLATED'})`);
-        
-        // For house number validation, we accept ROOFTOP or RANGE_INTERPOLATED
-        if (!isAcceptableLocation && locationType !== 'GEOMETRIC_CENTER') {
-            console.log('[API] Rejecting address: Google returned location type that is too imprecise');
-            return res.status(200).json({
-                valid: false,
-                address: result.formatted_address,
-                error: 'Address not found with sufficient precision',
-                locationType: locationType,
-                reason: 'Google could not find the address with acceptable precision'
-            });
-        }
+        console.log(`[API] Location precision: ${locationType} (${isPreciseLocation ? 'PRECISE' : isAcceptableLocation ? 'ACCEPTABLE' : 'ESTIMATED'})`);
         
         // Extract components to verify they match user input
         const cityComponent = result.address_components.find(c => 
@@ -86,7 +74,7 @@ export default async function handler(req, res) {
         const citySimilarity = cityComponent ? calculateSimilarity(city, cityComponent.long_name) : 0;
         const streetSimilarity = streetComponent ? calculateSimilarity(street, streetComponent.long_name) : 0;
         
-        // More sophisticated house number matching with better tolerance
+        // More sophisticated house number matching
         let houseSimilarity = 0;
         if (streetNumberComponent) {
             const googleHouseNumber = streetNumberComponent.long_name;
@@ -96,44 +84,63 @@ export default async function handler(req, res) {
             if (googleHouseNumber === userHouseNumber) {
                 houseSimilarity = 1;
             }
-            // Match numbers, ignoring Hebrew letters and extra characters
+            // Match numbers, ignoring Hebrew letters (e.g., "6" matches "6א")
             else {
-                const googleNum = googleHouseNumber.replace(/[א-ת\s\-\/]/g, '');
-                const userNum = userHouseNumber.replace(/[א-ת\s\-\/]/g, '');
+                const googleNum = googleHouseNumber.replace(/[א-ת]/g, '');
+                const userNum = userHouseNumber.replace(/[א-ת]/g, '');
                 if (googleNum === userNum && googleNum.length > 0) {
                     houseSimilarity = 0.9; // Very high but not perfect if letters differ
-                }
-                // Check if user number is contained in Google number (e.g., "23" in "23א")
-                else if (googleNum.includes(userNum) || userNum.includes(googleNum)) {
-                    houseSimilarity = 0.85;
                 }
             }
         }
         
-        // Adjust thresholds based on location type
-        const CITY_SIMILARITY_THRESHOLD = isPreciseLocation ? 0.65 : 0.6; // Slightly lower for less precise locations
-        const STREET_SIMILARITY_THRESHOLD = isPreciseLocation ? 0.65 : 0.6;
-        const HOUSE_SIMILARITY_THRESHOLD = isPreciseLocation ? 0.75 : 0.7; // Lower threshold for interpolated addresses
+        const SIMILARITY_THRESHOLD = 0.7; // 70% similarity required
+        const HIGH_SIMILARITY_THRESHOLD = 0.85; // 85% similarity for high confidence
         
-        const cityMatches = citySimilarity >= CITY_SIMILARITY_THRESHOLD;
-        const streetMatches = streetSimilarity >= STREET_SIMILARITY_THRESHOLD;
+        const cityMatches = citySimilarity >= SIMILARITY_THRESHOLD;
+        const streetMatches = streetSimilarity >= SIMILARITY_THRESHOLD;
+        const cityStreetHighMatch = citySimilarity >= HIGH_SIMILARITY_THRESHOLD && streetSimilarity >= HIGH_SIMILARITY_THRESHOLD;
         
-        // For GEOMETRIC_CENTER (city center), we don't require house number match
-        let houseMatches;
-        if (locationType === 'GEOMETRIC_CENTER') {
-            houseMatches = true; // Accept addresses that point to city center
-            console.log('[API] Accepting city center location - house number validation skipped');
+        // Enhanced house matching logic
+        let houseMatches = false;
+        
+        if (isPreciseLocation) {
+            // ROOFTOP location - require house number match if found, or accept if city+street are excellent
+            if (streetNumberComponent) {
+                houseMatches = houseSimilarity >= 0.7; // Slightly more lenient for ROOFTOP
+            } else {
+                // No house number found by Google, but ROOFTOP location with excellent city+street match
+                houseMatches = cityStreetHighMatch;
+            }
+        } else if (isAcceptableLocation) {
+            // RANGE_INTERPOLATED - more lenient, require very good city+street match
+            if (cityStreetHighMatch) {
+                if (streetNumberComponent) {
+                    houseMatches = houseSimilarity >= 0.6; // More lenient for interpolated
+                } else {
+                    // Accept if city and street match very well, even without house number
+                    houseMatches = true;
+                }
+            }
         } else {
-            // For other location types, house number must be found and match
-            houseMatches = streetNumberComponent && houseSimilarity >= HOUSE_SIMILARITY_THRESHOLD;
+            // Other location types (GEOMETRIC_CENTER, APPROXIMATE) - reject
+            console.log('[API] Rejecting address: Google returned low-precision location type:', locationType);
+            return res.status(200).json({
+                valid: false,
+                address: result.formatted_address,
+                error: 'Address not found with sufficient precision',
+                locationType: locationType,
+                reason: 'Google could not provide adequate location precision'
+            });
         }
         
         const isValidAddress = cityMatches && streetMatches && houseMatches;
         
-        console.log(`[API] Similarity scores - City: ${citySimilarity} (req: ${CITY_SIMILARITY_THRESHOLD}), Street: ${streetSimilarity} (req: ${STREET_SIMILARITY_THRESHOLD}), House: ${houseSimilarity} (req: ${HOUSE_SIMILARITY_THRESHOLD})`);
+        console.log(`[API] Similarity scores - City: ${citySimilarity}, Street: ${streetSimilarity}, House: ${houseSimilarity}`);
         console.log(`[API] Google returned house number:`, streetNumberComponent?.long_name || 'NOT FOUND');
         console.log(`[API] User entered house number:`, house);
-        console.log(`[API] House matches: ${houseMatches}`);
+        console.log(`[API] City+Street high match: ${cityStreetHighMatch} (both >= 85%)`);
+        console.log(`[API] House matches: ${houseMatches} (using enhanced logic)`);
         console.log(`[API] Address valid: ${isValidAddress}`);
 
         return res.status(200).json({
@@ -154,6 +161,7 @@ export default async function handler(req, res) {
                 cityMatches: cityMatches,
                 streetMatches: streetMatches,
                 houseMatches: houseMatches,
+                cityStreetHighMatch: cityStreetHighMatch,
                 houseNumberFound: !!streetNumberComponent,
                 userHouseNumber: house,
                 googleHouseNumber: streetNumberComponent?.long_name || null,
@@ -163,7 +171,12 @@ export default async function handler(req, res) {
             ...((!isValidAddress) && {
                 reason: !cityMatches ? 'City does not match' : 
                         !streetMatches ? 'Street does not match' : 
-                        !houseMatches ? (streetNumberComponent ? 'House number does not match' : 'House number not found by Google') : 
+                        !houseMatches ? (
+                            !isAcceptableLocation ? 'Location precision insufficient' :
+                            !cityStreetHighMatch ? 'City and street match not strong enough' :
+                            streetNumberComponent ? 'House number does not match sufficiently' : 
+                            'Address validation failed'
+                        ) : 
                         'Unknown validation error'
             })
         });
