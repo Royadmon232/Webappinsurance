@@ -53,9 +53,20 @@ export default async function handler(req, res) {
         // Check if this is a precise address (not interpolated)
         const locationType = result.geometry.location_type;
         const isPreciseLocation = locationType === 'ROOFTOP';
-        const isAcceptableLocation = locationType === 'ROOFTOP' || locationType === 'RANGE_INTERPOLATED';
         
-        console.log(`[API] Location precision: ${locationType} (${isPreciseLocation ? 'PRECISE' : isAcceptableLocation ? 'ACCEPTABLE' : 'ESTIMATED'})`);
+        console.log(`[API] Location precision: ${locationType} (${isPreciseLocation ? 'PRECISE' : 'ESTIMATED/INTERPOLATED'})`);
+        
+        // For house number validation, we need precise location data
+        if (!isPreciseLocation) {
+            console.log('[API] Rejecting address: Google returned interpolated/estimated location, not precise address');
+            return res.status(200).json({
+                valid: false,
+                address: result.formatted_address,
+                error: 'Address not found with sufficient precision',
+                locationType: locationType,
+                reason: 'Google could not find the exact house number - it may not exist'
+            });
+        }
         
         // Extract components to verify they match user input
         const cityComponent = result.address_components.find(c => 
@@ -95,52 +106,20 @@ export default async function handler(req, res) {
         }
         
         const SIMILARITY_THRESHOLD = 0.7; // 70% similarity required
-        const HIGH_SIMILARITY_THRESHOLD = 0.85; // 85% similarity for high confidence
+        const HOUSE_SIMILARITY_THRESHOLD = 0.8; // 80% similarity required for house numbers
         
         const cityMatches = citySimilarity >= SIMILARITY_THRESHOLD;
         const streetMatches = streetSimilarity >= SIMILARITY_THRESHOLD;
-        const cityStreetHighMatch = citySimilarity >= HIGH_SIMILARITY_THRESHOLD && streetSimilarity >= HIGH_SIMILARITY_THRESHOLD;
         
-        // Enhanced house matching logic
-        let houseMatches = false;
-        
-        if (isPreciseLocation) {
-            // ROOFTOP location - require house number match if found, or accept if city+street are excellent
-            if (streetNumberComponent) {
-                houseMatches = houseSimilarity >= 0.7; // Slightly more lenient for ROOFTOP
-            } else {
-                // No house number found by Google, but ROOFTOP location with excellent city+street match
-                houseMatches = cityStreetHighMatch;
-            }
-        } else if (isAcceptableLocation) {
-            // RANGE_INTERPOLATED - more lenient, require very good city+street match
-            if (cityStreetHighMatch) {
-                if (streetNumberComponent) {
-                    houseMatches = houseSimilarity >= 0.6; // More lenient for interpolated
-                } else {
-                    // Accept if city and street match very well, even without house number
-                    houseMatches = true;
-                }
-            }
-        } else {
-            // Other location types (GEOMETRIC_CENTER, APPROXIMATE) - reject
-            console.log('[API] Rejecting address: Google returned low-precision location type:', locationType);
-            return res.status(200).json({
-                valid: false,
-                address: result.formatted_address,
-                error: 'Address not found with sufficient precision',
-                locationType: locationType,
-                reason: 'Google could not provide adequate location precision'
-            });
-        }
+        // STRICT: House number must be found by Google AND match the user's input
+        const houseMatches = streetNumberComponent && houseSimilarity >= HOUSE_SIMILARITY_THRESHOLD;
         
         const isValidAddress = cityMatches && streetMatches && houseMatches;
         
         console.log(`[API] Similarity scores - City: ${citySimilarity}, Street: ${streetSimilarity}, House: ${houseSimilarity}`);
         console.log(`[API] Google returned house number:`, streetNumberComponent?.long_name || 'NOT FOUND');
         console.log(`[API] User entered house number:`, house);
-        console.log(`[API] City+Street high match: ${cityStreetHighMatch} (both >= 85%)`);
-        console.log(`[API] House matches: ${houseMatches} (using enhanced logic)`);
+        console.log(`[API] House matches: ${houseMatches} (requires Google to find the exact house number)`);
         console.log(`[API] Address valid: ${isValidAddress}`);
 
         return res.status(200).json({
@@ -161,22 +140,15 @@ export default async function handler(req, res) {
                 cityMatches: cityMatches,
                 streetMatches: streetMatches,
                 houseMatches: houseMatches,
-                cityStreetHighMatch: cityStreetHighMatch,
                 houseNumberFound: !!streetNumberComponent,
                 userHouseNumber: house,
                 googleHouseNumber: streetNumberComponent?.long_name || null,
-                preciseLocation: isPreciseLocation,
-                acceptableLocation: isAcceptableLocation
+                preciseLocation: isPreciseLocation
             },
             ...((!isValidAddress) && {
                 reason: !cityMatches ? 'City does not match' : 
                         !streetMatches ? 'Street does not match' : 
-                        !houseMatches ? (
-                            !isAcceptableLocation ? 'Location precision insufficient' :
-                            !cityStreetHighMatch ? 'City and street match not strong enough' :
-                            streetNumberComponent ? 'House number does not match sufficiently' : 
-                            'Address validation failed'
-                        ) : 
+                        !houseMatches ? (streetNumberComponent ? 'House number does not match' : 'House number not found by Google') : 
                         'Unknown validation error'
             })
         });
@@ -241,6 +213,16 @@ const calculateSimilarity = (str1, str2) => {
 
 // Helper function to check if two Hebrew words are similar
 const areWordsSimilar = (word1, word2) => {
+    // Safety check: if words are very different in length, they're probably not the same
+    if (Math.abs(word1.length - word2.length) > 3) {
+        return false;
+    }
+    
+    // Safety check: if words are too short, be more strict
+    if (word1.length < 3 || word2.length < 3) {
+        return word1 === word2;
+    }
+    
     // Handle common Hebrew variations
     const variations = [
         // י/ה endings
@@ -258,12 +240,109 @@ const areWordsSimilar = (word1, word2) => {
         [word1, word2.replace(/ו/g, 'י')],
         // Common name variations like פינחס vs פנחס
         [word1.replace(/ינ/g, 'נ'), word2],
-        [word1, word2.replace(/ינ/g, 'נ')]
+        [word1, word2.replace(/ינ/g, 'נ')],
+        // Handle ביצ/בי variations (like שדרוביצקי vs שדרובצקי)
+        [word1.replace(/ביצ/g, 'בי'), word2],
+        [word1, word2.replace(/ביצ/g, 'בי')],
+        [word1.replace(/בי/g, 'ביצ'), word2],
+        [word1, word2.replace(/בי/g, 'ביצ')],
+        // Handle צ/ץ variations (final forms)
+        [word1.replace(/צ/g, 'ץ'), word2],
+        [word1, word2.replace(/צ/g, 'ץ')],
+        [word1.replace(/ץ/g, 'צ'), word2],
+        [word1, word2.replace(/ץ/g, 'צ')],
+        // Handle כ/ך variations (final forms)
+        [word1.replace(/כ/g, 'ך'), word2],
+        [word1, word2.replace(/כ/g, 'ך')],
+        [word1.replace(/ך/g, 'כ'), word2],
+        [word1, word2.replace(/ך/g, 'כ')],
+        // Handle מ/ם variations (final forms)
+        [word1.replace(/מ/g, 'ם'), word2],
+        [word1, word2.replace(/מ/g, 'ם')],
+        [word1.replace(/ם/g, 'מ'), word2],
+        [word1, word2.replace(/ם/g, 'מ')],
+        // Handle נ/ן variations (final forms)
+        [word1.replace(/נ/g, 'ן'), word2],
+        [word1, word2.replace(/נ/g, 'ן')],
+        [word1.replace(/ן/g, 'נ'), word2],
+        [word1, word2.replace(/ן/g, 'נ')],
+        // Handle פ/ף variations (final forms)
+        [word1.replace(/פ/g, 'ף'), word2],
+        [word1, word2.replace(/פ/g, 'ף')],
+        [word1.replace(/ף/g, 'פ'), word2],
+        [word1, word2.replace(/ף/g, 'פ')],
+        // Handle ו/וו variations (double vav)
+        [word1.replace(/וו/g, 'ו'), word2],
+        [word1, word2.replace(/וו/g, 'ו')],
+        [word1.replace(/ו/g, 'וו'), word2],
+        [word1, word2.replace(/ו/g, 'וו')],
+        // Handle common spelling variations in names
+        // Like אברהם vs אברם, יהושע vs יהושוע
+        [word1.replace(/אברהם/g, 'אברם'), word2],
+        [word1, word2.replace(/אברהם/g, 'אברם')],
+        [word1.replace(/אברם/g, 'אברהם'), word2],
+        [word1, word2.replace(/אברם/g, 'אברהם')],
+        [word1.replace(/יהושע/g, 'יהושוע'), word2],
+        [word1, word2.replace(/יהושע/g, 'יהושוע')],
+        [word1.replace(/יהושוע/g, 'יהושע'), word2],
+        [word1, word2.replace(/יהושוע/g, 'יהושע')],
+        // Handle ח/כ confusion (common in transliteration)
+        [word1.replace(/ח/g, 'כ'), word2],
+        [word1, word2.replace(/ח/g, 'כ')],
+        [word1.replace(/כ/g, 'ח'), word2],
+        [word1, word2.replace(/כ/g, 'ח')],
+        // Handle ב/ו confusion in some names (but only for specific patterns)
+        [word1.replace(/ביצ/g, 'ויצ'), word2],
+        [word1, word2.replace(/ביצ/g, 'ויצ')],
+        [word1.replace(/ויצ/g, 'ביצ'), word2],
+        [word1, word2.replace(/ויצ/g, 'ביצ')],
+        // Handle ט/ת confusion (common in names)
+        [word1.replace(/ט/g, 'ת'), word2],
+        [word1, word2.replace(/ט/g, 'ת')],
+        [word1.replace(/ת/g, 'ט'), word2],
+        [word1, word2.replace(/ת/g, 'ט')],
+        // Handle ק/כ confusion (common in names)
+        [word1.replace(/ק/g, 'כ'), word2],
+        [word1, word2.replace(/ק/g, 'כ')],
+        [word1.replace(/כ/g, 'ק'), word2],
+        [word1, word2.replace(/כ/g, 'ק')],
+        // Handle ש/ס confusion (common in names)
+        [word1.replace(/ש/g, 'ס'), word2],
+        [word1, word2.replace(/ש/g, 'ס')],
+        [word1.replace(/ס/g, 'ש'), word2],
+        [word1, word2.replace(/ס/g, 'ש')]
     ];
     
     for (const [v1, v2] of variations) {
         if (v1 === v2) return true;
     }
     
+    // Additional check: calculate character-level similarity for close matches
+    // Only for words that are reasonably long and close in length
+    if (word1.length >= 4 && word2.length >= 4 && Math.abs(word1.length - word2.length) <= 2) {
+        const similarity = calculateCharacterSimilarity(word1, word2);
+        if (similarity >= 0.75) return true; // Lowered threshold as requested
+    }
+    
     return false;
+};
+
+// Helper function to calculate character-level similarity
+const calculateCharacterSimilarity = (str1, str2) => {
+    const len1 = str1.length;
+    const len2 = str2.length;
+    const maxLen = Math.max(len1, len2);
+    
+    if (maxLen === 0) return 1;
+    
+    let matches = 0;
+    const minLen = Math.min(len1, len2);
+    
+    for (let i = 0; i < minLen; i++) {
+        if (str1[i] === str2[i]) {
+            matches++;
+        }
+    }
+    
+    return matches / maxLen;
 }; 
