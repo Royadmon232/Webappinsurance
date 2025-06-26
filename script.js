@@ -3653,7 +3653,7 @@ const STREET_NAME_FIELD = 'שם_רחוב';
         });
 
         async function handleCityChange() {
-            const selectedCity = citySelect.value;
+            const selectedCity = citySelect.value?.trim();
             resetStreetField();
 
             if (!selectedCity) {
@@ -3676,19 +3676,42 @@ const STREET_NAME_FIELD = 'שם_רחוב';
                 const filtersStr = encodeURIComponent(JSON.stringify(filters));
                 const url = `${API_URL}?resource_id=${RESOURCE_ID}&filters=${filtersStr}&limit=32000`;
 
-                const response = await fetch(url);
+                console.log('[Street API] Fetching streets for city:', selectedCity);
+                console.log('[Street API] URL:', url);
+
+                let response;
+                try {
+                    response = await fetch(url);
+                } catch (corsError) {
+                    console.log('[Street API] Direct fetch failed, trying proxy');
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                    response = await fetch(proxyUrl);
+                }
+                
                 if (!response.ok) {
                     throw new Error(`API request failed with status ${response.status}`);
                 }
                 const data = await response.json();
                 
+                console.log('[Street API] Total records:', data.result?.records?.length || 0);
+                
                 // Filter records to ensure they belong to the selected city and sort alphabetically
                 const streets = data.success && data.result.records
                     ? [...new Set(data.result.records
-                        .filter(r => r['שם_ישוב'] === selectedCity && r['שם_רחוב'] && r['שם_רחוב'].trim())
+                        .filter(r => {
+                            const cityMatch = r['שם_ישוב'] === selectedCity;
+                            const hasStreet = r['שם_רחוב'] && r['שם_רחוב'].trim();
+                            if (!cityMatch && hasStreet) {
+                                console.log('[Street API] Filtered out street from different city:', r['שם_רחוב'], 'City:', r['שם_ישוב']);
+                            }
+                            return cityMatch && hasStreet;
+                        })
                         .map(r => r['שם_רחוב'].trim()))]
                         .sort((a, b) => a.localeCompare(b, 'he'))
                     : [];
+
+                console.log('[Street API] Streets found:', streets.length);
+                console.log('[Street API] Sample streets:', streets.slice(0, 5));
 
                 streetCache.set(selectedCity, streets);
                 processStreets(streets);
