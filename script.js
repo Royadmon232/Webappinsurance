@@ -147,9 +147,6 @@ function initStepWizard() {
     
     // Update navigation buttons
     updateWizardNavigation();
-    
-    // Update progress indicator
-    updateProgressIndicator();
 }
 
 /**
@@ -231,9 +228,6 @@ function showWizardStep(stepIndex) {
     
     // Update navigation
     updateWizardNavigation();
-    
-    // Update progress indicator
-    updateProgressIndicator();
 }
 
 /**
@@ -331,8 +325,6 @@ function wizardNext() {
     // Move to next step
     if (currentWizardStep < wizardSteps.length - 1) {
         showWizardStep(currentWizardStep + 1);
-        // Update progress indicator after step change
-        setTimeout(() => updateProgressIndicator(), 100);
     }
 }
 
@@ -343,44 +335,6 @@ function wizardPrev() {
     if (currentWizardStep > 0) {
         showWizardStep(currentWizardStep - 1);
     }
-}
-
-/**
- * Update progress indicator based on current step
- */
-function updateProgressIndicator() {
-    const progressSteps = document.querySelectorAll('.progress-step-indicator');
-    const progressBar = document.querySelector('.progress-bar-fill');
-    const progressPercentage = document.querySelector('.progress-percentage');
-    
-    if (!progressSteps.length) return;
-    
-    // Calculate progress
-    const totalSteps = wizardSteps.length;
-    const currentStep = currentWizardStep + 1;
-    const percentage = Math.round((currentStep / totalSteps) * 100);
-    
-    // Update progress bar
-    if (progressBar) {
-        progressBar.style.width = `${percentage}%`;
-    }
-    
-    if (progressPercentage) {
-        progressPercentage.textContent = `${percentage}%`;
-    }
-    
-    // Update step indicators
-    progressSteps.forEach((step, index) => {
-        if (index < currentWizardStep) {
-            step.classList.add('completed');
-            step.classList.remove('active');
-        } else if (index === currentWizardStep) {
-            step.classList.add('active');
-            step.classList.remove('completed');
-        } else {
-            step.classList.remove('active', 'completed');
-        }
-    });
 }
 
 // Expose wizard functions to global scope for onclick handlers
