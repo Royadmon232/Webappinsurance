@@ -786,151 +786,208 @@ footer {
     }
 }
 
-/* תיקון נוסף מחוזק לטלפון נייד - וידוא שה-checkboxes לא מטשטשים את הטקסט */
-@media screen and (max-width: 500px) and (orientation: portrait) {
-    /* תיקון מיוחד לחלון כיסויים נוספים */
-    #step-cover-additional.modal .building-checkbox-wrapper,
-    .modal #step-cover-additional .building-checkbox-wrapper,
-    #generalDetailsModal #step-cover-additional .building-checkbox-wrapper {
-        display: flex !important;
-        align-items: flex-start !important;
-        justify-content: flex-start !important;
-        gap: 6px !important;
-        padding: 6px 8px !important;
-        margin: 4px 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-        position: relative !important;
-        background: transparent !important;
-        border: none !important;
-        min-height: auto !important;
-    }
-    
-    #step-cover-additional.modal .building-checkbox-wrapper input[type="checkbox"],
-    .modal #step-cover-additional .building-checkbox-wrapper input[type="checkbox"],
-    #generalDetailsModal #step-cover-additional .building-checkbox-wrapper input[type="checkbox"] {
-        position: relative !important;
-        display: block !important;
-        width: 16px !important;
-        height: 16px !important;
-        min-width: 16px !important;
-        min-height: 16px !important;
-        margin: 0 !important;
-        margin-top: 1px !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        flex-shrink: 0 !important;
-        z-index: 100 !important;
-        opacity: 1 !important;
-        -webkit-appearance: checkbox !important;
-        appearance: checkbox !important;
-        background: white !important;
-        border: 1px solid #ccc !important;
-        border-radius: 2px !important;
-    }
-    
-    #step-cover-additional.modal .building-checkbox-wrapper label,
-    .modal #step-cover-additional .building-checkbox-wrapper label,
-    #generalDetailsModal #step-cover-additional .building-checkbox-wrapper label {
-        position: relative !important;
-        display: block !important;
-        flex: 1 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-        font-size: 0.75rem !important;
-        line-height: 1.2 !important;
-        color: #333 !important;
-        white-space: normal !important;
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-        hyphens: auto !important;
-        text-align: right !important;
-        z-index: 1 !important;
-        cursor: pointer !important;
-    }
-    
-    /* ביטול מוחלט של אלמנטים מזויפים */
-    #step-cover-additional.modal .building-checkbox-wrapper label::before,
-    #step-cover-additional.modal .building-checkbox-wrapper label::after,
-    .modal #step-cover-additional .building-checkbox-wrapper label::before,
-    .modal #step-cover-additional .building-checkbox-wrapper label::after,
-    #generalDetailsModal #step-cover-additional .building-checkbox-wrapper label::before,
-    #generalDetailsModal #step-cover-additional .building-checkbox-wrapper label::after {
-        display: none !important;
-        content: none !important;
-        position: static !important;
-        width: 0 !important;
-        height: 0 !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-    }
-    
-    /* תיקון מיוחד לחלון הצעת מחיר */
-    #step-completion.wizard-step,
-    .modal #step-completion,
-    #generalDetailsModal #step-completion {
-        width: 100vw !important;
-        height: 100vh !important;
-        max-width: 100vw !important;
-        max-height: 100vh !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        z-index: 9999 !important;
-        -webkit-overflow-scrolling: touch !important;
-        touch-action: pan-y !important;
-    }
-    
-    /* וידוא שכל הטקסטים נקראים */
-    #step-cover-additional .building-section-title,
-    #step-cover-additional .coverage-explanation,
-    #step-cover-additional .form-helper-text,
-    #step-completion .completion-title,
-    #step-completion .completion-subtitle,
-    #step-completion .section-title {
-        font-size: 0.8rem !important;
-        line-height: 1.3 !important;
-        word-wrap: break-word !important;
-        white-space: normal !important;
-        hyphens: auto !important;
-        overflow-wrap: break-word !important;
-    }
-    
-    /* התאמה למסכי טלפון קטנים במיוחד */
-    #step-cover-additional .building-section,
-    #step-completion .verification-section {
-        margin: 0 4px 8px 4px !important;
-        padding: 6px !important;
-        width: calc(100% - 8px) !important;
-        max-width: calc(100% - 8px) !important;
-        box-sizing: border-box !important;
-    }
-}
+/* ==========================================
+   טיפול בבעיות תצוגה בטלפון עבור חלונות כיסויים נוספים והצעת מחיר סופית
+   ========================================== */
 
-/* תיקון לטלפונים זעירים */
-@media screen and (max-width: 360px) and (orientation: portrait) {
+/* תיקונים למובייל בלבד - רק עבור מכשירי טלפון במצב אורך */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+    
+    /* תיקון עבור חלון כיסויים נוספים */
+    #step-cover-additional {
+        padding: 15px;
+    }
+    
+    #step-cover-additional .modal-body-grid {
+        padding: 0;
+        margin: 0;
+    }
+    
+    #step-cover-additional .building-sections-container {
+        width: 100%;
+        max-width: 100%;
+        padding: 10px;
+        overflow-x: hidden;
+    }
+    
+    #step-cover-additional .building-section {
+        width: 100%;
+        margin: 10px 0;
+        padding: 15px;
+    }
+    
+    /* תיקון לצ'קבוקסים בחלון כיסויים נוספים */
     #step-cover-additional .building-checkbox-wrapper {
-        gap: 4px !important;
-        padding: 4px 6px !important;
+        display: flex;
+        align-items: flex-start;
+        width: 100%;
+        margin: 10px 0;
+        min-height: 50px;
     }
     
     #step-cover-additional .building-checkbox-wrapper input[type="checkbox"] {
-        width: 14px !important;
-        height: 14px !important;
-        min-width: 14px !important;
-        min-height: 14px !important;
+        flex-shrink: 0;
+        width: 22px;
+        height: 22px;
+        margin-left: 10px;
+        margin-top: 2px;
+        position: relative;
+        z-index: 1;
     }
     
     #step-cover-additional .building-checkbox-wrapper label {
-        font-size: 0.7rem !important;
-        line-height: 1.1 !important;
+        flex: 1;
+        padding-right: 35px;
+        padding-left: 0;
+        word-wrap: break-word;
+        line-height: 1.4;
+        display: block;
+        position: relative;
+    }
+    
+    /* מיקום ה-checkmark */
+    #step-cover-additional .building-checkbox-wrapper input[type="checkbox"]:checked::after {
+        content: "✓";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 16px;
+        color: white;
+        font-weight: bold;
+    }
+    
+    /* תיקון לטפסים בחלון כיסויים נוספים */
+    #step-cover-additional .building-form-group {
+        width: 100%;
+        margin: 10px 0;
+    }
+    
+    #step-cover-additional .building-form-group input {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    /* תיקון עבור חלון הצעת מחיר סופית */
+    #step-completion {
+        padding: 15px;
+        overflow-x: hidden;
+    }
+    
+    #step-completion .completion-container {
+        width: 100%;
+        max-width: 100%;
+        padding: 20px 15px;
+        overflow-x: hidden;
+    }
+    
+    #step-completion .modal-body-grid {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+    }
+    
+    /* תיקון לכרטיסי מידע בחלון הסופי */
+    #step-completion .info-cards {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        width: 100%;
+    }
+    
+    #step-completion .info-card {
+        width: 100%;
+        padding: 15px;
+    }
+    
+    /* תיקון לטופס הטלפון */
+    #step-completion .phone-input-container {
+        width: 100%;
+        max-width: 100%;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    #step-completion #phone-number {
+        width: 100%;
+        font-size: 16px; /* מונע זום בiOS */
+    }
+    
+    #step-completion .btn-send-code {
+        width: 100%;
+        padding: 15px;
+    }
+    
+    /* תיקון לקוד אימות */
+    #step-completion .code-inputs {
+        width: 100%;
+        justify-content: space-between;
+        gap: 8px;
+    }
+    
+    #step-completion .code-digit {
+        width: calc(16.66% - 8px);
+        max-width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    
+    /* תיקון לכפתור שליחה סופי */
+    #step-completion .btn-submit-final {
+        width: 100%;
+        padding: 18px;
+        font-size: 16px;
+    }
+    
+    /* הוספת גלילה למקרה הצורך */
+    #step-cover-additional,
+    #step-completion {
+        max-height: 100vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* תיקונים נוספים למסכים קטנים מאוד */
+@media screen and (max-width: 375px) and (orientation: portrait) {
+    
+    #step-cover-additional .building-checkbox-wrapper label {
+        font-size: 14px;
+        padding-right: 30px;
+    }
+    
+    #step-cover-additional .building-checkbox-wrapper input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+    }
+    
+    #step-completion .code-digit {
+        width: calc(16.66% - 5px);
+        max-width: 45px;
+        height: 45px;
+        font-size: 18px;
+    }
+    
+    #step-completion .completion-title {
+        font-size: 22px;
+    }
+    
+    #step-completion .completion-subtitle {
+        font-size: 15px;
+    }
+}
+
+/* תמיכה במכשירים עם מסך מגע */
+@media (pointer: coarse) and (max-width: 768px) {
+    
+    #step-cover-additional .building-checkbox-wrapper,
+    #step-completion .info-card {
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    #step-cover-additional .building-checkbox-wrapper:active,
+    #step-completion .info-card:active {
+        opacity: 0.8;
     }
 }
 
@@ -16834,4 +16891,2287 @@ input:disabled {
 
 .completion-icon svg {
     filter: drop-shadow(0 4px 20px rgba(16, 185, 129, 0.25));
+}
+
+.completion-title {
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.completion-subtitle {
+    font-size: clamp(0.95rem, 2vw, 1.125rem);
+    color: #6b7280;
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Enhanced verification sections */
+.verification-section {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    animation: fadeInUp 0.6s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.verification-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+}
+
+.section-title {
+    font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+/* Enhanced phone input styling */
+.phone-input-wrapper {
+    position: relative;
+}
+
+.phone-input-container {
+    position: relative;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+#phone-number {
+    flex: 1;
+    padding: 1rem 3rem 1rem 1rem;
+    font-size: 1.125rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+    direction: ltr;
+    text-align: left;
+}
+
+#phone-number:focus {
+    outline: none;
+    border-color: #4f46e5;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+#phone-number.valid {
+    border-color: #10b981;
+    background-color: #f0fdf4;
+}
+
+#phone-number.error {
+    border-color: #ef4444;
+    background-color: #fef2f2;
+}
+
+/* Enhanced send button */
+.btn-send-code {
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    min-width: 150px;
+}
+
+.btn-send-code::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-send-code:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+}
+
+.btn-send-code:hover:not(:disabled)::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-send-code:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* Code input section styling */
+.code-inputs {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    margin: 2rem 0;
+}
+
+.code-digit {
+    width: 3.5rem;
+    height: 3.5rem;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+}
+
+.code-digit:focus {
+    outline: none;
+    border-color: #4f46e5;
+    background: white;
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.code-digit.filled {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-color: #10b981;
+    animation: digitBounce 0.4s ease;
+}
+
+.code-digit.error {
+    background: #fef2f2;
+    border-color: #ef4444;
+    animation: shake 0.5s ease;
+}
+
+@keyframes digitBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* Success section styling */
+#success-section {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.success-animation svg {
+    animation: successScale 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: drop-shadow(0 8px 30px rgba(16, 185, 129, 0.3));
+}
+
+@keyframes successScale {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.success-title {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    color: #10b981;
+    margin: 1.5rem 0 0.75rem;
+}
+
+.success-message {
+    font-size: clamp(1rem, 2vw, 1.125rem);
+    color: #6b7280;
+    margin-bottom: 2rem;
+}
+
+/* Agency info card */
+.agency-info {
+    background: linear-gradient(135deg, #f8f9ff 0%, #f3f4f6 100%);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin: 2rem auto;
+    max-width: 500px;
+    border: 1px solid rgba(79, 70, 229, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.agency-logo {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 82, 204, 0.2);
+}
+
+.agency-details h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+}
+
+.agency-details p {
+    font-size: 0.95rem;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Info cards */
+.info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.info-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s;
+}
+
+.info-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    border-color: #10b981;
+}
+
+.info-icon {
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.info-card h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 12px;
+}
+
+.info-card p {
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Final submit button */
+.btn-submit-final {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 2rem auto 0;
+    padding: 1.25rem 2rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-submit-final::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-submit-final:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+}
+
+.btn-submit-final:hover:not(:disabled)::before {
+    width: 400px;
+    height: 400px;
+}
+
+.btn-submit-final:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Responsive Design Enhancements */
+@media (max-width: 768px) {
+    #step-cover-additional .building-section,
+    .verification-section {
+        padding: 1.5rem;
+        border-radius: 16px;
+        margin-bottom: 1rem;
+    }
+    
+    #step-cover-additional .building-main-title {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    #step-cover-additional .building-subtitle {
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .coverage-explanation {
+        padding: 1.25rem;
+    }
+    
+    .phone-input-container {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    #phone-number {
+        width: 100%;
+    }
+    
+    .btn-send-code {
+        width: 100%;
+    }
+    
+    .code-inputs {
+        gap: 0.5rem;
+    }
+    
+    .code-digit {
+        width: 3rem;
+        height: 3rem;
+        font-size: 1.25rem;
+    }
+    
+    .info-cards {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .agency-info {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    #step-cover-additional .building-section {
+        padding: 1.25rem;
+    }
+    
+    .completion-container {
+        padding: 0 1rem;
+    }
+    
+    .code-digit {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 1.125rem;
+    }
+    
+    .info-icon {
+        font-size: 2.5rem;
+    }
+}
+
+/* Tablet optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+    #step-cover-additional .building-sections-container,
+    .completion-container {
+        padding: 0 2rem;
+    }
+    
+    .info-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* High-resolution screens */
+@media (min-resolution: 2dppx) {
+    #step-cover-additional .building-section,
+    .verification-section {
+        border-width: 0.5px;
+    }
+}
+
+/* Dark mode support (if implemented) */
+@media (prefers-color-scheme: dark) {
+    #step-cover-additional .building-section,
+    .verification-section {
+        background: #1f2937;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    #step-cover-additional .building-section-title,
+    .section-title,
+    .info-card h4 {
+        color: #f3f4f6;
+    }
+    
+    .coverage-explanation {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border-color: rgba(139, 92, 246, 0.2);
+    }
+    
+    .coverage-explanation p,
+    .coverage-list li,
+    .form-helper-text,
+    .info-card p {
+        color: #9ca3af;
+    }
+    
+    #phone-number,
+    .code-digit {
+        background: #374151;
+        border-color: #4b5563;
+        color: #f3f4f6;
+    }
+}
+
+/* Smooth scrolling for the entire modal */
+#step-cover-additional,
+#step-completion {
+    scroll-behavior: smooth;
+}
+
+/* Add micro-interactions and polish */
+#step-cover-additional input[type="number"]::-webkit-inner-spin-button,
+#step-cover-additional input[type="number"]::-webkit-outer-spin-button {
+    opacity: 0.5;
+    height: 2rem;
+    margin-right: 0.5rem;
+}
+
+/* Enhance focus states with pulsing effect */
+@keyframes pulseFocus {
+    0% {
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+    }
+}
+
+#step-cover-additional input:focus,
+#step-cover-additional select:focus,
+#phone-number:focus {
+    animation: pulseFocus 1.5s infinite;
+}
+
+/* Gradient text animation for titles on hover */
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+#step-cover-additional .building-main-title:hover,
+.completion-title:hover {
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
+}
+
+/* Subtle parallax effect for sections */
+#step-cover-additional .building-section:nth-child(odd) {
+    transform: translateX(0);
+    transition: transform 0.6s ease;
+}
+
+#step-cover-additional .building-section:nth-child(even) {
+    transform: translateX(0);
+    transition: transform 0.6s ease;
+}
+
+@media (min-width: 768px) {
+    #step-cover-additional:hover .building-section:nth-child(odd) {
+        transform: translateX(-5px);
+    }
+    
+    #step-cover-additional:hover .building-section:nth-child(even) {
+        transform: translateX(5px);
+    }
+}
+
+/* Enhanced scrollbar styling */
+#step-cover-additional::-webkit-scrollbar,
+#step-completion::-webkit-scrollbar {
+    width: 8px;
+}
+
+#step-cover-additional::-webkit-scrollbar-track,
+#step-completion::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 10px;
+}
+
+#step-cover-additional::-webkit-scrollbar-thumb,
+#step-completion::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #4f46e5 0%, #7c3aed 100%);
+    border-radius: 10px;
+}
+
+#step-cover-additional::-webkit-scrollbar-thumb:hover,
+#step-completion::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+/* Beautiful loading animation for sections */
+#step-cover-additional .building-section,
+.verification-section {
+    opacity: 0;
+    animation: fadeInSection 0.6s ease forwards;
+}
+
+#step-cover-additional .building-section:nth-child(1) { animation-delay: 0.1s; }
+#step-cover-additional .building-section:nth-child(2) { animation-delay: 0.2s; }
+#step-cover-additional .building-section:nth-child(3) { animation-delay: 0.3s; }
+#step-cover-additional .building-section:nth-child(4) { animation-delay: 0.4s; }
+#step-cover-additional .building-section:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes fadeInSection {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+
+/* Glassmorphism effect for modern browsers */
+@supports (backdrop-filter: blur(10px)) {
+    .coverage-explanation {
+        background: rgba(248, 249, 255, 0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    
+    .agency-info {
+        background: rgba(248, 249, 255, 0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+}
+
+/* Enhance checkbox animation */
+#step-cover-additional .building-checkbox-wrapper input:checked ~ label {
+    animation: checkPulse 0.4s ease;
+}
+
+@keyframes checkPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Beautiful gradient borders on hover */
+#step-cover-additional .building-section::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #4f46e5, #7c3aed, #ec4899, #f59e0b, #10b981);
+    border-radius: 22px;
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.3s ease;
+    background-size: 300% 300%;
+    animation: gradientRotate 4s ease infinite;
+}
+
+#step-cover-additional .building-section:hover::after {
+    opacity: 0.3;
+}
+
+@keyframes gradientRotate {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Enhance mobile experience with larger touch targets */
+@media (max-width: 768px) {
+    #step-cover-additional .building-checkbox-wrapper,
+    .phone-input-container button,
+    .code-digit,
+    .btn-submit-final {
+        min-height: 48px;
+    }
+    
+    #step-cover-additional .building-checkbox-wrapper label {
+        padding: 0.75rem 0;
+    }
+}
+
+/* Print styles for better document printing */
+@media print {
+    #step-cover-additional .building-section,
+    .verification-section {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .btn-send-code,
+    .btn-submit-final {
+        display: none;
+    }
+}
+
+/* Accessibility improvements */
+#step-cover-additional .building-checkbox-wrapper:focus-within,
+.info-card:focus-within {
+    outline: 2px solid #4f46e5;
+    outline-offset: 2px;
+}
+
+/* Skip link for keyboard navigation */
+.skip-to-content {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #4f46e5;
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    border-radius: 0 0 4px 0;
+    z-index: 100;
+}
+
+.skip-to-content:focus {
+    top: 0;
+}
+
+/* Performance optimization - disable animations for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Fix for modal body scrolling */
+.modal-body {
+    position: relative;
+}
+
+/* Ensure all sections have proper spacing */
+#step-cover-additional .building-sections-container > *:last-child,
+.completion-container > *:last-child {
+    margin-bottom: 0;
+}
+
+/* Improve form field alignment */
+#step-cover-additional .building-form-grid {
+    display: grid;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+/* Better visual hierarchy for nested content */
+#step-cover-additional .building-section .building-section-form {
+    position: relative;
+    z-index: 1;
+}
+
+/* Ensure proper stacking of animated elements */
+#step-cover-additional .building-section {
+    position: relative;
+    z-index: 1;
+}
+
+#step-cover-additional .building-section:hover {
+    z-index: 2;
+}
+
+/* Smooth transitions for all interactive elements */
+#step-cover-additional input,
+#step-cover-additional select,
+#step-cover-additional button,
+#step-cover-additional .building-checkbox-wrapper,
+.verification-section input,
+.verification-section button {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ensure readability on all backgrounds */
+.coverage-explanation strong,
+#step-cover-additional .building-section-title,
+.section-title {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Polish for number inputs */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Better focus management */
+:focus-visible {
+    outline: 2px solid #4f46e5;
+    outline-offset: 2px;
+}
+
+/* Ensure proper touch targets on mobile */
+@media (pointer: coarse) {
+    #step-cover-additional .building-checkbox-wrapper,
+    .btn-send-code,
+    .btn-submit-final,
+    .code-digit {
+        min-height: 48px;
+        min-width: 48px;
+    }
+}
+
+/* Fix for iOS form zoom */
+@media (max-width: 768px) {
+    input[type="text"],
+    input[type="tel"],
+    input[type="number"],
+    select {
+        font-size: 16px !important;
+    }
+}
+
+/* Loading states */
+.btn-send-code.loading .btn-text {
+    opacity: 0;
+}
+
+.btn-send-code .btn-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.spinner {
+    animation: rotate 0.8s linear infinite;
+}
+
+@keyframes rotate {
+    100% { transform: rotate(360deg); }
+}
+
+.spinner .path {
+    stroke: white;
+    stroke-linecap: round;
+    animation: dash 1.5s ease-in-out infinite;
+}
+
+@keyframes dash {
+    0% {
+        stroke-dasharray: 1, 150;
+        stroke-dashoffset: 0;
+    }
+    50% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -35;
+    }
+    100% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -124;
+    }
+}
+
+/* Final Submit Quote Button */
+.btn-submit-quote {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 400px;
+    margin: 40px auto 20px;
+    padding: 20px 40px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: 2px solid transparent;
+    border-radius: 50px;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    position: relative;
+    overflow: hidden;
+    transform: scale(1.05);
+    animation: pulseButton 2s ease-in-out infinite;
+}
+
+.btn-submit-quote:hover {
+    transform: translateY(-3px) scale(1.08);
+    box-shadow: 0 12px 35px rgba(16, 185, 129, 0.5);
+    background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+    animation: none;
+}
+
+.btn-submit-quote:active {
+    transform: translateY(0);
+}
+
+.btn-submit-quote:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-submit-quote .btn-icon {
+    font-size: 24px;
+}
+
+.btn-submit-quote::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-submit-quote:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* Loading state for submit button */
+.btn-submit-quote.loading {
+    pointer-events: none;
+}
+
+.btn-submit-quote.loading .btn-icon {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes pulseButton {
+    0% { 
+        transform: scale(1.05);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+    50% { 
+        transform: scale(1.08);
+        box-shadow: 0 12px 35px rgba(16, 185, 129, 0.6);
+    }
+    100% { 
+        transform: scale(1.05);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .btn-submit-quote {
+        max-width: 100%;
+        font-size: 16px;
+        padding: 14px 28px;
+    }
+}
+
+/* Enhanced Step 4: כיסויים נוספים - Light and Modern Design */
+#step-cover-additional .building-sections-container {
+    background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+    padding: 2.5rem;
+    border-radius: 20px;
+}
+
+#step-cover-additional .building-main-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.75rem;
+    text-align: center;
+}
+
+#step-cover-additional .building-subtitle {
+    text-align: center;
+    color: #64748b;
+    font-size: 1.125rem;
+    margin-bottom: 2rem;
+}
+
+#step-cover-additional .building-section {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(14, 165, 233, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#step-cover-additional .building-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
+    border-radius: 16px 16px 0 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#step-cover-additional .building-section:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(14, 165, 233, 0.15);
+    border-color: rgba(14, 165, 233, 0.3);
+}
+
+#step-cover-additional .building-section:hover::before {
+    opacity: 1;
+}
+
+#step-cover-additional .building-section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Coverage explanation with light blue background */
+.coverage-explanation {
+    background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-right: 4px solid #0ea5e9;
+    position: relative;
+}
+
+.coverage-explanation::before {
+    content: '💡';
+    position: absolute;
+    top: 1.5rem;
+    left: 1.5rem;
+    font-size: 1.5rem;
+    opacity: 0.8;
+}
+
+.coverage-explanation p {
+    color: #1e293b;
+    line-height: 1.8;
+    margin-bottom: 0.75rem;
+}
+
+.coverage-explanation p:last-child {
+    margin-bottom: 0;
+}
+
+.coverage-explanation strong {
+    color: #0369a1;
+    font-weight: 700;
+}
+
+/* Enhanced coverage list */
+.coverage-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0 0;
+}
+
+.coverage-list li {
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+    margin-bottom: 0.5rem;
+    background: white;
+    border-radius: 8px;
+    position: relative;
+    transition: all 0.2s;
+    border: 1px solid #e2e8f0;
+}
+
+.coverage-list li:hover {
+    background: #f0f9ff;
+    border-color: #0ea5e9;
+    transform: translateX(-4px);
+}
+
+.coverage-list li::before {
+    content: '✓';
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Enhanced checkbox styles for additional coverage */
+#step-cover-additional .building-checkbox-wrapper {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+#step-cover-additional .building-checkbox-wrapper:hover {
+    background: #f0f9ff;
+    border-color: #0ea5e9;
+    transform: translateY(-2px);
+}
+
+#step-cover-additional .building-checkbox-wrapper input[type="checkbox"] {
+    accent-color: #0ea5e9;
+}
+
+#step-cover-additional .building-checkbox-wrapper label {
+    color: #1e293b;
+    font-weight: 600;
+    font-size: 1.05rem;
+    cursor: pointer;
+}
+
+/* Step 5: Completion - Fresh and Modern Design */
+.completion-container {
+    background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+    padding: 3rem;
+    border-radius: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.completion-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.completion-icon-wrapper {
+    margin-bottom: 2rem;
+}
+
+.completion-icon svg {
+    filter: drop-shadow(0 8px 16px rgba(16, 185, 129, 0.2));
+}
+
+.completion-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+}
+
+.completion-subtitle {
+    font-size: 1.25rem;
+    color: #64748b;
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.verification-section {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s;
+}
+
+.verification-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+    border-radius: 16px 16px 0 0;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.step-number {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.125rem;
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.2);
+}
+
+#phone-number {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    font-size: 1.125rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    transition: all 0.3s;
+}
+
+
+#phone-number:focus {
+    border-color: #10b981;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+}
+
+.btn-send-code {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.btn-send-code:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+
+#success-section {
+    text-align: center;
+}
+
+.success-title {
+    font-size: 2rem;
+    color: #059669;
+    font-weight: 700;
+    margin: 1.5rem 0 1rem;
+}
+
+.success-message {
+    font-size: 1.125rem;
+    color: #64748b;
+    margin-bottom: 2rem;
+}
+
+.agency-info {
+    background: #f0f9ff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #bae6fd;
+}
+
+.info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.info-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s;
+}
+
+.info-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    border-color: #10b981;
+}
+
+.info-icon {
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.info-card h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 12px;
+}
+
+.info-card p {
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Enhanced Quote Button */
+.btn-submit-quote {
+    width: 100%;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    padding: 1.25rem 2.5rem;
+    border-radius: 12px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin: 2rem 0;
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-submit-quote:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(59, 130, 246, 0.4);
+}
+
+.btn-submit-quote:active {
+    transform: translateY(0);
+}
+
+.btn-submit-quote:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-submit-quote .btn-icon {
+    font-size: 1.5rem;
+}
+
+.btn-submit-quote::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-submit-quote:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* Final submit button with softer style */
+.btn-submit-final {
+    width: 100%;
+    background: #f8fafc;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 1rem;
+}
+
+.btn-submit-final:hover:not(:disabled) {
+    background: white;
+    color: #475569;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Final Step: Completion Window - Black Text */
+#step-completion, #step-completion * {
+    color: #111 !important;
+}
+
+/* Form validation styles */
+.form-group input.valid,
+.form-group select.valid {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.1rem rgba(40, 167, 69, 0.25);
+}
+
+.form-group input.error,
+.form-group select.error {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.1rem rgba(220, 53, 69, 0.25);
+}
+
+.form-error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: block;
+    animation: fadeInError 0.3s ease-in;
+}
+
+@keyframes fadeInError {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Real-time validation feedback */
+.form-group input:focus.valid {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.form-group input:focus.error {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Enhanced notification styles for PDF success messages */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    padding: 20px 24px;
+    max-width: 420px;
+    z-index: 10000;
+    transform: translateX(100%);
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    direction: rtl;
+    text-align: right;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification-success {
+    border-right: 4px solid #4caf50;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fff8 100%);
+}
+
+.notification-error {
+    border-right: 4px solid #f44336;
+    background: linear-gradient(135deg, #ffffff 0%, #fff8f8 100%);
+}
+
+.notification-warning {
+    border-right: 4px solid #ff9800;
+    background: linear-gradient(135deg, #ffffff 0%, #fffaf0 100%);
+}
+
+.notification-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.notification-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    animation: notificationIconPulse 0.6s ease-out;
+}
+
+.notification-message {
+    font-size: 15px;
+    line-height: 1.5;
+    color: #333;
+    font-weight: 500;
+}
+
+.notification-success .notification-message {
+    color: #2e7d32;
+}
+
+.notification-error .notification-message {
+    color: #c62828;
+}
+
+.notification-warning .notification-message {
+    color: #ef6c00;
+}
+
+@keyframes notificationIconPulse {
+    0% { 
+        transform: scale(0.8); 
+        opacity: 0; 
+    }
+    50% { 
+        transform: scale(1.1); 
+        opacity: 0.8; 
+    }
+    100% { 
+        transform: scale(1); 
+        opacity: 1; 
+    }
+}
+
+/* Enhanced mobile notification */
+@media (max-width: 768px) {
+    .notification {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        transform: translateY(-100%);
+        top: 10px;
+    }
+    
+    .notification.show {
+        transform: translateY(0);
+    }
+    
+    .notification-message {
+        font-size: 14px;
+    }
+    
+    .notification-icon {
+        font-size: 20px;
+    }
+}
+
+/* התאמות מתקדמות למכשירים שונים - כיסויים נוספים ושלב סיום */
+
+/* iPhone 12/13/14 Portrait */
+@media only screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) {
+    #step-cover-additional .building-sections-container {
+        padding: 1.5rem 1.25rem;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 1.5rem;
+        margin-bottom: 1.25rem;
+    }
+    
+    .completion-container {
+        padding: 20px 18px;
+        margin: 12px 10px;
+    }
+    
+    .code-digit {
+        width: 46px;
+        height: 46px;
+        font-size: 1.2rem;
+    }
+}
+
+/* iPad Air/Pro Portrait */
+@media only screen and (device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait) {
+    #step-cover-additional .building-sections-container {
+        padding: 2.5rem 2rem;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 2rem 1.75rem;
+    }
+    
+    .completion-container {
+        padding: 35px 30px;
+        max-width: 650px;
+    }
+    
+    .info-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+/* Small Android phones */
+@media screen and (max-width: 360px) {
+    #step-cover-additional .building-sections-container {
+        padding: 1rem 0.75rem;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    #step-cover-additional .building-section-title {
+        font-size: 1.1rem;
+        line-height: 1.3;
+    }
+    
+    #step-cover-additional .coverage-explanation {
+        padding: 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .completion-container {
+        padding: 16px 10px;
+        margin: 8px 6px;
+    }
+    
+    .completion-title {
+        font-size: 1.15rem;
+        line-height: 1.2;
+    }
+    
+    .verification-section {
+        padding: 16px 12px;
+    }
+    
+    .code-digit {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+    
+    .info-card {
+        padding: 12px 8px;
+    }
+    
+    .info-icon {
+        font-size: 2rem;
+    }
+}
+
+/* Large Mobile Landscape */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    #step-cover-additional .building-sections-container {
+        padding: 1rem;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    #step-cover-additional .building-main-title {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .completion-container {
+        padding: 16px 20px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .completion-title {
+        font-size: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .verification-section {
+        padding: 16px 20px;
+        margin-bottom: 12px;
+    }
+    
+    .info-cards {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin: 16px 0;
+    }
+}
+
+/* Ultra-wide screens */
+@media screen and (min-width: 1920px) {
+    #step-cover-additional .building-sections-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 3rem 2.5rem;
+    }
+    
+    .completion-container {
+        max-width: 850px;
+        padding: 50px 40px;
+    }
+    
+    .info-cards {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+}
+
+/* Foldable devices - Galaxy Fold */
+@media screen and (max-width: 280px) {
+    #step-cover-additional .building-sections-container {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    #step-cover-additional .building-section-title {
+        font-size: 1rem;
+    }
+    
+    .completion-container {
+        padding: 12px 8px;
+        margin: 6px 4px;
+    }
+    
+    .code-digit {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+    
+    .code-inputs {
+        gap: 4px;
+    }
+}
+
+/* High density displays */
+@media screen and (-webkit-min-device-pixel-ratio: 3), 
+       screen and (min-resolution: 288dpi) {
+    #step-cover-additional .building-section {
+        border-width: 0.33px;
+    }
+    
+    .verification-section {
+        border-width: 0.67px;
+    }
+    
+    .code-digit {
+        border-width: 0.67px;
+    }
+}
+
+/* Touch optimizations */
+@media (pointer: coarse) and (hover: none) {
+    #step-cover-additional .building-checkbox-wrapper {
+        min-height: 48px;
+        padding: 1.25rem;
+    }
+    
+    #step-cover-additional .building-checkbox-wrapper input[type="checkbox"] {
+        width: 22px;
+        height: 22px;
+    }
+    
+    .btn-send-code,
+    .btn-submit-final {
+        min-height: 48px;
+        padding: 16px 24px;
+    }
+    
+    .code-digit {
+        min-width: 48px;
+        min-height: 48px;
+    }
+}
+
+/* Accessibility - High contrast mode */
+@media (prefers-contrast: high) {
+    #step-cover-additional .building-section,
+    .completion-container,
+    .verification-section {
+        border: 2px solid #000;
+        background: #fff;
+    }
+    
+    #step-cover-additional .building-section-title,
+    .completion-title,
+    .section-title {
+        color: #000;
+    }
+    
+    .btn-send-code,
+    .btn-submit-final {
+        border: 2px solid #000;
+    }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    #step-cover-additional .building-section,
+    #step-cover-additional .building-section:hover,
+    .verification-section:hover,
+    .info-card:hover {
+        transform: none !important;
+        transition: none !important;
+    }
+    
+    .completion-container::before {
+        animation: none !important;
+    }
+}
+
+/* Print styles */
+@media print {
+    #step-cover-additional .building-section,
+    .completion-container,
+    .verification-section {
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    
+    .btn-send-code,
+    .btn-submit-final {
+        border: 1px solid #000 !important;
+        background: white !important;
+        color: black !important;
+    }
+    
+    .code-digit {
+        border: 1px solid #000 !important;
+        background: white !important;
+    }
+}
+
+/* התאמות קיצוניות לטלפון במצב Portrait (לאורך) - שמירת העיצוב אך התאמה מושלמת למסך */
+
+/* זיהוי טלפון במצב Portrait (לאורך) */
+@media screen and (max-width: 500px) and (orientation: portrait) {
+    /* חלון כיסויים נוספים - התאמה לכל המסך בטלפון */
+    #step-cover-additional .building-sections-container {
+        padding: 8px !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100vw !important;
+        box-sizing: border-box !important;
+        border-radius: 0 !important;
+        background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%) !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        z-index: 9999 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    #step-cover-additional .building-main-title {
+        font-size: 1.3rem !important;
+        line-height: 1.3 !important;
+        margin-bottom: 8px !important;
+        padding: 12px 8px !important;
+        text-align: center !important;
+        font-weight: 700 !important;
+    }
+    
+    #step-cover-additional .building-subtitle {
+        font-size: 0.9rem !important;
+        margin-bottom: 12px !important;
+        padding: 0 8px !important;
+        text-align: center !important;
+        line-height: 1.3 !important;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 12px !important;
+        margin-bottom: 12px !important;
+        border-radius: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+        background: white !important;
+        border: 1px solid rgba(14, 165, 233, 0.1) !important;
+    }
+    
+    #step-cover-additional .building-section-title {
+        font-size: 1rem !important;
+        line-height: 1.2 !important;
+        margin-bottom: 8px !important;
+        padding: 0 2px !important;
+    }
+    
+    #step-cover-additional .coverage-explanation {
+        padding: 8px !important;
+        margin-bottom: 8px !important;
+        font-size: 0.8rem !important;
+        border-radius: 6px !important;
+    }
+    
+    #step-cover-additional .building-checkbox-wrapper {
+        padding: 10px !important;
+        margin-bottom: 6px !important;
+        border-radius: 6px !important;
+        display: flex !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+    
+    #step-cover-additional .building-checkbox-wrapper input[type="checkbox"] {
+        width: 24px !important;
+        height: 24px !important;
+        margin: 0 !important;
+        flex-shrink: 0 !important;
+        margin-top: 2px !important;
+    }
+    
+    #step-cover-additional .building-checkbox-wrapper label {
+        font-size: 0.8rem !important;
+        line-height: 1.2 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        flex: 1 !important;
+        word-wrap: break-word !important;
+        display: block !important;
+    }
+    
+    /* חלון סיום - התאמה לכל המסך בטלפון */
+    .completion-container {
+        padding: 8px !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        max-width: 100% !important;
+        width: 100vw !important;
+        box-sizing: border-box !important;
+        background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%) !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow-y: auto !important;
+        box-shadow: none !important;
+        border: none !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        z-index: 9999 !important;
+    }
+    
+    .completion-header {
+        margin-bottom: 20px !important;
+        text-align: center !important;
+    }
+    
+    .completion-title {
+        font-size: 1.4rem !important;
+        line-height: 1.3 !important;
+        margin-bottom: 12px !important;
+        padding: 16px 8px !important;
+        text-align: center !important;
+        font-weight: 700 !important;
+    }
+    
+    .completion-subtitle {
+        font-size: 1rem !important;
+        line-height: 1.3 !important;
+        margin-bottom: 16px !important;
+        padding: 0 8px !important;
+        text-align: center !important;
+    }
+    
+    .verification-section {
+        padding: 16px !important;
+        margin-bottom: 20px !important;
+        border-radius: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        background: white !important;
+        border: 1px solid rgba(14, 165, 233, 0.1) !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .section-title {
+        font-size: 1.1rem !important;
+        margin-bottom: 16px !important;
+        gap: 8px !important;
+        line-height: 1.3 !important;
+        text-align: center !important;
+    }
+    
+    .step-number {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 0.9rem !important;
+        line-height: 28px !important;
+    }
+    
+    .phone-input-container {
+        flex-direction: column !important;
+        gap: 12px !important;
+        width: 100% !important;
+        align-items: center !important;
+    }
+    
+    #phone-number {
+        padding: 12px !important;
+        font-size: 1rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        border-radius: 8px !important;
+        height: 48px !important;
+    }
+    
+    .btn-send-code {
+        width: 100% !important;
+        padding: 12px !important;
+        font-size: 1rem !important;
+        min-width: auto !important;
+        border-radius: 8px !important;
+        height: 48px !important;
+        line-height: 1.2 !important;
+    }
+    
+    .code-inputs {
+        gap: 8px !important;
+        margin: 16px 0 !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+    }
+    
+    .code-digit {
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 1.2rem !important;
+        border-radius: 8px !important;
+        line-height: 1 !important;
+    }
+    
+    .agency-info {
+        padding: 16px !important;
+        margin: 20px 0 !important;
+        flex-direction: column !important;
+        text-align: center !important;
+        border-radius: 8px !important;
+        background: white !important;
+        border: 1px solid rgba(14, 165, 233, 0.1) !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .info-cards {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+        margin: 20px 0 !important;
+    }
+    
+    .info-card {
+        padding: 16px !important;
+        border-radius: 8px !important;
+        background: white !important;
+        border: 1px solid rgba(14, 165, 233, 0.1) !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .info-icon {
+        font-size: 1.8rem !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .info-card h4 {
+        font-size: 1rem !important;
+        margin-bottom: 8px !important;
+        line-height: 1.3 !important;
+        font-weight: 600 !important;
+    }
+    
+    .info-card p {
+        font-size: 0.9rem !important;
+        line-height: 1.3 !important;
+    }
+    
+    .btn-submit-final {
+        padding: 12px !important;
+        font-size: 1rem !important;
+        margin-top: 20px !important;
+        border-radius: 8px !important;
+        height: 48px !important;
+        line-height: 1.2 !important;
+        width: 100% !important;
+    }
+}
+
+/* מכשירים קטנים במיוחד - רק במצב Portrait */
+@media screen and (max-width: 375px) and (orientation: portrait) {
+    #step-cover-additional .building-sections-container {
+        padding: 6px !important;
+        margin: 2px !important;
+    }
+    
+    #step-cover-additional .building-main-title {
+        font-size: 1.1rem !important;
+        margin-bottom: 6px !important;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 6px !important;
+        margin-bottom: 6px !important;
+    }
+    
+    #step-cover-additional .building-section-title {
+        font-size: 0.9rem !important;
+    }
+    
+    .completion-container {
+        padding: 6px !important;
+        margin: 2px !important;
+    }
+    
+    .completion-title {
+        font-size: 1rem !important;
+    }
+    
+    .code-digit {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 0.9rem !important;
+    }
+}
+
+/* מכשירים זעירים - רק במצב Portrait */
+@media screen and (max-width: 320px) and (orientation: portrait) {
+    #step-cover-additional .building-sections-container {
+        padding: 4px !important;
+        margin: 1px !important;
+    }
+    
+    #step-cover-additional .building-main-title {
+        font-size: 1rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 4px !important;
+        margin-bottom: 4px !important;
+    }
+    
+    #step-cover-additional .building-section-title {
+        font-size: 0.85rem !important;
+    }
+    
+    .completion-container {
+        padding: 4px !important;
+        margin: 1px !important;
+    }
+    
+    .completion-title {
+        font-size: 0.95rem !important;
+    }
+    
+    .code-digit {
+        width: 26px !important;
+        height: 26px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .code-inputs {
+        gap: 2px !important;
+    }
+}
+
+/* טלפון במצב לנדסקייפ (רוחב יותר אך גובה פחות) */
+@media screen and (max-height: 600px) and (orientation: landscape) and (max-width: 900px) {
+    #step-cover-additional .building-sections-container {
+        padding: 6px !important;
+        margin: 2px !important;
+        max-height: 85vh !important;
+        overflow-y: auto !important;
+    }
+    
+    #step-cover-additional .building-main-title {
+        font-size: 1.1rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 6px !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .completion-container {
+        padding: 6px !important;
+        margin: 2px !important;
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+    }
+    
+    .completion-header {
+        margin-bottom: 8px !important;
+    }
+    
+    .completion-title {
+        font-size: 1rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .verification-section {
+        padding: 6px !important;
+        margin-bottom: 6px !important;
+    }
+    
+    .info-cards {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px !important;
+        margin: 8px 0 !important;
+    }
+    
+    .code-inputs {
+        margin: 8px 0 !important;
+    }
+}
+
+/* התאמות נוספות לגדלי מסך ספציפיים */
+@media screen and (max-width: 414px) and (max-height: 896px) {
+    /* iPhone XR, 11, 12, 13, 14 */
+    #step-cover-additional .building-sections-container {
+        width: calc(100vw - 12px) !important;
+        padding: 6px !important;
+    }
+    
+    .completion-container {
+        width: calc(100vw - 12px) !important;
+        padding: 6px !important;
+    }
+}
+
+@media screen and (max-width: 393px) and (max-height: 852px) {
+    /* iPhone 14 Pro */
+    #step-cover-additional .building-sections-container {
+        width: calc(100vw - 10px) !important;
+        padding: 5px !important;
+    }
+    
+    .completion-container {
+        width: calc(100vw - 10px) !important;
+        padding: 5px !important;
+    }
 }
