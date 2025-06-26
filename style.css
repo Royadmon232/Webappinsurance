@@ -6350,9 +6350,11 @@ footer {
     /* מוודא שהחלונות תופסים את כל המסך אבל מאפשרים גלילה */
     #step-cover-additional,
     #step-completion {
-        position: fixed !important;
-        inset: 0 !important;
-        overflow: hidden !important;
+        position: relative !important;
+        min-height: 100vh !important;
+        height: auto !important;
+        overflow-y: visible !important;
+        overflow-x: hidden !important;
     }
     
     /* התוכן הפנימי שאמור להיות ניתן לגלילה */
@@ -18877,10 +18879,10 @@ input[type="number"]::-webkit-outer-spin-button {
 @media screen and (max-width: 768px) and (orientation: portrait) {
     /* ================= חלון כיסויים נוספים ================= */
     #step-cover-additional .building-sections-container {
-        padding: 12px !important;
+        padding: 10px !important;
         margin: 0 auto !important;
-        max-width: 95vw !important;
-        width: 95vw !important;
+        max-width: 90% !important;
+        width: 90vw !important;
         box-sizing: border-box !important;
         background: #f8fafc !important;
         min-height: 100vh !important;
@@ -18889,17 +18891,17 @@ input[type="number"]::-webkit-outer-spin-button {
         overflow-x: hidden !important;
         position: relative !important;
         -webkit-overflow-scrolling: touch !important;
+        border-radius: 8px !important;
     }
     
     #step-cover-additional .building-main-title {
-        font-size: 22px !important;
+        font-size: 26px !important;
         line-height: 1.3 !important;
-        margin-bottom: 12px !important;
-        padding: 0 5px !important;
+        margin-bottom: 15px !important;
+        padding: 0 !important;
         text-align: center !important;
         font-weight: 700 !important;
         color: #1a202c !important;
-        word-wrap: break-word !important;
     }
     
     #step-cover-additional .building-subtitle {
@@ -18912,11 +18914,10 @@ input[type="number"]::-webkit-outer-spin-button {
     }
     
     #step-cover-additional .building-section {
-        padding: 14px !important;
-        margin-bottom: 12px !important;
-        border-radius: 10px !important;
+        padding: 12px !important;
+        margin-bottom: 10px !important;
+        border-radius: 8px !important;
         width: 100% !important;
-        max-width: 100% !important;
         box-sizing: border-box !important;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
         background: white !important;
@@ -18943,18 +18944,15 @@ input[type="number"]::-webkit-outer-spin-button {
     }
     
     #step-cover-additional .building-checkbox-wrapper {
-        padding: 12px !important;
+        padding: 10px !important;
         margin-bottom: 8px !important;
-        border-radius: 8px !important;
+        border-radius: 6px !important;
         display: flex !important;
         align-items: center !important;
-        gap: 12px !important;
+        gap: 10px !important;
         background: #f7fafc !important;
         border: 1px solid #e2e8f0 !important;
         transition: all 0.2s ease !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
     }
     
     #step-cover-additional .building-checkbox-wrapper:hover {
@@ -18993,25 +18991,22 @@ input[type="number"]::-webkit-outer-spin-button {
     }
     
     #step-cover-additional .building-checkbox-wrapper label {
-        font-size: 14px !important;
-        line-height: 1.3 !important;
+        font-size: 16px !important;
+        line-height: 1.4 !important;
         margin: 0 !important;
         padding: 0 !important;
         flex: 1 !important;
         color: #2d3748 !important;
         cursor: pointer !important;
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-        max-width: calc(100% - 40px) !important;
     }
     
     /* ================= חלון הצעת מחיר סופית ================= */
     .completion-container {
-        padding: 12px !important;
+        padding: 10px !important;
         margin: 0 auto !important;
-        border-radius: 0 !important;
-        max-width: 95vw !important;
-        width: 95vw !important;
+        border-radius: 8px !important;
+        max-width: 90% !important;
+        width: 90vw !important;
         box-sizing: border-box !important;
         background: #f8fafc !important;
         min-height: 100vh !important;
@@ -19023,14 +19018,13 @@ input[type="number"]::-webkit-outer-spin-button {
     }
     
     .completion-title {
-        font-size: 24px !important;
+        font-size: 28px !important;
         line-height: 1.3 !important;
-        margin-bottom: 12px !important;
-        padding: 0 5px !important;
+        margin-bottom: 15px !important;
+        padding: 0 !important;
         text-align: center !important;
         font-weight: 700 !important;
         color: #1a202c !important;
-        word-wrap: break-word !important;
     }
     
     .completion-subtitle {
@@ -19043,11 +19037,10 @@ input[type="number"]::-webkit-outer-spin-button {
     }
     
     .verification-section {
-        padding: 14px !important;
-        margin-bottom: 16px !important;
-        border-radius: 10px !important;
+        padding: 15px !important;
+        margin-bottom: 15px !important;
+        border-radius: 8px !important;
         width: 100% !important;
-        max-width: 100% !important;
         box-sizing: border-box !important;
         background: white !important;
         border: 1px solid #e2e8f0 !important;
@@ -19071,30 +19064,27 @@ input[type="number"]::-webkit-outer-spin-button {
     }
     
     #phone-number {
-        padding: 12px !important;
-        font-size: 16px !important;
+        padding: 15px !important;
+        font-size: 18px !important;
         width: 100% !important;
-        max-width: 100% !important;
         box-sizing: border-box !important;
         border-radius: 8px !important;
-        height: 48px !important;
+        height: 54px !important;
         border: 2px solid #cbd5e0 !important;
     }
     
     .btn-send-code {
         width: 100% !important;
-        max-width: 100% !important;
-        padding: 12px !important;
-        font-size: 16px !important;
+        padding: 15px !important;
+        font-size: 18px !important;
         min-width: auto !important;
         border-radius: 8px !important;
-        height: 48px !important;
+        height: 54px !important;
         line-height: 1.2 !important;
         background: #3182ce !important;
         color: white !important;
         border: none !important;
         font-weight: 600 !important;
-        box-sizing: border-box !important;
     }
     
     .code-inputs {
@@ -19113,10 +19103,10 @@ input[type="number"]::-webkit-outer-spin-button {
     }
     
     .agency-info {
-        padding: 20px !important;
-        margin: 25px 0 !important;
+        padding: 15px !important;
+        margin: 20px 0 !important;
         text-align: center !important;
-        border-radius: 12px !important;
+        border-radius: 8px !important;
         background: white !important;
         border: 1px solid #e2e8f0 !important;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
@@ -19129,15 +19119,12 @@ input[type="number"]::-webkit-outer-spin-button {
     }
     
     .info-card {
-        padding: 14px !important;
-        border-radius: 10px !important;
+        padding: 15px !important;
+        border-radius: 8px !important;
         background: white !important;
         border: 1px solid #e2e8f0 !important;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
         text-align: center !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
     }
     
     .info-icon {
@@ -19162,14 +19149,13 @@ input[type="number"]::-webkit-outer-spin-button {
     
     /* כפתור קבל הצעת מחיר - בולט במיוחד */
     .btn-submit-final {
-        padding: 16px 24px !important;
-        font-size: 17px !important;
-        margin-top: 24px !important;
-        border-radius: 10px !important;
-        height: 56px !important;
+        padding: 15px 20px !important;
+        font-size: 18px !important;
+        margin: 20px 0 50px 0 !important;
+        border-radius: 8px !important;
+        height: 60px !important;
         line-height: 1.2 !important;
         width: 100% !important;
-        max-width: 100% !important;
         background: linear-gradient(135deg, #48bb78 0%, #38a169 100%) !important;
         color: white !important;
         border: none !important;
@@ -19178,7 +19164,6 @@ input[type="number"]::-webkit-outer-spin-button {
         transition: all 0.3s ease !important;
         position: relative !important;
         overflow: hidden !important;
-        box-sizing: border-box !important;
     }
     
     .btn-submit-final::before {
@@ -19259,11 +19244,7 @@ input[type="number"]::-webkit-outer-spin-button {
         position: relative !important;
         min-height: 100% !important;
         height: auto !important;
-        padding-bottom: 150px !important; /* רווח נוסף בתחתית לראות כפתורים */
-        margin: 0 auto !important;
-        max-width: 95vw !important;
-        width: 95vw !important;
-        box-sizing: border-box !important;
+        padding-bottom: 100px !important; /* רווח נוסף בתחתית */
     }
     
     /* תיקון לבעיות גלילה ב-iOS */
@@ -19288,12 +19269,12 @@ input[type="number"]::-webkit-outer-spin-button {
 @media screen and (max-width: 500px) and (orientation: portrait) {
     /* חלון כיסויים נוספים - התאמה לכל המסך בטלפון */
     #step-cover-additional .building-sections-container {
-        padding: 10px !important;
+        padding: 6px !important;
         margin: 0 auto !important;
-        max-width: 92vw !important;
-        width: 92vw !important;
+        max-width: 90% !important;
+        width: 90vw !important;
         box-sizing: border-box !important;
-        border-radius: 0 !important;
+        border-radius: 8px !important;
         background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%) !important;
         min-height: 100vh !important;
         height: auto !important;
@@ -19374,11 +19355,11 @@ input[type="number"]::-webkit-outer-spin-button {
     
     /* חלון סיום - התאמה לכל המסך בטלפון */
     .completion-container {
-        padding: 10px !important;
+        padding: 6px !important;
         margin: 0 auto !important;
-        border-radius: 0 !important;
-        max-width: 92vw !important;
-        width: 92vw !important;
+        border-radius: 8px !important;
+        max-width: 90% !important;
+        width: 90vw !important;
         box-sizing: border-box !important;
         background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%) !important;
         min-height: 100vh !important;
