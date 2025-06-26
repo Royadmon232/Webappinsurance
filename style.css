@@ -13492,3 +13492,292 @@ input[type="number"]::-webkit-outer-spin-button {
         font-size: 20px;
     }
 }
+
+/* התאמות מתקדמות למכשירים שונים - כיסויים נוספים ושלב סיום */
+
+/* iPhone 12/13/14 Portrait */
+@media only screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) {
+    #step-cover-additional .building-sections-container {
+        padding: 1.5rem 1.25rem;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 1.5rem;
+        margin-bottom: 1.25rem;
+    }
+    
+    .completion-container {
+        padding: 20px 18px;
+        margin: 12px 10px;
+    }
+    
+    .code-digit {
+        width: 46px;
+        height: 46px;
+        font-size: 1.2rem;
+    }
+}
+
+/* iPad Air/Pro Portrait */
+@media only screen and (device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait) {
+    #step-cover-additional .building-sections-container {
+        padding: 2.5rem 2rem;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 2rem 1.75rem;
+    }
+    
+    .completion-container {
+        padding: 35px 30px;
+        max-width: 650px;
+    }
+    
+    .info-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+/* Small Android phones */
+@media screen and (max-width: 360px) {
+    #step-cover-additional .building-sections-container {
+        padding: 1rem 0.75rem;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    #step-cover-additional .building-section-title {
+        font-size: 1.1rem;
+        line-height: 1.3;
+    }
+    
+    #step-cover-additional .coverage-explanation {
+        padding: 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .completion-container {
+        padding: 16px 10px;
+        margin: 8px 6px;
+    }
+    
+    .completion-title {
+        font-size: 1.15rem;
+        line-height: 1.2;
+    }
+    
+    .verification-section {
+        padding: 16px 12px;
+    }
+    
+    .code-digit {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+    
+    .info-card {
+        padding: 12px 8px;
+    }
+    
+    .info-icon {
+        font-size: 2rem;
+    }
+}
+
+/* Large Mobile Landscape */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    #step-cover-additional .building-sections-container {
+        padding: 1rem;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    #step-cover-additional .building-main-title {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .completion-container {
+        padding: 16px 20px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .completion-title {
+        font-size: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .verification-section {
+        padding: 16px 20px;
+        margin-bottom: 12px;
+    }
+    
+    .info-cards {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin: 16px 0;
+    }
+}
+
+/* Ultra-wide screens */
+@media screen and (min-width: 1920px) {
+    #step-cover-additional .building-sections-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 3rem 2.5rem;
+    }
+    
+    .completion-container {
+        max-width: 850px;
+        padding: 50px 40px;
+    }
+    
+    .info-cards {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+}
+
+/* Foldable devices - Galaxy Fold */
+@media screen and (max-width: 280px) {
+    #step-cover-additional .building-sections-container {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    #step-cover-additional .building-section-title {
+        font-size: 1rem;
+    }
+    
+    .completion-container {
+        padding: 12px 8px;
+        margin: 6px 4px;
+    }
+    
+    .code-digit {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+    
+    .code-inputs {
+        gap: 4px;
+    }
+}
+
+/* High density displays */
+@media screen and (-webkit-min-device-pixel-ratio: 3), 
+       screen and (min-resolution: 288dpi) {
+    #step-cover-additional .building-section {
+        border-width: 0.33px;
+    }
+    
+    .verification-section {
+        border-width: 0.67px;
+    }
+    
+    .code-digit {
+        border-width: 0.67px;
+    }
+}
+
+/* Touch optimizations */
+@media (pointer: coarse) and (hover: none) {
+    #step-cover-additional .building-checkbox-wrapper {
+        min-height: 48px;
+        padding: 1.25rem;
+    }
+    
+    #step-cover-additional .building-checkbox-wrapper input[type="checkbox"] {
+        width: 22px;
+        height: 22px;
+    }
+    
+    .btn-send-code,
+    .btn-submit-final {
+        min-height: 48px;
+        padding: 16px 24px;
+    }
+    
+    .code-digit {
+        min-width: 48px;
+        min-height: 48px;
+    }
+}
+
+/* Accessibility - High contrast mode */
+@media (prefers-contrast: high) {
+    #step-cover-additional .building-section,
+    .completion-container,
+    .verification-section {
+        border: 2px solid #000;
+        background: #fff;
+    }
+    
+    #step-cover-additional .building-section-title,
+    .completion-title,
+    .section-title {
+        color: #000;
+    }
+    
+    .btn-send-code,
+    .btn-submit-final {
+        border: 2px solid #000;
+    }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    #step-cover-additional .building-section,
+    #step-cover-additional .building-section:hover,
+    .verification-section:hover,
+    .info-card:hover {
+        transform: none !important;
+        transition: none !important;
+    }
+    
+    .completion-container::before {
+        animation: none !important;
+    }
+}
+
+/* Print styles */
+@media print {
+    #step-cover-additional .building-section,
+    .completion-container,
+    .verification-section {
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    
+    .btn-send-code,
+    .btn-submit-final {
+        border: 1px solid #000 !important;
+        background: white !important;
+        color: black !important;
+    }
+    
+    .code-digit {
+        border: 1px solid #000 !important;
+        background: white !important;
+    }
+}
