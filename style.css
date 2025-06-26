@@ -786,552 +786,6 @@ footer {
     }
 }
 
-/* ==========================================
-   עיצוב משודרג למובייל - חלונות כיסויים נוספים והצעת מחיר סופית
-   ========================================== */
-
-/* עיצוב מותאם למובייל בלבד - מכשירי טלפון במצב אורך */
-@media screen and (max-width: 768px) and (orientation: portrait) {
-    
-    /* === חלון כיסויים נוספים - עיצוב משודרג === */
-    #step-cover-additional {
-        padding: 10px;
-        background: #f8f9fa;
-        min-height: 100vh;
-    }
-    
-    #step-cover-additional .modal-body-grid {
-        padding: 0;
-        margin: 0;
-        width: 100%;
-    }
-    
-    /* כותרת ראשית משודרגת */
-    #step-cover-additional .building-main-title {
-        font-size: 24px;
-        font-weight: 700;
-        color: #1a1a2e;
-        text-align: center;
-        margin-bottom: 20px;
-        padding: 0 10px;
-        line-height: 1.3;
-    }
-    
-    #step-cover-additional .building-subtitle {
-        font-size: 15px;
-        color: #4a5568;
-        text-align: center;
-        margin-bottom: 25px;
-        padding: 0 10px;
-        line-height: 1.4;
-    }
-    
-    #step-cover-additional .building-sections-container {
-        width: 100%;
-        padding: 0;
-        overflow-x: hidden;
-    }
-    
-    /* סקשנים משודרגים */
-    #step-cover-additional .building-section {
-        width: calc(100% - 20px);
-        margin: 10px;
-        padding: 0;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    
-    #step-cover-additional .building-section:active {
-        transform: scale(0.98);
-    }
-    
-    /* כותרת סקשן משודרגת */
-    #step-cover-additional .building-section-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: #2d3748;
-        padding: 15px;
-        margin: 0;
-        background: linear-gradient(135deg, #f7fafc 0%, #e9ecef 100%);
-        border-bottom: 1px solid #e2e8f0;
-    }
-    
-    /* הסבר כיסוי משודרג */
-    #step-cover-additional .coverage-explanation {
-        padding: 15px;
-        margin: 0;
-        background: #f8f9fa;
-        border-radius: 0;
-    }
-    
-    #step-cover-additional .coverage-explanation p {
-        font-size: 14px;
-        line-height: 1.6;
-        color: #4a5568;
-        margin-bottom: 10px;
-    }
-    
-    /* רשימת כיסויים משודרגת */
-    #step-cover-additional .coverage-list {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-    }
-    
-    #step-cover-additional .coverage-list li {
-        font-size: 14px;
-        line-height: 1.5;
-        padding: 8px 0;
-        padding-right: 25px;
-        position: relative;
-        color: #2d3748;
-    }
-    
-    #step-cover-additional .coverage-list li::before {
-        content: "✓";
-        position: absolute;
-        right: 0;
-        top: 8px;
-        color: #27ae60;
-        font-weight: bold;
-        font-size: 16px;
-    }
-    
-    /* צ'קבוקסים משודרגים */
-    #step-cover-additional .building-checkbox-wrapper {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        padding: 15px;
-        margin: 0;
-        min-height: 60px;
-        background: white;
-        border-top: 1px solid #e2e8f0;
-        cursor: pointer;
-        transition: background 0.2s ease;
-    }
-    
-    #step-cover-additional .building-checkbox-wrapper:active {
-        background: #f7fafc;
-    }
-    
-    #step-cover-additional .building-checkbox-wrapper input[type="checkbox"] {
-        width: 24px;
-        height: 24px;
-        margin-left: 15px;
-        margin-right: 0;
-        flex-shrink: 0;
-        cursor: pointer;
-        -webkit-appearance: none;
-        appearance: none;
-        background: white;
-        border: 2px solid #cbd5e0;
-        border-radius: 6px;
-        position: relative;
-        transition: all 0.2s ease;
-    }
-    
-    #step-cover-additional .building-checkbox-wrapper input[type="checkbox"]:checked {
-        background: #4299e1;
-        border-color: #4299e1;
-    }
-    
-    #step-cover-additional .building-checkbox-wrapper input[type="checkbox"]:checked::after {
-        content: "✓";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: white;
-        font-size: 16px;
-        font-weight: bold;
-    }
-    
-    #step-cover-additional .building-checkbox-wrapper label {
-        flex: 1;
-        padding: 0 15px 0 0;
-        font-size: 15px;
-        line-height: 1.4;
-        color: #2d3748;
-        cursor: pointer;
-        user-select: none;
-    }
-    
-    /* שדות טופס משודרגים */
-    #step-cover-additional .building-form-group {
-        width: 100%;
-        padding: 15px;
-        margin: 0;
-        background: white;
-        border-top: 1px solid #e2e8f0;
-    }
-    
-    #step-cover-additional .building-form-group label {
-        font-size: 14px;
-        color: #4a5568;
-        margin-bottom: 8px;
-        display: block;
-    }
-    
-    #step-cover-additional .building-form-group input {
-        width: 100%;
-        padding: 12px 15px;
-        font-size: 16px;
-        border: 2px solid #e2e8f0;
-        border-radius: 8px;
-        background: white;
-        transition: all 0.2s ease;
-    }
-    
-    #step-cover-additional .building-form-group input:focus {
-        border-color: #4299e1;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
-    }
-    
-    /* === חלון הצעת מחיר סופית - עיצוב משודרג === */
-    #step-completion {
-        padding: 0;
-        background: #f8f9fa;
-        min-height: 100vh;
-        overflow-x: hidden;
-    }
-    
-    #step-completion .completion-container {
-        width: 100%;
-        max-width: 100%;
-        padding: 20px 15px;
-        background: white;
-        border-radius: 0;
-        box-shadow: none;
-    }
-    
-    /* כותרת משודרגת */
-    #step-completion .completion-title {
-        font-size: 26px;
-        font-weight: 700;
-        color: #1a1a2e;
-        text-align: center;
-        margin-bottom: 10px;
-        line-height: 1.3;
-    }
-    
-    #step-completion .completion-subtitle {
-        font-size: 16px;
-        color: #4a5568;
-        text-align: center;
-        margin-bottom: 30px;
-        line-height: 1.4;
-    }
-    
-    /* אייקון הצלחה */
-    #step-completion .completion-icon-wrapper {
-        margin-bottom: 25px;
-        text-align: center;
-    }
-    
-    #step-completion .completion-icon {
-        width: 90px;
-        height: 90px;
-        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-        border-radius: 50%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
-    }
-    
-    #step-completion .completion-icon svg {
-        width: 45px;
-        height: 45px;
-        color: white;
-    }
-    
-    /* סקציית אימות משודרגת */
-    #step-completion .verification-section {
-        background: #f8f9fa;
-        border-radius: 12px;
-        padding: 20px 15px;
-        margin-bottom: 25px;
-    }
-    
-    #step-completion .section-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: #2d3748;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    #step-completion .step-number {
-        width: 30px;
-        height: 30px;
-        background: #4299e1;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 16px;
-    }
-    
-    /* שדה טלפון משודרג */
-    #step-completion .phone-input-container {
-        width: 100%;
-        margin-bottom: 20px;
-    }
-    
-    #step-completion #phone-number {
-        width: 100%;
-        padding: 15px;
-        font-size: 18px;
-        border: 2px solid #e2e8f0;
-        border-radius: 10px;
-        text-align: center;
-        font-weight: 500;
-        letter-spacing: 1px;
-        transition: all 0.2s ease;
-    }
-    
-    #step-completion #phone-number:focus {
-        border-color: #4299e1;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
-    }
-    
-    /* כפתור שליחת קוד משודרג */
-    #step-completion .btn-send-code {
-        width: 100%;
-        padding: 16px;
-        font-size: 17px;
-        font-weight: 600;
-        background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
-        color: white;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(66, 153, 225, 0.3);
-    }
-    
-    #step-completion .btn-send-code:active {
-        transform: scale(0.98);
-    }
-    
-    /* שדות קוד אימות */
-    #step-completion .code-inputs {
-        width: 100%;
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 8px;
-        margin-bottom: 25px;
-    }
-    
-    #step-completion .code-digit {
-        width: 100%;
-        aspect-ratio: 1;
-        font-size: 20px;
-        font-weight: 600;
-        text-align: center;
-        border: 2px solid #e2e8f0;
-        border-radius: 10px;
-        background: white;
-        transition: all 0.2s ease;
-    }
-    
-    #step-completion .code-digit:focus {
-        border-color: #4299e1;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
-    }
-    
-    /* כרטיסי מידע משודרגים */
-    #step-completion .info-cards {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 15px;
-        margin-bottom: 25px;
-    }
-    
-    #step-completion .info-card {
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 18px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        transition: all 0.2s ease;
-    }
-    
-    #step-completion .info-card:active {
-        transform: scale(0.98);
-        background: #f8f9fa;
-    }
-    
-    #step-completion .info-icon {
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    
-    #step-completion .info-icon svg {
-        width: 28px;
-        height: 28px;
-        color: #2196f3;
-    }
-    
-    #step-completion .info-card h4 {
-        font-size: 16px;
-        font-weight: 600;
-        color: #2d3748;
-        margin-bottom: 5px;
-    }
-    
-    #step-completion .info-card p {
-        font-size: 14px;
-        color: #4a5568;
-        line-height: 1.4;
-    }
-    
-    /* כפתור קבל הצעת מחיר - משודרג ובולט */
-    #step-completion .btn-submit-final {
-        width: 100%;
-        padding: 20px;
-        font-size: 18px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.3);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    #step-completion .btn-submit-final::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: left 0.6s;
-    }
-    
-    #step-completion .btn-submit-final:active {
-        transform: scale(0.98);
-    }
-    
-    #step-completion .btn-submit-final:hover::before {
-        left: 100%;
-    }
-    
-    /* מידע סוכנות משודרג */
-    #step-completion .agency-info {
-        background: #f8f9fa;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 25px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-    
-    #step-completion .agency-logo {
-        width: 60px;
-        height: 60px;
-        background: white;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    }
-    
-    #step-completion .agency-details h4 {
-        font-size: 17px;
-        font-weight: 600;
-        color: #2d3748;
-        margin-bottom: 5px;
-    }
-    
-    #step-completion .agency-details p {
-        font-size: 14px;
-        color: #4a5568;
-        line-height: 1.4;
-    }
-    
-    /* גלילה חלקה */
-    #step-cover-additional,
-    #step-completion {
-        max-height: 100vh;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        scroll-behavior: smooth;
-    }
-}
-
-/* תיקונים נוספים למסכים קטנים מאוד */
-@media screen and (max-width: 375px) and (orientation: portrait) {
-    
-    #step-cover-additional .building-checkbox-wrapper label {
-        font-size: 14px;
-        padding-right: 30px;
-    }
-    
-    #step-cover-additional .building-checkbox-wrapper input[type="checkbox"] {
-        width: 20px;
-        height: 20px;
-    }
-    
-    #step-completion .code-digit {
-        width: calc(16.66% - 5px);
-        max-width: 45px;
-        height: 45px;
-        font-size: 18px;
-    }
-    
-    #step-completion .completion-title {
-        font-size: 22px;
-    }
-    
-    #step-completion .completion-subtitle {
-        font-size: 15px;
-    }
-}
-
-/* תמיכה במכשירים עם מסך מגע */
-@media (pointer: coarse) and (max-width: 768px) {
-    
-    #step-cover-additional .building-checkbox-wrapper,
-    #step-completion .info-card {
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-    }
-    
-    #step-cover-additional .building-checkbox-wrapper:active,
-    #step-completion .info-card:active {
-        opacity: 0.8;
-    }
-}
-
 @media (max-width: 480px) {
     .hero h1 {
         font-size: 2rem;
@@ -6342,67 +5796,6 @@ footer {
     .btn-submit {
         padding: 10px 20px;
         font-size: 0.85rem;
-    }
-}
-
-/* תיקונים נוספים לגלילה במובייל - חשוב מאוד! */
-@media screen and (max-width: 768px) and (touch-enabled) {
-    /* מוודא שהחלונות תופסים את כל המסך אבל מאפשרים גלילה */
-    #step-cover-additional,
-    #step-completion {
-        position: relative !important;
-        min-height: 100vh !important;
-        height: auto !important;
-        overflow-y: visible !important;
-        overflow-x: hidden !important;
-    }
-    
-    /* התוכן הפנימי שאמור להיות ניתן לגלילה */
-    #step-cover-additional > *,
-    #step-completion > * {
-        height: 100% !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        overscroll-behavior: contain !important;
-    }
-}
-
-/* תיקון ספציפי ל-iOS */
-@supports (-webkit-touch-callout: none) {
-    #step-cover-additional .building-sections-container,
-    #step-completion .completion-container {
-        /* מונע באג גלילה ב-iOS */
-        transform: translateZ(0) !important;
-        -webkit-transform: translateZ(0) !important;
-    }
-}
-
-/* וידוא שאפשר לגלול בכל מצב */
-@media (max-width: 768px) {
-    html.modal-open,
-    body.modal-open {
-        height: 100% !important;
-        overflow: hidden !important;
-        position: fixed !important;
-        width: 100% !important;
-    }
-    
-    .modal-open #step-cover-additional,
-    .modal-open #step-completion {
-        position: fixed !important;
-        top: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        overflow: hidden !important;
-    }
-    
-    .modal-open #step-cover-additional .building-sections-container,
-    .modal-open #step-completion .completion-container {
-        height: 100vh !important;
-        overflow-y: scroll !important;
-        -webkit-overflow-scrolling: touch !important;
-        scroll-behavior: smooth !important;
     }
 }
 
@@ -14291,6 +13684,11 @@ input:disabled {
     margin-bottom: 3rem;
 }
 
+.footer-column h3,
+.footer-column h4 {
+    margin-bottom: 1rem;
+}
+
 .footer-column p {
     color: rgba(255, 255, 255, 0.8);
     line-height: 1.6;
@@ -18874,392 +18272,292 @@ input[type="number"]::-webkit-outer-spin-button {
     }
 }
 
-/* עיצוב משודרג למובייל - חלונות כיסויים נוספים והצעת מחיר סופית */
-/* עדכון בתאריך: ${new Date().toLocaleDateString('he-IL')} */
-@media screen and (max-width: 768px) and (orientation: portrait) {
-    /* ================= חלון כיסויים נוספים ================= */
+/* התאמות מתקדמות למכשירים שונים - כיסויים נוספים ושלב סיום */
+
+/* iPhone 12/13/14 Portrait */
+@media only screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) {
     #step-cover-additional .building-sections-container {
-        padding: 10px !important;
-        margin: 0 auto !important;
-        max-width: 90% !important;
-        width: 90vw !important;
-        box-sizing: border-box !important;
-        background: #f8fafc !important;
-        min-height: 100vh !important;
-        height: auto !important;
-        overflow-y: visible !important;
-        overflow-x: hidden !important;
-        position: relative !important;
-        -webkit-overflow-scrolling: touch !important;
-        border-radius: 8px !important;
-    }
-    
-    #step-cover-additional .building-main-title {
-        font-size: 26px !important;
-        line-height: 1.3 !important;
-        margin-bottom: 15px !important;
-        padding: 0 !important;
-        text-align: center !important;
-        font-weight: 700 !important;
-        color: #1a202c !important;
-    }
-    
-    #step-cover-additional .building-subtitle {
-        font-size: 16px !important;
-        margin-bottom: 20px !important;
-        padding: 0 !important;
-        text-align: center !important;
-        line-height: 1.4 !important;
-        color: #4a5568 !important;
+        padding: 1.5rem 1.25rem;
     }
     
     #step-cover-additional .building-section {
-        padding: 12px !important;
-        margin-bottom: 10px !important;
-        border-radius: 8px !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
-        background: white !important;
-        border: 1px solid #e2e8f0 !important;
+        padding: 1.5rem;
+        margin-bottom: 1.25rem;
     }
     
-    #step-cover-additional .building-section-title {
-        font-size: 20px !important;
-        line-height: 1.3 !important;
-        margin-bottom: 15px !important;
-        padding: 0 !important;
-        color: #2d3748 !important;
-        font-weight: 600 !important;
-    }
-    
-    #step-cover-additional .coverage-explanation {
-        padding: 15px !important;
-        margin-bottom: 15px !important;
-        font-size: 15px !important;
-        line-height: 1.5 !important;
-        border-radius: 8px !important;
-        background: #f7fafc !important;
-        border: 1px solid #e2e8f0 !important;
-    }
-    
-    #step-cover-additional .building-checkbox-wrapper {
-        padding: 10px !important;
-        margin-bottom: 8px !important;
-        border-radius: 6px !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 10px !important;
-        background: #f7fafc !important;
-        border: 1px solid #e2e8f0 !important;
-        transition: all 0.2s ease !important;
-    }
-    
-    #step-cover-additional .building-checkbox-wrapper:hover {
-        background: #edf2f7 !important;
-        border-color: #cbd5e0 !important;
-    }
-    
-    #step-cover-additional .building-checkbox-wrapper input[type="checkbox"] {
-        width: 26px !important;
-        height: 26px !important;
-        margin: 0 !important;
-        flex-shrink: 0 !important;
-        cursor: pointer !important;
-        -webkit-appearance: none !important;
-        appearance: none !important;
-        background: white !important;
-        border: 2px solid #cbd5e0 !important;
-        border-radius: 4px !important;
-        position: relative !important;
-    }
-    
-    #step-cover-additional .building-checkbox-wrapper input[type="checkbox"]:checked {
-        background: #3182ce !important;
-        border-color: #3182ce !important;
-    }
-    
-    #step-cover-additional .building-checkbox-wrapper input[type="checkbox"]:checked::after {
-        content: '✓' !important;
-        position: absolute !important;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        color: white !important;
-        font-size: 16px !important;
-        font-weight: bold !important;
-    }
-    
-    #step-cover-additional .building-checkbox-wrapper label {
-        font-size: 16px !important;
-        line-height: 1.4 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        flex: 1 !important;
-        color: #2d3748 !important;
-        cursor: pointer !important;
-    }
-    
-    /* ================= חלון הצעת מחיר סופית ================= */
     .completion-container {
-        padding: 10px !important;
-        margin: 0 auto !important;
-        border-radius: 8px !important;
-        max-width: 90% !important;
-        width: 90vw !important;
-        box-sizing: border-box !important;
-        background: #f8fafc !important;
-        min-height: 100vh !important;
-        height: auto !important;
-        overflow-y: visible !important;
-        overflow-x: hidden !important;
-        position: relative !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-    
-    .completion-title {
-        font-size: 28px !important;
-        line-height: 1.3 !important;
-        margin-bottom: 15px !important;
-        padding: 0 !important;
-        text-align: center !important;
-        font-weight: 700 !important;
-        color: #1a202c !important;
-    }
-    
-    .completion-subtitle {
-        font-size: 18px !important;
-        line-height: 1.4 !important;
-        margin-bottom: 25px !important;
-        padding: 0 !important;
-        text-align: center !important;
-        color: #4a5568 !important;
-    }
-    
-    .verification-section {
-        padding: 15px !important;
-        margin-bottom: 15px !important;
-        border-radius: 8px !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-        background: white !important;
-        border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
-    }
-    
-    .section-title {
-        font-size: 20px !important;
-        margin-bottom: 20px !important;
-        line-height: 1.3 !important;
-        text-align: center !important;
-        color: #2d3748 !important;
-        font-weight: 600 !important;
-    }
-    
-    .phone-input-container {
-        flex-direction: column !important;
-        gap: 15px !important;
-        width: 100% !important;
-        align-items: stretch !important;
-    }
-    
-    #phone-number {
-        padding: 15px !important;
-        font-size: 18px !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-        border-radius: 8px !important;
-        height: 54px !important;
-        border: 2px solid #cbd5e0 !important;
-    }
-    
-    .btn-send-code {
-        width: 100% !important;
-        padding: 15px !important;
-        font-size: 18px !important;
-        min-width: auto !important;
-        border-radius: 8px !important;
-        height: 54px !important;
-        line-height: 1.2 !important;
-        background: #3182ce !important;
-        color: white !important;
-        border: none !important;
-        font-weight: 600 !important;
-    }
-    
-    .code-inputs {
-        gap: 10px !important;
-        margin: 20px 0 !important;
-        justify-content: center !important;
+        padding: 20px 18px;
+        margin: 12px 10px;
     }
     
     .code-digit {
-        width: 50px !important;
-        height: 50px !important;
-        font-size: 22px !important;
-        border-radius: 8px !important;
-        line-height: 1 !important;
-        border: 2px solid #cbd5e0 !important;
+        width: 46px;
+        height: 46px;
+        font-size: 1.2rem;
+    }
+}
+
+/* iPad Air/Pro Portrait */
+@media only screen and (device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait) {
+    #step-cover-additional .building-sections-container {
+        padding: 2.5rem 2rem;
+        max-width: 700px;
+        margin: 0 auto;
     }
     
-    .agency-info {
-        padding: 15px !important;
-        margin: 20px 0 !important;
-        text-align: center !important;
-        border-radius: 8px !important;
-        background: white !important;
-        border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    #step-cover-additional .building-section {
+        padding: 2rem 1.75rem;
+    }
+    
+    .completion-container {
+        padding: 35px 30px;
+        max-width: 650px;
     }
     
     .info-cards {
-        grid-template-columns: 1fr !important;
-        gap: 15px !important;
-        margin: 25px 0 !important;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+/* Small Android phones */
+@media screen and (max-width: 360px) {
+    #step-cover-additional .building-sections-container {
+        padding: 1rem 0.75rem;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    #step-cover-additional .building-section-title {
+        font-size: 1.1rem;
+        line-height: 1.3;
+    }
+    
+    #step-cover-additional .coverage-explanation {
+        padding: 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .completion-container {
+        padding: 16px 10px;
+        margin: 8px 6px;
+    }
+    
+    .completion-title {
+        font-size: 1.15rem;
+        line-height: 1.2;
+    }
+    
+    .verification-section {
+        padding: 16px 12px;
+    }
+    
+    .code-digit {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
     }
     
     .info-card {
-        padding: 15px !important;
-        border-radius: 8px !important;
-        background: white !important;
-        border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
-        text-align: center !important;
+        padding: 12px 8px;
     }
     
     .info-icon {
-        font-size: 36px !important;
-        margin-bottom: 12px !important;
-        color: #3182ce !important;
-    }
-    
-    .info-card h4 {
-        font-size: 18px !important;
-        margin-bottom: 10px !important;
-        line-height: 1.3 !important;
-        font-weight: 600 !important;
-        color: #2d3748 !important;
-    }
-    
-    .info-card p {
-        font-size: 15px !important;
-        line-height: 1.4 !important;
-        color: #4a5568 !important;
-    }
-    
-    /* כפתור קבל הצעת מחיר - בולט במיוחד */
-    .btn-submit-final {
-        padding: 15px 20px !important;
-        font-size: 18px !important;
-        margin: 20px 0 50px 0 !important;
-        border-radius: 8px !important;
-        height: 60px !important;
-        line-height: 1.2 !important;
-        width: 100% !important;
-        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%) !important;
-        color: white !important;
-        border: none !important;
-        font-weight: 700 !important;
-        box-shadow: 0 4px 14px rgba(72, 187, 120, 0.4) !important;
-        transition: all 0.3s ease !important;
-        position: relative !important;
-        overflow: hidden !important;
-    }
-    
-    .btn-submit-final::before {
-        content: '' !important;
-        position: absolute !important;
-        top: 0 !important;
-        left: -100% !important;
-        width: 100% !important;
-        height: 100% !important;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent) !important;
-        transition: left 0.5s ease !important;
-    }
-    
-    .btn-submit-final:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px rgba(72, 187, 120, 0.5) !important;
-    }
-    
-    .btn-submit-final:hover::before {
-        left: 100% !important;
-    }
-    
-    .btn-submit-final:active {
-        transform: translateY(0) !important;
-        box-shadow: 0 2px 10px rgba(72, 187, 120, 0.4) !important;
+        font-size: 2rem;
     }
 }
 
-/* התאמות למכשירים קטנים במיוחד */
-@media screen and (max-width: 375px) and (orientation: portrait) {
-    #step-cover-additional .building-sections-container,
+/* Large Mobile Landscape */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    #step-cover-additional .building-sections-container {
+        padding: 1rem;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    #step-cover-additional .building-main-title {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
     .completion-container {
-        padding: 10px !important;
+        padding: 16px 20px;
+        max-height: 90vh;
+        overflow-y: auto;
     }
     
-    #step-cover-additional .building-main-title,
     .completion-title {
-        font-size: 24px !important;
+        font-size: 1.5rem;
+        margin-bottom: 0.75rem;
     }
     
-    #step-cover-additional .building-section,
-    .verification-section,
-    .info-card {
-        padding: 15px !important;
+    .verification-section {
+        padding: 16px 20px;
+        margin-bottom: 12px;
     }
     
-    .btn-submit-final {
-        font-size: 18px !important;
-        height: 60px !important;
+    .info-cards {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin: 16px 0;
     }
 }
 
-/* תיקון בעיות גלילה במובייל */
-@media screen and (max-width: 768px) {
-    /* מונע בעיות גלילה בחלונות */
-    body.modal-open {
-        position: fixed !important;
-        width: 100% !important;
-        overflow: hidden !important;
+/* Ultra-wide screens */
+@media screen and (min-width: 1920px) {
+    #step-cover-additional .building-sections-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 3rem 2.5rem;
     }
     
-    /* מאפשר גלילה בתוך החלונות */
-    #step-cover-additional,
-    #step-completion {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        z-index: 9999 !important;
+    .completion-container {
+        max-width: 850px;
+        padding: 50px 40px;
     }
     
-    /* מוודא שהתוכן ניתן לגלילה */
-    #step-cover-additional .building-sections-container,
-    #step-completion .completion-container {
-        position: relative !important;
-        min-height: 100% !important;
-        height: auto !important;
-        padding-bottom: 100px !important; /* רווח נוסף בתחתית */
+    .info-cards {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+}
+
+/* Foldable devices - Galaxy Fold */
+@media screen and (max-width: 280px) {
+    #step-cover-additional .building-sections-container {
+        padding: 0.75rem 0.5rem;
     }
     
-    /* תיקון לבעיות גלילה ב-iOS */
-    #step-cover-additional .building-sections-container::-webkit-scrollbar,
-    #step-completion .completion-container::-webkit-scrollbar {
-        display: none !important;
+    #step-cover-additional .building-section {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
     }
     
-    /* מוודא שאפשר לגלול עד הסוף */
-    #step-cover-additional .building-sections-container::after,
-    #step-completion .completion-container::after {
-        content: '' !important;
-        display: block !important;
-        height: 50px !important;
-        width: 100% !important;
+    #step-cover-additional .building-section-title {
+        font-size: 1rem;
+    }
+    
+    .completion-container {
+        padding: 12px 8px;
+        margin: 6px 4px;
+    }
+    
+    .code-digit {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+    
+    .code-inputs {
+        gap: 4px;
+    }
+}
+
+/* High density displays */
+@media screen and (-webkit-min-device-pixel-ratio: 3), 
+       screen and (min-resolution: 288dpi) {
+    #step-cover-additional .building-section {
+        border-width: 0.33px;
+    }
+    
+    .verification-section {
+        border-width: 0.67px;
+    }
+    
+    .code-digit {
+        border-width: 0.67px;
+    }
+}
+
+/* Touch optimizations */
+@media (pointer: coarse) and (hover: none) {
+    #step-cover-additional .building-checkbox-wrapper {
+        min-height: 48px;
+        padding: 1.25rem;
+    }
+    
+    #step-cover-additional .building-checkbox-wrapper input[type="checkbox"] {
+        width: 22px;
+        height: 22px;
+    }
+    
+    .btn-send-code,
+    .btn-submit-final {
+        min-height: 48px;
+        padding: 16px 24px;
+    }
+    
+    .code-digit {
+        min-width: 48px;
+        min-height: 48px;
+    }
+}
+
+/* Accessibility - High contrast mode */
+@media (prefers-contrast: high) {
+    #step-cover-additional .building-section,
+    .completion-container,
+    .verification-section {
+        border: 2px solid #000;
+        background: #fff;
+    }
+    
+    #step-cover-additional .building-section-title,
+    .completion-title,
+    .section-title {
+        color: #000;
+    }
+    
+    .btn-send-code,
+    .btn-submit-final {
+        border: 2px solid #000;
+    }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    #step-cover-additional .building-section,
+    #step-cover-additional .building-section:hover,
+    .verification-section:hover,
+    .info-card:hover {
+        transform: none !important;
+        transition: none !important;
+    }
+    
+    .completion-container::before {
+        animation: none !important;
+    }
+}
+
+/* Print styles */
+@media print {
+    #step-cover-additional .building-section,
+    .completion-container,
+    .verification-section {
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    
+    .btn-send-code,
+    .btn-submit-final {
+        border: 1px solid #000 !important;
+        background: white !important;
+        color: black !important;
+    }
+    
+    .code-digit {
+        border: 1px solid #000 !important;
+        background: white !important;
     }
 }
 
@@ -19269,18 +18567,20 @@ input[type="number"]::-webkit-outer-spin-button {
 @media screen and (max-width: 500px) and (orientation: portrait) {
     /* חלון כיסויים נוספים - התאמה לכל המסך בטלפון */
     #step-cover-additional .building-sections-container {
-        padding: 6px !important;
-        margin: 0 auto !important;
-        max-width: 90% !important;
-        width: 90vw !important;
+        padding: 8px !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100vw !important;
         box-sizing: border-box !important;
-        border-radius: 8px !important;
+        border-radius: 0 !important;
         background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%) !important;
-        min-height: 100vh !important;
-        height: auto !important;
-        position: relative !important;
-        overflow-y: visible !important;
-        overflow-x: hidden !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        z-index: 9999 !important;
+        overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
     }
     
@@ -19355,21 +18655,22 @@ input[type="number"]::-webkit-outer-spin-button {
     
     /* חלון סיום - התאמה לכל המסך בטלפון */
     .completion-container {
-        padding: 6px !important;
-        margin: 0 auto !important;
-        border-radius: 8px !important;
-        max-width: 90% !important;
-        width: 90vw !important;
+        padding: 8px !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        max-width: 100% !important;
+        width: 100vw !important;
         box-sizing: border-box !important;
         background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%) !important;
-        min-height: 100vh !important;
-        height: auto !important;
-        overflow-y: visible !important;
-        overflow-x: hidden !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow-y: auto !important;
         box-shadow: none !important;
         border: none !important;
-        position: relative !important;
-        -webkit-overflow-scrolling: touch !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        z-index: 9999 !important;
     }
     
     .completion-header {
