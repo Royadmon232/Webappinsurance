@@ -4385,6 +4385,12 @@ function updateContentsDropdownsForCoverageType(coverageType) {
         if (watchesCoverageSelect) {
             watchesCoverageSelect.value = 'מקיף';
             watchesCoverageSelect.disabled = true;
+            
+            // Update the default option text to show "מקיף"
+            const defaultOption = watchesCoverageSelect.querySelector('option[value=""]');
+            if (defaultOption) {
+                defaultOption.textContent = 'מקיף';
+            }
         }
     } else {
         // Enable jewelry coverage dropdown
@@ -4395,6 +4401,12 @@ function updateContentsDropdownsForCoverageType(coverageType) {
         // Enable watches coverage dropdown
         if (watchesCoverageSelect) {
             watchesCoverageSelect.disabled = false;
+            
+            // Restore the default option text
+            const defaultOption = watchesCoverageSelect.querySelector('option[value=""]');
+            if (defaultOption) {
+                defaultOption.textContent = 'בחר סוג כיסוי';
+            }
         }
     }
 }
