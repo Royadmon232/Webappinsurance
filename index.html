@@ -19,6 +19,7 @@
     
     <!-- CSS -->
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="modal-enhancements.css">
     
     <!-- Feather Icons -->
     <script src="https://unpkg.com/feather-icons"></script>
@@ -543,6 +544,69 @@
                 <div class="modal-header">
                     <h2>פרטים כלליים</h2>
                     <span class="close" onclick="window.HomeInsuranceApp.closeGeneralDetailsModal()">&times;</span>
+                </div>
+                <!-- Progress Indicator -->
+                <div class="progress-indicator-wrapper">
+                    <div class="progress-indicator">
+                        <div class="progress-step-indicator active" data-step="1">
+                            <div class="step-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
+                                </svg>
+                                <span class="step-number">1</span>
+                            </div>
+                            <div class="step-info">
+                                <span class="step-title">פרטים כלליים</span>
+                                <span class="step-subtitle">פרטים אישיים וכתובת</span>
+                            </div>
+                        </div>
+                        <div class="progress-line"></div>
+                        <div class="progress-step-indicator" data-step="2">
+                            <div class="step-icon">
+                                <span class="step-number">2</span>
+                            </div>
+                            <div class="step-info">
+                                <span class="step-title">מבנה</span>
+                                <span class="step-subtitle">פרטי המבנה וכיסויים</span>
+                            </div>
+                        </div>
+                        <div class="progress-line"></div>
+                        <div class="progress-step-indicator" data-step="3">
+                            <div class="step-icon">
+                                <span class="step-number">3</span>
+                            </div>
+                            <div class="step-info">
+                                <span class="step-title">תכולה</span>
+                                <span class="step-subtitle">פרטי התכולה וערך</span>
+                            </div>
+                        </div>
+                        <div class="progress-line"></div>
+                        <div class="progress-step-indicator" data-step="4">
+                            <div class="step-icon">
+                                <span class="step-number">4</span>
+                            </div>
+                            <div class="step-info">
+                                <span class="step-title">כיסויים נוספים</span>
+                                <span class="step-subtitle">הרחבות וכיסויים מיוחדים</span>
+                            </div>
+                        </div>
+                        <div class="progress-line"></div>
+                        <div class="progress-step-indicator" data-step="5">
+                            <div class="step-icon">
+                                <span class="step-number">5</span>
+                            </div>
+                            <div class="step-info">
+                                <span class="step-title">סיום</span>
+                                <span class="step-subtitle">אימות וקבלת הצעה</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress-bar-wrapper">
+                        <div class="progress-bar-background">
+                            <div class="progress-bar-fill" style="width: 20%"></div>
+                        </div>
+                        <span class="progress-percentage">20%</span>
+                    </div>
                 </div>
                 <div class="modal-body">
                     <!-- Step 1: General Details (centered) -->
