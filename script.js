@@ -147,6 +147,9 @@ function initStepWizard() {
     
     // Update navigation buttons
     updateWizardNavigation();
+    
+    // Update progress indicator
+    updateProgressIndicator();
 }
 
 /**
@@ -228,6 +231,9 @@ function showWizardStep(stepIndex) {
     
     // Update navigation
     updateWizardNavigation();
+    
+    // Update progress indicator
+    updateProgressIndicator();
 }
 
 /**
