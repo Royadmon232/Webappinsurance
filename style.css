@@ -13781,3 +13781,342 @@ input[type="number"]::-webkit-outer-spin-button {
         background: white !important;
     }
 }
+
+/* התאמות קיצוניות לטלפון - שמירת העיצוב אך התאמה מושלמת למסך */
+
+/* כל הטלפונים - התאמה גנרית */
+@media screen and (max-width: 500px) {
+    /* חלון כיסויים נוספים */
+    #step-cover-additional .building-sections-container {
+        padding: 8px !important;
+        margin: 4px !important;
+        max-width: 100% !important;
+        width: calc(100vw - 16px) !important;
+        box-sizing: border-box !important;
+    }
+    
+    #step-cover-additional .building-main-title {
+        font-size: 1.25rem !important;
+        line-height: 1.3 !important;
+        margin-bottom: 8px !important;
+        padding: 0 4px !important;
+    }
+    
+    #step-cover-additional .building-subtitle {
+        font-size: 0.9rem !important;
+        margin-bottom: 12px !important;
+        padding: 0 4px !important;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 8px !important;
+        margin-bottom: 8px !important;
+        border-radius: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    #step-cover-additional .building-section-title {
+        font-size: 1rem !important;
+        line-height: 1.2 !important;
+        margin-bottom: 8px !important;
+        padding: 0 2px !important;
+    }
+    
+    #step-cover-additional .coverage-explanation {
+        padding: 8px !important;
+        margin-bottom: 8px !important;
+        font-size: 0.8rem !important;
+        border-radius: 6px !important;
+    }
+    
+    #step-cover-additional .building-checkbox-wrapper {
+        padding: 8px !important;
+        margin-bottom: 6px !important;
+        border-radius: 6px !important;
+    }
+    
+    #step-cover-additional .building-checkbox-wrapper label {
+        font-size: 0.85rem !important;
+        line-height: 1.3 !important;
+    }
+    
+    /* חלון סיום */
+    .completion-container {
+        padding: 8px !important;
+        margin: 4px !important;
+        border-radius: 8px !important;
+        max-width: 100% !important;
+        width: calc(100vw - 16px) !important;
+        box-sizing: border-box !important;
+    }
+    
+    .completion-header {
+        margin-bottom: 16px !important;
+    }
+    
+    .completion-title {
+        font-size: 1.1rem !important;
+        line-height: 1.2 !important;
+        margin-bottom: 8px !important;
+        padding: 0 4px !important;
+    }
+    
+    .completion-subtitle {
+        font-size: 0.8rem !important;
+        line-height: 1.3 !important;
+        margin-bottom: 16px !important;
+        padding: 0 4px !important;
+    }
+    
+    .verification-section {
+        padding: 8px !important;
+        margin-bottom: 12px !important;
+        border-radius: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .section-title {
+        font-size: 1rem !important;
+        margin-bottom: 12px !important;
+        gap: 6px !important;
+    }
+    
+    .step-number {
+        width: 24px !important;
+        height: 24px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .phone-input-container {
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+    
+    #phone-number {
+        padding: 10px !important;
+        font-size: 0.9rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .btn-send-code {
+        width: 100% !important;
+        padding: 10px !important;
+        font-size: 0.8rem !important;
+        min-width: auto !important;
+    }
+    
+    .code-inputs {
+        gap: 4px !important;
+        margin: 12px 0 !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+    }
+    
+    .code-digit {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 1rem !important;
+        border-radius: 6px !important;
+    }
+    
+    .agency-info {
+        padding: 8px !important;
+        margin: 12px 0 !important;
+        flex-direction: column !important;
+        text-align: center !important;
+        border-radius: 8px !important;
+    }
+    
+    .info-cards {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+        margin: 12px 0 !important;
+    }
+    
+    .info-card {
+        padding: 8px !important;
+        border-radius: 8px !important;
+    }
+    
+    .info-icon {
+        font-size: 1.5rem !important;
+        margin-bottom: 6px !important;
+    }
+    
+    .info-card h4 {
+        font-size: 0.9rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .info-card p {
+        font-size: 0.75rem !important;
+        line-height: 1.3 !important;
+    }
+    
+    .btn-submit-final {
+        padding: 12px !important;
+        font-size: 0.9rem !important;
+        margin-top: 16px !important;
+        border-radius: 8px !important;
+    }
+}
+
+/* מכשירים קטנים במיוחד */
+@media screen and (max-width: 375px) {
+    #step-cover-additional .building-sections-container {
+        padding: 6px !important;
+        margin: 2px !important;
+    }
+    
+    #step-cover-additional .building-main-title {
+        font-size: 1.1rem !important;
+        margin-bottom: 6px !important;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 6px !important;
+        margin-bottom: 6px !important;
+    }
+    
+    #step-cover-additional .building-section-title {
+        font-size: 0.9rem !important;
+    }
+    
+    .completion-container {
+        padding: 6px !important;
+        margin: 2px !important;
+    }
+    
+    .completion-title {
+        font-size: 1rem !important;
+    }
+    
+    .code-digit {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 0.9rem !important;
+    }
+}
+
+/* מכשירים זעירים */
+@media screen and (max-width: 320px) {
+    #step-cover-additional .building-sections-container {
+        padding: 4px !important;
+        margin: 1px !important;
+    }
+    
+    #step-cover-additional .building-main-title {
+        font-size: 1rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 4px !important;
+        margin-bottom: 4px !important;
+    }
+    
+    #step-cover-additional .building-section-title {
+        font-size: 0.85rem !important;
+    }
+    
+    .completion-container {
+        padding: 4px !important;
+        margin: 1px !important;
+    }
+    
+    .completion-title {
+        font-size: 0.95rem !important;
+    }
+    
+    .code-digit {
+        width: 26px !important;
+        height: 26px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .code-inputs {
+        gap: 2px !important;
+    }
+}
+
+/* טלפון במצב לנדסקייפ (רוחב יותר אך גובה פחות) */
+@media screen and (max-height: 600px) and (orientation: landscape) and (max-width: 900px) {
+    #step-cover-additional .building-sections-container {
+        padding: 6px !important;
+        margin: 2px !important;
+        max-height: 85vh !important;
+        overflow-y: auto !important;
+    }
+    
+    #step-cover-additional .building-main-title {
+        font-size: 1.1rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    #step-cover-additional .building-section {
+        padding: 6px !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .completion-container {
+        padding: 6px !important;
+        margin: 2px !important;
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+    }
+    
+    .completion-header {
+        margin-bottom: 8px !important;
+    }
+    
+    .completion-title {
+        font-size: 1rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .verification-section {
+        padding: 6px !important;
+        margin-bottom: 6px !important;
+    }
+    
+    .info-cards {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px !important;
+        margin: 8px 0 !important;
+    }
+    
+    .code-inputs {
+        margin: 8px 0 !important;
+    }
+}
+
+/* התאמות נוספות לגדלי מסך ספציפיים */
+@media screen and (max-width: 414px) and (max-height: 896px) {
+    /* iPhone XR, 11, 12, 13, 14 */
+    #step-cover-additional .building-sections-container {
+        width: calc(100vw - 12px) !important;
+        padding: 6px !important;
+    }
+    
+    .completion-container {
+        width: calc(100vw - 12px) !important;
+        padding: 6px !important;
+    }
+}
+
+@media screen and (max-width: 393px) and (max-height: 852px) {
+    /* iPhone 14 Pro */
+    #step-cover-additional .building-sections-container {
+        width: calc(100vw - 10px) !important;
+        padding: 5px !important;
+    }
+    
+    .completion-container {
+        width: calc(100vw - 10px) !important;
+        padding: 5px !important;
+    }
+}
