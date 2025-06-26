@@ -3671,10 +3671,10 @@ const STREET_NAME_FIELD = 'שם_רחוב';
             try {
                 const API_URL = 'https://data.gov.il/api/3/action/datastore_search';
                 const RESOURCE_ID = '9ad3862c-8391-4b2f-84a4-2d4c68625f4b';
-                // Use 'q' for a more flexible full-text search instead of 'filters' for an exact match.
-                // This helps handle inconsistencies in city name spellings in the database.
-                const queryParams = JSON.stringify({ 'שם_ישוב': selectedCity });
-                const url = `${API_URL}?resource_id=${RESOURCE_ID}&q=${encodeURIComponent(queryParams)}&limit=32000`;
+                // Use 'filters' for exact city match to prevent getting streets from other cities
+                const filters = { 'שם_ישוב': selectedCity };
+                const filtersStr = encodeURIComponent(JSON.stringify(filters));
+                const url = `${API_URL}?resource_id=${RESOURCE_ID}&filters=${filtersStr}&limit=32000`;
 
                 const response = await fetch(url);
                 if (!response.ok) {
@@ -3682,9 +3682,12 @@ const STREET_NAME_FIELD = 'שם_רחוב';
                 }
                 const data = await response.json();
                 
-                // Sort streets alphabetically in Hebrew and ensure they are unique.
+                // Filter records to ensure they belong to the selected city and sort alphabetically
                 const streets = data.success && data.result.records
-                    ? [...new Set(data.result.records.map(r => r['שם_רחוב'].trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'he'))
+                    ? [...new Set(data.result.records
+                        .filter(r => r['שם_ישוב'] === selectedCity && r['שם_רחוב'] && r['שם_רחוב'].trim())
+                        .map(r => r['שם_רחוב'].trim()))]
+                        .sort((a, b) => a.localeCompare(b, 'he'))
                     : [];
 
                 streetCache.set(selectedCity, streets);
