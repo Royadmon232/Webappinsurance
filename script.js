@@ -142,6 +142,9 @@ function initStepWizard() {
     // Build steps array based on product type
     buildWizardSteps();
     
+    // Initialize progress indicator
+    initWizardProgress();
+    
     // Show first step
     showWizardStep(0);
     
@@ -195,6 +198,12 @@ function buildWizardSteps() {
     
     // Always add completion step at the end
     wizardSteps.push('step-completion');
+    
+    // Update progress indicator if it exists
+    const progressContainer = document.getElementById('wizard-progress-container');
+    if (progressContainer) {
+        initWizardProgress();
+    }
 }
 
 /**
@@ -215,9 +224,6 @@ function showWizardStep(stepIndex) {
         }
         currentWizardStep = stepIndex;
         
-        // Update progress indicator
-        updateProgressIndicator(stepIndex);
-        
         // Initialize phone validation when reaching the final step
         const currentStepId = wizardSteps[stepIndex];
         
@@ -231,45 +237,6 @@ function showWizardStep(stepIndex) {
     
     // Update navigation
     updateWizardNavigation();
-}
-
-/**
- * Update progress indicator
- */
-function updateProgressIndicator(stepIndex) {
-    const progressSteps = document.querySelectorAll('.progress-step');
-    const progressBar = document.querySelector('.progress-bar');
-    
-    if (!progressSteps || !progressBar) return;
-    
-    // Calculate progress percentage
-    const totalSteps = wizardSteps.length;
-    const progressPercentage = ((stepIndex + 1) / totalSteps) * 100;
-    
-    // Update progress bar width
-    progressBar.style.width = `${progressPercentage}%`;
-    
-    // Update step states
-    progressSteps.forEach((step, index) => {
-        step.classList.remove('active', 'completed', 'just-completed');
-        
-        if (index < stepIndex) {
-            // Previous steps are completed
-            step.classList.add('completed');
-        } else if (index === stepIndex) {
-            // Current step is active
-            step.classList.add('active');
-            
-            // Add animation for just completed step
-            if (index > 0) {
-                const prevStep = progressSteps[index - 1];
-                prevStep.classList.add('just-completed');
-                setTimeout(() => {
-                    prevStep.classList.remove('just-completed');
-                }, 600);
-            }
-        }
-    });
 }
 
 /**
@@ -292,6 +259,9 @@ function updateWizardNavigation() {
             nextBtn.textContent = 'הבא';
         }
     }
+    
+    // Update progress indicator
+    updateWizardProgress();
 }
 
 /**
@@ -315,6 +285,9 @@ function wizardNext() {
             
             // Rebuild steps based on selected product type
             buildWizardSteps();
+            
+            // Update progress indicator with new steps
+            updateWizardNavigation();
         }
     }
             
@@ -1649,6 +1622,103 @@ function debounce(func, wait) {
     };
 }
 
+/**
+ * Initialize Wizard Progress Indicator
+ */
+function initWizardProgress() {
+    const progressContainer = document.getElementById('wizard-progress-container');
+    if (!progressContainer) return;
+    
+    const stepsContainer = progressContainer.querySelector('.wizard-progress-steps');
+    if (!stepsContainer) return;
+    
+    // Clear existing steps
+    stepsContainer.innerHTML = '';
+    
+    // Create steps based on wizardSteps array
+    wizardSteps.forEach((stepId, index) => {
+        const stepDisplayName = getStepDisplayName(stepId);
+        const stepNumber = index + 1;
+        
+        const stepItem = document.createElement('div');
+        stepItem.className = 'wizard-step-item pending';
+        stepItem.setAttribute('data-step-index', index);
+        
+        stepItem.innerHTML = `
+            <div class="wizard-step-circle">${stepNumber}</div>
+            <div class="wizard-step-label">${stepDisplayName}</div>
+        `;
+        
+        stepsContainer.appendChild(stepItem);
+    });
+    
+    // Update progress to show current step
+    updateWizardProgress();
+}
+
+/**
+ * Update Wizard Progress Indicator
+ */
+function updateWizardProgress() {
+    const progressContainer = document.getElementById('wizard-progress-container');
+    if (!progressContainer) return;
+    
+    const stepItems = progressContainer.querySelectorAll('.wizard-step-item');
+    const progressFill = progressContainer.querySelector('.wizard-progress-fill');
+    
+    if (!stepItems.length || !progressFill) return;
+    
+    // Update step states
+    stepItems.forEach((stepItem, index) => {
+        const stepElement = stepItem;
+        
+        // Remove all state classes
+        stepElement.classList.remove('pending', 'current', 'completed');
+        
+        // Add appropriate state class
+        if (index < currentWizardStep) {
+            stepElement.classList.add('completed');
+        } else if (index === currentWizardStep) {
+            stepElement.classList.add('current');
+        } else {
+            stepElement.classList.add('pending');
+        }
+    });
+    
+    // Update progress bar
+    const progressPercentage = wizardSteps.length > 1 ? 
+        (currentWizardStep / (wizardSteps.length - 1)) * 100 : 0;
+    
+    progressFill.style.width = `${Math.min(progressPercentage, 100)}%`;
+    
+    // Add percentage display if not exists
+    let percentageDisplay = progressContainer.querySelector('.wizard-progress-percentage');
+    if (!percentageDisplay) {
+        percentageDisplay = document.createElement('div');
+        percentageDisplay.className = 'wizard-progress-percentage';
+        progressContainer.appendChild(percentageDisplay);
+    }
+    
+    // Update percentage text
+    const displayPercentage = Math.round(Math.min(progressPercentage, 100));
+    percentageDisplay.textContent = `${displayPercentage}% הושלם`;
+}
+
+/**
+ * Get display name for step
+ */
+function getStepDisplayName(stepId) {
+    const stepNames = {
+        'step-general': 'פרטים כלליים',
+        'step-cover-structure': 'מבנה',
+        'step-cover-contents': 'תכולה',
+        'step-cover-additional': 'כיסויים נוספים',
+        'step-completion': 'סיום'
+    };
+    
+    return stepNames[stepId] || 'שלב';
+}
+
 // Export functions for potential module use
 window.HomeInsuranceApp = {
     openGeneralDetailsModal,
@@ -1719,9 +1789,6 @@ function openGeneralDetailsModal() {
         
         // Initialize wizard
         initStepWizard();
-        
-        // Initialize progress indicator
-        updateProgressIndicator(0);
         
         // Ensure phone validation is ready when needed
         document.addEventListener('input', function(e) {
