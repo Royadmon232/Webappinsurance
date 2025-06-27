@@ -215,6 +215,9 @@ function showWizardStep(stepIndex) {
         }
         currentWizardStep = stepIndex;
         
+        // Update progress indicator
+        updateProgressIndicator(stepIndex);
+        
         // Initialize phone validation when reaching the final step
         const currentStepId = wizardSteps[stepIndex];
         
@@ -228,6 +231,45 @@ function showWizardStep(stepIndex) {
     
     // Update navigation
     updateWizardNavigation();
+}
+
+/**
+ * Update progress indicator
+ */
+function updateProgressIndicator(stepIndex) {
+    const progressSteps = document.querySelectorAll('.progress-step');
+    const progressBar = document.querySelector('.progress-bar');
+    
+    if (!progressSteps || !progressBar) return;
+    
+    // Calculate progress percentage
+    const totalSteps = wizardSteps.length;
+    const progressPercentage = ((stepIndex + 1) / totalSteps) * 100;
+    
+    // Update progress bar width
+    progressBar.style.width = `${progressPercentage}%`;
+    
+    // Update step states
+    progressSteps.forEach((step, index) => {
+        step.classList.remove('active', 'completed', 'just-completed');
+        
+        if (index < stepIndex) {
+            // Previous steps are completed
+            step.classList.add('completed');
+        } else if (index === stepIndex) {
+            // Current step is active
+            step.classList.add('active');
+            
+            // Add animation for just completed step
+            if (index > 0) {
+                const prevStep = progressSteps[index - 1];
+                prevStep.classList.add('just-completed');
+                setTimeout(() => {
+                    prevStep.classList.remove('just-completed');
+                }, 600);
+            }
+        }
+    });
 }
 
 /**
@@ -1677,6 +1719,9 @@ function openGeneralDetailsModal() {
         
         // Initialize wizard
         initStepWizard();
+        
+        // Initialize progress indicator
+        updateProgressIndicator(0);
         
         // Ensure phone validation is ready when needed
         document.addEventListener('input', function(e) {
