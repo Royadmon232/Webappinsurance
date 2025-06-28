@@ -782,7 +782,7 @@ function initializeConditionalFields() {
             const selectedValue = this.value;
             
             if (coverageTypeField && coverageTypeSelect) {
-                if (selectedValue === 'מבנה בלבד' || selectedValue === 'מבנה בלבד משועבד') {
+                if (selectedValue === 'מבנה בלבד' || selectedValue === 'מבנה בלבד משועבד לבנק') {
                     // Hide coverage type field with animation
                     coverageTypeField.classList.add('hidden');
                     // Clear the value when hiding
@@ -857,7 +857,7 @@ function updateProductSections(productType) {
             disableSection(sections['מבנה']);
             break;
             
-        case 'מבנה בלבד משועבד':
+        case 'מבנה בלבד משועבד לבנק':
             // Disable multiple sections
             disableSection(sections['תכולה']);
             disableSection(sections['פעילות עסקית']);

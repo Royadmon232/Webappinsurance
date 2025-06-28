@@ -182,7 +182,7 @@ function buildWizardSteps() {
             wizardSteps.push('step-cover-additional');
             break;
             
-        case 'מבנה בלבד משועבד':
+        case 'מבנה בלבד משועבד לבנק':
             // Only מבנה and כיסויים נוספים
             wizardSteps.push('step-cover-structure');
             wizardSteps.push('step-cover-additional');
@@ -1838,12 +1838,12 @@ function initializeConditionalFields() {
             const selectedValue = this.value;
             
             if (coverageTypeField && coverageTypeSelect) {
-                if (selectedValue === 'מבנה בלבד' || selectedValue === 'מבנה בלבד משועבד') {
-                    // Hide coverage type field
-                    coverageTypeField.classList.add('hidden');
-                    coverageTypeSelect.value = '';
-                    coverageTypeSelect.required = false; // <-- התיקון
-                } else {
+                            if (selectedValue === 'מבנה בלבד' || selectedValue === 'מבנה בלבד משועבד לבנק') {
+                // Hide coverage type field
+                coverageTypeField.classList.add('hidden');
+                coverageTypeSelect.value = '';
+                coverageTypeSelect.required = false; // <-- התיקון
+            } else {
                     // Show coverage type field
                     coverageTypeField.classList.remove('hidden');
                     coverageTypeSelect.required = true; // <-- התיקון
@@ -1947,7 +1947,7 @@ function updateProductSections(productType) {
         [businessSection, thirdPartySection, employersSection, cyberSection, terrorSection].forEach(section => {
             if (section) section.style.display = '';
         });
-        if (productType === 'מבנה בלבד משועבד') {
+        if (productType === 'מבנה בלבד משועבד לבנק') {
             // Hide all except third party
             if (businessSection) businessSection.style.display = 'none';
             if (employersSection) employersSection.style.display = 'none';
@@ -1981,7 +1981,7 @@ function updateProductSections(productType) {
             disableSection(sections['מבנה']);
             break;
             
-        case 'מבנה בלבד משועבד':
+        case 'מבנה בלבד משועבד לבנק':
             // Disable multiple sections
             disableSection(sections['תכולה']);
             disableSection(sections['פעילות עסקית']);
@@ -2012,7 +2012,7 @@ function updateBuildingFields(productType) {
     const renewalsGroup = document.getElementById('renewals-group');
     const renewalsSelect = document.getElementById('renewals');
     
-    if (productType === 'מבנה בלבד משועבד') {
+    if (productType === 'מבנה בלבד משועבד לבנק') {
         // Hide building age field
         if (buildingAgeGroup) {
             buildingAgeGroup.style.display = 'none';
@@ -2087,7 +2087,7 @@ function updateAdditionalCoverages(productType) {
     const mortgageWaterDamageGroup = document.getElementById('mortgage-water-damage-group');
     const mortgageWaterDamageSelect = document.getElementById('mortgage-water-damage');
     
-    if (productType === 'מבנה בלבד משועבד') {
+    if (productType === 'מבנה בלבד משועבד לבנק') {
         // Auto-select and disable water damage dropdown
         if (waterDamageSelect) {
             waterDamageSelect.value = 'שרברב שבהסדר';
@@ -2266,7 +2266,7 @@ function updateBuildingExtensionsForProduct(productType) {
     const boilersGroup = document.getElementById('boilers-group');
     const boilersCheckbox = document.getElementById('boilers-coverage');
     
-    if (productType === 'מבנה בלבד משועבד') {
+    if (productType === 'מבנה בלבד משועבד לבנק') {
         // Hide boilers checkbox completely
         if (boilersGroup) {
             boilersGroup.style.display = 'none';
@@ -3927,9 +3927,9 @@ function testConditionalLogic() {
         return;
     }
     
-    // Test מבנה בלבד משועבד
-    console.log('\n--- Testing מבנה בלבד משועבד ---');
-    productTypeSelect.value = 'מבנה בלבד משועבד';
+    // Test מבנה בלבד משועבד לבנק
+    console.log('\n--- Testing מבנה בלבד משועבד לבנק ---');
+    productTypeSelect.value = 'מבנה בלבד משועבד לבנק';
     productTypeSelect.dispatchEvent(new Event('change'));
     
     setTimeout(() => {
@@ -4073,8 +4073,8 @@ function logInitializationSummary() {
     console.log(`Product Type: ${productType}`);
     console.log(`Property Type: ${propertyType}`);
     
-    if (productType === 'מבנה בלבד משועבד') {
-        console.log('🔒 Special conditions active for "מבנה בלבד משועבד":');
+    if (productType === 'מבנה בלבד משועבד לבנק') {
+        console.log('🔒 Special conditions active for "מבנה בלבד משועבד לבנק":');
         console.log('  - Building age field: HIDDEN');
         console.log('  - Mortgaged checkbox: AUTO-CHECKED & DISABLED');
         console.log('  - Renewals dropdown: VISIBLE');
