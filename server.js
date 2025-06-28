@@ -387,6 +387,7 @@ app.post('/api/submit-form', async (req, res) => {
             const browser = await puppeteer.launch({
                 headless: 'new',
                 timeout: 60000, // 60 seconds timeout
+                executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
                 args: [
                     '--no-sandbox',
                     '--disable-setuid-sandbox',
@@ -633,6 +634,7 @@ app.post('/api/generate-pdf', async (req, res) => {
         const browser = await puppeteer.launch({
             headless: 'new',
             timeout: 60000, // 60 seconds timeout
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
