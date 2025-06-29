@@ -18,8 +18,10 @@ jobs:
       - name: Update Claude CLI
         run: npm install -g @anthropic-ai/claude-code@latest
 
-      - uses: anthropics/claude-code-action@v0.0.18
+         # האקשן הראשי – עדכן רק את המספר
+      - uses: anthropics/claude-code-action@v0.0.24   # ← במקום v0.0.18
         with:
           github_token:      ${{ secrets.GH_PAT }}
           model:             claude-opus-4-20250514
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+
