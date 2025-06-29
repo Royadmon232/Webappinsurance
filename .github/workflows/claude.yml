@@ -18,7 +18,7 @@ jobs:
       - name: Update Claude CLI
         run: npm install -g @anthropic-ai/claude-code@latest
 
-      - uses: anthropics/claude-code-action@v1.0.24 
+      - uses: anthropics/claude-code-action@v0.0.18
         with:
           github_token:      ${{ secrets.GH_PAT }}
           model:             claude-opus-4-20250514
