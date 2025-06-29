@@ -829,8 +829,6 @@ function collectAllFormData() {
         contentsEarthquakeCoverage: document.getElementById('contents-earthquake-coverage')?.value || '',
         
         // Additional coverages
-        businessEmployers: document.getElementById('business-employers')?.checked || false,
-        businessThirdParty: document.getElementById('business-third-party')?.checked || false,
         thirdPartyCoverage: document.getElementById('third-party-coverage')?.checked || false,
         employersLiability: document.getElementById('employers-liability')?.checked || false,
         cyberCoverage: document.getElementById('cyber-coverage')?.checked || false,
@@ -915,7 +913,6 @@ function formatEmailContent(data) {
 
 כיסויים נוספים:
 ---------------
-פעילות עסקית: ${data.businessEmployers || data.businessThirdParty ? 'כן' : 'לא'}
 צד שלישי: ${data.thirdPartyCoverage ? 'כן' : 'לא'}
 חבות מעבידים: ${data.employersLiability ? 'כן' : 'לא'}
 סייבר למשפחה: ${data.cyberCoverage ? 'כן' : 'לא'}
@@ -1941,27 +1938,24 @@ function updateProductSections(productType) {
     const sections = {
         'מבנה': document.querySelector('[data-section="מבנה"]'),
         'תכולה': document.querySelector('[data-section="תכולה"]'),
-        'פעילות עסקית': document.querySelector('[data-section="פעילות עסקית"]'),
         'צד שלישי': document.querySelector('[data-section="צד שלישי"]'),
         'מעבידים': document.querySelector('[data-section="מעבידים"]'),
         'סייבר למשפחה': document.querySelector('[data-section="סייבר למשפחה"]'),
         'טרור': document.querySelector('[data-section="טרור"]')
     };
-    // Additional Coverage step sections
+    // Additional Coverage step sections - business section removed
     const additionalCoverageStep = document.getElementById('step-cover-additional');
     if (additionalCoverageStep) {
-        const businessSection = additionalCoverageStep.querySelector('.building-section:nth-of-type(1)');
-        const thirdPartySection = additionalCoverageStep.querySelector('.building-section:nth-of-type(2)');
-        const employersSection = additionalCoverageStep.querySelector('.building-section:nth-of-type(3)');
-        const cyberSection = additionalCoverageStep.querySelector('.building-section:nth-of-type(4)');
-        const terrorSection = additionalCoverageStep.querySelector('.building-section:nth-of-type(5)');
+        const thirdPartySection = additionalCoverageStep.querySelector('.building-section:nth-of-type(1)');
+        const employersSection = additionalCoverageStep.querySelector('.building-section:nth-of-type(2)');
+        const cyberSection = additionalCoverageStep.querySelector('.building-section:nth-of-type(3)');
+        const terrorSection = additionalCoverageStep.querySelector('.building-section:nth-of-type(4)');
         // Show all by default
-        [businessSection, thirdPartySection, employersSection, cyberSection, terrorSection].forEach(section => {
+        [thirdPartySection, employersSection, cyberSection, terrorSection].forEach(section => {
             if (section) section.style.display = '';
         });
         if (productType === 'מבנה בלבד משועבד לבנק') {
             // Hide all except third party
-            if (businessSection) businessSection.style.display = 'none';
             if (employersSection) employersSection.style.display = 'none';
             if (cyberSection) cyberSection.style.display = 'none';
             if (terrorSection) terrorSection.style.display = 'none';
@@ -1996,7 +1990,6 @@ function updateProductSections(productType) {
         case 'מבנה בלבד משועבד לבנק':
             // Disable multiple sections
             disableSection(sections['תכולה']);
-            disableSection(sections['פעילות עסקית']);
             disableSection(sections['סייבר למשפחה']);
             disableSection(sections['מעבידים']);
             disableSection(sections['טרור']);
@@ -5534,8 +5527,6 @@ function collectFullFormData() {
     
     // Add additional coverage data
     const additionalCoverage = {
-        businessEmployers: document.getElementById('business-employers')?.checked || false,
-        businessThirdParty: document.getElementById('business-third-party')?.checked || false,
         thirdPartyCoverage: document.getElementById('third-party-coverage')?.checked || false,
         employersLiability: document.getElementById('employers-liability')?.checked || false,
         cyberCoverage: document.getElementById('cyber-coverage')?.checked || false,
@@ -5923,23 +5914,10 @@ function generateEmailHTML(data) {
                     
                     <!-- כיסויים נוספים -->
                     ${data.additionalCoverage && (data.additionalCoverage.thirdPartyCoverage || data.additionalCoverage.employersLiability || 
-                       data.additionalCoverage.cyberCoverage || data.additionalCoverage.terrorCoverage || 
-                       data.additionalCoverage.businessEmployers || data.additionalCoverage.businessThirdParty) ? `
+                       data.additionalCoverage.cyberCoverage || data.additionalCoverage.terrorCoverage) ? `
                     <div class="section">
                         <h2>🛡️ כיסויים נוספים</h2>
                         <div class="info-grid">
-                            ${data.additionalCoverage.businessEmployers !== undefined ? `
-                            <div class="info-item">
-                                <strong>חבות מעבידים עסקית:</strong>
-                                <span class="badge ${data.additionalCoverage.businessEmployers ? 'active' : 'inactive'}">${formatBoolean(data.additionalCoverage.businessEmployers)}</span>
-                            </div>
-                            ` : ''}
-                            ${data.additionalCoverage.businessThirdParty !== undefined ? `
-                            <div class="info-item">
-                                <strong>צד ג' עסקי:</strong>
-                                <span class="badge ${data.additionalCoverage.businessThirdParty ? 'active' : 'inactive'}">${formatBoolean(data.additionalCoverage.businessThirdParty)}</span>
-                            </div>
-                            ` : ''}
                             ${data.additionalCoverage.thirdPartyCoverage !== undefined ? `
                             <div class="info-item">
                                 <strong>צד שלישי:</strong>
@@ -6215,8 +6193,6 @@ function generateLeadPDF(formData) {
         // Additional Coverage
         if (formData.additionalCoverage) {
             const additionalItems = [
-                { label: 'חבות מעבידים עסקית', value: formData.additionalCoverage.businessEmployers ? 'כן' : null },
-                { label: 'צד ג\' עסקי', value: formData.additionalCoverage.businessThirdParty ? 'כן' : null },
                 { label: 'צד שלישי', value: formData.additionalCoverage.thirdPartyCoverage ? 'כן' : null },
                 { label: 'חבות מעבידים', value: formData.additionalCoverage.employersLiability ? 'כן' : null },
                 { label: 'סייבר למשפחה', value: formData.additionalCoverage.cyberCoverage ? 'כן' : null },
@@ -6548,8 +6524,6 @@ function collectContentsData() {
  */
 function collectAdditionalCoverages() {
     return {
-        businessEmployers: document.getElementById('business-employers')?.checked || false,
-        businessThirdParty: document.getElementById('business-third-party')?.checked || false,
         thirdPartyCoverage: document.getElementById('third-party-coverage')?.checked || false,
         employersLiability: document.getElementById('employers-liability')?.checked || false,
         cyberCoverage: document.getElementById('cyber-coverage')?.checked || false,
