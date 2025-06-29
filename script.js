@@ -795,7 +795,7 @@ function collectAllFormData() {
         constructionType: document.getElementById('construction-type')?.value || '',
         constructionStandard: document.getElementById('construction-standard')?.value || '',
         mortgagedProperty: document.getElementById('mortgaged-property')?.checked || false,
-        renewals: document.getElementById('renewals')?.value || '',
+        loanEndDate: document.getElementById("loan-end-date")?.value || "",
         
         // Building coverages
         waterDamageType: document.getElementById('water-damage-type')?.value || '',
@@ -810,11 +810,8 @@ function collectAllFormData() {
         buildingContentsInsurance: document.getElementById('building-contents-insurance')?.value || '',
         storageInsurance: document.getElementById('storage-insurance')?.value || '',
         swimmingPoolInsurance: document.getElementById('swimming-pool-insurance')?.value || '',
-        glassBreakageInsurance: document.getElementById('glass-breakage-insurance')?.value || '',
-        boilersCoverage: document.getElementById('boilers-coverage')?.checked || false,
         
         // Contents details (if applicable)
-        contentsInsuranceAmount: document.getElementById('contents-insurance-amount')?.value || '',
         contentsBuildingAge: document.getElementById('contents-building-age')?.value || '',
         jewelryAmount: document.getElementById('jewelry-amount')?.value || '',
         jewelryCoverage: document.getElementById('jewelry-coverage')?.value || '',
@@ -829,12 +826,8 @@ function collectAllFormData() {
         
         // Contents coverages
         contentsWaterDamage: document.getElementById('contents-water-damage')?.checked || false,
-        contentsBurglary: document.getElementById('contents-burglary')?.checked || false,
-        contentsEarthquake: document.getElementById('contents-earthquake')?.value || '',
-        contentsEarthquakeDeductible: document.getElementById('contents-earthquake-deductible')?.value || '',
         
         // Additional coverages
-        businessContentsAmount: document.getElementById('business-contents-amount')?.value || '',
         businessEmployers: document.getElementById('business-employers')?.checked || false,
         businessThirdParty: document.getElementById('business-third-party')?.checked || false,
         thirdPartyCoverage: document.getElementById('third-party-coverage')?.checked || false,
@@ -891,7 +884,7 @@ function formatEmailContent(data) {
 סוג בניה: ${data.constructionType}
 סטנדרט בניה: ${data.constructionStandard}
 משועבד/מוטב: ${data.mortgagedProperty ? 'כן' : 'לא'}
-חידושים: ${data.renewals}
+חידושים: ${data.loanEndDate}
 
 כיסויים נוספים למבנה:
 נזקי מים: ${data.waterDamageType}
@@ -902,12 +895,11 @@ function formatEmailContent(data) {
     }
 
     // Add contents details if applicable
-    if (data.contentsInsuranceAmount) {
+    if (data.jewelryAmount || data.watchesAmount) {
         content += `
 
 פרטי תכולה:
 -----------
-סכום ביטוח: ₪${data.contentsInsuranceAmount}
 תכשיטים: ₪${data.jewelryAmount || '0'}
 שעונים: ₪${data.watchesAmount || '0'}
 מצלמות: ₪${data.camerasAmount || '0'}
@@ -922,7 +914,7 @@ function formatEmailContent(data) {
 
 כיסויים נוספים:
 ---------------
-פעילות עסקית: ${data.businessContentsAmount ? `₪${data.businessContentsAmount}` : 'לא'}
+פעילות עסקית: ${data.businessEmployers || data.businessThirdParty ? 'כן' : 'לא'}
 צד שלישי: ${data.thirdPartyCoverage ? 'כן' : 'לא'}
 חבות מעבידים: ${data.employersLiability ? 'כן' : 'לא'}
 סייבר למשפחה: ${data.cyberCoverage ? 'כן' : 'לא'}
@@ -1816,39 +1808,16 @@ function openGeneralDetailsModal() {
  */
 function initializeConditionalFields() {
     const productTypeSelect = document.getElementById('productType');
-    const coverageTypeSelect = document.getElementById('coverageType');
     const propertyTypeSelect = document.getElementById('propertyType');
     const floorCountSelect = document.getElementById('floorCount');
     
     // Find parent form groups
-    const coverageTypeField = coverageTypeSelect ? coverageTypeSelect.closest('.form-group') : null;
     const floorCountField = floorCountSelect ? floorCountSelect.closest('.form-group') : null;
-    
-    // Coverage Type change handler
-    if (coverageTypeSelect) {
-        coverageTypeSelect.addEventListener('change', function() {
-            // Update valuable items section based on coverage type
-            updateValuableItemsSection();
-        });
-    }
     
     // Product Type change handler
     if (productTypeSelect) {
         productTypeSelect.addEventListener('change', function() {
             const selectedValue = this.value;
-            
-            if (coverageTypeField && coverageTypeSelect) {
-                            if (selectedValue === 'מבנה בלבד' || selectedValue === 'מבנה בלבד משועבד לבנק') {
-                // Hide coverage type field
-                coverageTypeField.classList.add('hidden');
-                coverageTypeSelect.value = '';
-                coverageTypeSelect.required = false; // <-- התיקון
-            } else {
-                    // Show coverage type field
-                    coverageTypeField.classList.remove('hidden');
-                    coverageTypeSelect.required = true; // <-- התיקון
-                }
-            }
             
             // Update product sections based on selection
             updateProductSections(selectedValue);
@@ -1908,6 +1877,36 @@ function initializeConditionalFields() {
             updateEarthquakeFields(this.value);
         });
     }
+
+    // Building conditional fields handlers
+    const hasTerrace = document.getElementById('has-terrace');
+    const hasGarden = document.getElementById('has-garden');
+    const hasSwimmingPool = document.getElementById('has-swimming-pool');
+    const earthquakeLandCoverage = document.getElementById('earthquake-land-coverage');
+
+    if (hasTerrace) {
+        hasTerrace.addEventListener('change', function() {
+            updateTerraceFields(this.value);
+        });
+    }
+
+    if (hasGarden) {
+        hasGarden.addEventListener('change', function() {
+            updateGardenFields(this.value);
+        });
+    }
+
+    if (hasSwimmingPool) {
+        hasSwimmingPool.addEventListener('change', function() {
+            updateSwimmingPoolFields(this.checked);
+        });
+    }
+
+    if (earthquakeLandCoverage) {
+        earthquakeLandCoverage.addEventListener('change', function() {
+            updateEarthquakeLandCoverageFields(this.value);
+        });
+    }
     
     // Initialize tooltips and help text animations for additional coverage section
     initializeAdditionalCoverageEnhancements();
@@ -1918,6 +1917,11 @@ function initializeConditionalFields() {
         propertyTypeSelect.addEventListener('change', function() {
             updateBuildingExtensions(this.value);
         });
+        
+        // Initialize on page load if property type is already selected
+        if (propertyTypeSelect.value) {
+            updateBuildingExtensions(propertyTypeSelect.value);
+        }
     }
 }
 
@@ -2009,8 +2013,8 @@ function updateBuildingFields(productType) {
     const buildingAgeField = document.getElementById('building-age');
     const buildingAgeGroup = buildingAgeField ? buildingAgeField.closest('.building-form-group') : null;
     const mortgagedCheckbox = document.getElementById('mortgaged-property');
-    const renewalsGroup = document.getElementById('renewals-group');
-    const renewalsSelect = document.getElementById('renewals');
+    const loanEndDateGroup = document.getElementById('loanEndDate-group');
+    const loanEndDateInput = document.getElementById('loanEndDate');
     
     if (productType === 'מבנה בלבד משועבד לבנק') {
         // Hide building age field
@@ -2035,11 +2039,11 @@ function updateBuildingFields(productType) {
             }
         }
         
-        // Show renewals dropdown
-        if (renewalsGroup) {
-            renewalsGroup.style.display = 'block';
-            if (renewalsSelect) {
-                renewalsSelect.required = true;
+        // Show loanEndDate dropdown
+        if (loanEndDateGroup) {
+            loanEndDateGroup.style.display = 'block';
+            if (loanEndDateInput) {
+                loanEndDateInput.required = true;
             }
         }
     } else {
@@ -2064,12 +2068,12 @@ function updateBuildingFields(productType) {
             }
         }
         
-        // Hide renewals dropdown
-        if (renewalsGroup) {
-            renewalsGroup.style.display = 'none';
-            if (renewalsSelect) {
-                renewalsSelect.required = false;
-                renewalsSelect.value = '';
+        // Hide loanEndDate dropdown
+        if (loanEndDateGroup) {
+            loanEndDateGroup.style.display = 'none';
+            if (loanEndDateInput) {
+                loanEndDateInput.required = false;
+                loanEndDateInput.value = '';
             }
         }
     }
@@ -2241,11 +2245,42 @@ function updateEarthquakeFields(earthquakeCoverage) {
 function updateBuildingExtensions(propertyType) {
     const storageGroup = document.getElementById('storage-group');
     const storageInput = document.getElementById('storage-insurance');
+    const hasGardenGroup = document.getElementById('has-garden-group');
+    const roofTypeGroup = document.getElementById('roof-type-group');
     
     if (propertyType === 'פרטי') {
         // Show storage field for private properties
         if (storageGroup) {
             storageGroup.style.display = 'block';
+        }
+        // Show garden field for private properties
+        if (hasGardenGroup) {
+            hasGardenGroup.style.display = 'block';
+        }
+        // Show roof type field for private properties
+        if (roofTypeGroup) {
+            roofTypeGroup.style.display = 'block';
+        }
+    } else if (propertyType === 'דירה קומת קרקע') {
+        // Hide storage field for non-private properties
+        if (storageGroup) {
+            storageGroup.style.display = 'none';
+            if (storageInput) {
+                storageInput.value = '';
+            }
+        }
+        // Show garden field for ground floor apartments
+        if (hasGardenGroup) {
+            hasGardenGroup.style.display = 'block';
+        }
+        // Hide roof type field for non-private properties
+        if (roofTypeGroup) {
+            roofTypeGroup.style.display = 'none';
+            const roofTypeSelect = document.getElementById('roof-type');
+            if (roofTypeSelect) {
+                roofTypeSelect.value = '';
+                roofTypeSelect.required = false;
+            }
         }
     } else {
         // Hide storage field for non-private properties
@@ -2255,6 +2290,32 @@ function updateBuildingExtensions(propertyType) {
                 storageInput.value = '';
             }
         }
+        // Hide garden field for other property types
+        if (hasGardenGroup) {
+            hasGardenGroup.style.display = 'none';
+            const hasGardenSelect = document.getElementById('has-garden');
+            const gardenAreaGroup = document.getElementById('garden-area-group');
+            if (hasGardenSelect) {
+                hasGardenSelect.value = '';
+            }
+            if (gardenAreaGroup) {
+                gardenAreaGroup.style.display = 'none';
+                const gardenAreaInput = document.getElementById('garden-area');
+                if (gardenAreaInput) {
+                    gardenAreaInput.value = '';
+                    gardenAreaInput.required = false;
+                }
+            }
+        }
+        // Hide roof type field for non-private properties
+        if (roofTypeGroup) {
+            roofTypeGroup.style.display = 'none';
+            const roofTypeSelect = document.getElementById('roof-type');
+            if (roofTypeSelect) {
+                roofTypeSelect.value = '';
+                roofTypeSelect.required = false;
+            }
+        }
     }
 }
 
@@ -2262,9 +2323,15 @@ function updateBuildingExtensions(propertyType) {
  * Update building extensions fields based on product type selection
  * @param {string} productType - The selected product type
  */
+/**
+ * Update building extensions fields based on product type selection
+ * @param {string} productType - The selected product type
+ */
 function updateBuildingExtensionsForProduct(productType) {
     const boilersGroup = document.getElementById('boilers-group');
     const boilersCheckbox = document.getElementById('boilers-coverage');
+    const loanEndDateGroup = document.getElementById('loan-end-date-group');
+    const loanEndDateInput = document.getElementById('loan-end-date');
     
     if (productType === 'מבנה בלבד משועבד לבנק') {
         // Hide boilers checkbox completely
@@ -2275,10 +2342,138 @@ function updateBuildingExtensionsForProduct(productType) {
                 boilersCheckbox.value = '';
             }
         }
+        
+        // Show loan end date field for mortgaged properties
+        if (loanEndDateGroup) {
+            loanEndDateGroup.style.display = 'block';
+            if (loanEndDateInput) {
+                loanEndDateInput.required = true;
+            }
+        }
     } else {
         // Show boilers checkbox
         if (boilersGroup) {
             boilersGroup.style.display = 'block';
+        }
+        
+        // Hide loan end date field for non-mortgaged properties
+        if (loanEndDateGroup) {
+            loanEndDateGroup.style.display = 'none';
+            if (loanEndDateInput) {
+                loanEndDateInput.required = false;
+                loanEndDateInput.value = '';
+            }
+        }
+    }
+}
+/**
+ * Update terrace related fields based on selection
+ * @param {string} hasTerrace - The selected terrace option
+ */
+function updateTerraceFields(hasTerrace) {
+    const terraceAreaGroup = document.getElementById('terrace-area-group');
+    const terraceAreaInput = document.getElementById('terrace-area');
+    
+    if (hasTerrace === 'כן') {
+        // Show terrace area field
+        if (terraceAreaGroup) {
+            terraceAreaGroup.style.display = 'block';
+            if (terraceAreaInput) {
+                terraceAreaInput.required = true;
+            }
+        }
+    } else {
+        // Hide terrace area field
+        if (terraceAreaGroup) {
+            terraceAreaGroup.style.display = 'none';
+            if (terraceAreaInput) {
+                terraceAreaInput.required = false;
+                terraceAreaInput.value = '';
+            }
+        }
+    }
+}
+
+/**
+ * Update garden related fields based on selection
+ * @param {string} hasGarden - The selected garden option
+ */
+function updateGardenFields(hasGarden) {
+    const gardenAreaGroup = document.getElementById('garden-area-group');
+    const gardenAreaInput = document.getElementById('garden-area');
+    
+    if (hasGarden === 'כן') {
+        // Show garden area field
+        if (gardenAreaGroup) {
+            gardenAreaGroup.style.display = 'block';
+            if (gardenAreaInput) {
+                gardenAreaInput.required = true;
+            }
+        }
+    } else {
+        // Hide garden area field
+        if (gardenAreaGroup) {
+            gardenAreaGroup.style.display = 'none';
+            if (gardenAreaInput) {
+                gardenAreaInput.required = false;
+                gardenAreaInput.value = '';
+            }
+        }
+    }
+}
+
+/**
+ * Update swimming pool related fields based on selection
+ * @param {boolean} hasSwimmingPool - Whether swimming pool checkbox is checked
+ */
+function updateSwimmingPoolFields(hasSwimmingPool) {
+    const swimmingPoolValueGroup = document.getElementById('swimming-pool-value-group');
+    const swimmingPoolValueInput = document.getElementById('swimming-pool-value');
+    
+    if (hasSwimmingPool) {
+        // Show swimming pool value field
+        if (swimmingPoolValueGroup) {
+            swimmingPoolValueGroup.style.display = 'block';
+            if (swimmingPoolValueInput) {
+                swimmingPoolValueInput.required = true;
+            }
+        }
+    } else {
+        // Hide swimming pool value field
+        if (swimmingPoolValueGroup) {
+            swimmingPoolValueGroup.style.display = 'none';
+            if (swimmingPoolValueInput) {
+                swimmingPoolValueInput.required = false;
+                swimmingPoolValueInput.value = '';
+            }
+        }
+    }
+}
+
+/**
+ * Update earthquake land coverage related fields based on selection
+ * @param {string} earthquakeLandCoverage - The selected earthquake land coverage option
+ */
+function updateEarthquakeLandCoverageFields(earthquakeLandCoverage) {
+    const earthquakeCoverageAmountGroup = document.getElementById('earthquake-coverage-amount-group');
+    const earthquakeCoverageAmountInput = document.getElementById('earthquake-coverage-amount');
+    
+    if (earthquakeLandCoverage === 'כן') {
+        // Show earthquake coverage amount field
+        if (earthquakeCoverageAmountGroup) {
+            earthquakeCoverageAmountGroup.style.display = 'block';
+            if (earthquakeCoverageAmountInput) {
+                earthquakeCoverageAmountInput.required = true;
+            }
+        }
+    } else {
+        // Hide earthquake coverage amount field
+        if (earthquakeCoverageAmountGroup) {
+            earthquakeCoverageAmountGroup.style.display = 'none';
+            if (earthquakeCoverageAmountInput) {
+                earthquakeCoverageAmountInput.required = false;
+                earthquakeCoverageAmountInput.value = '';
+            }
         }
     }
 }
@@ -2436,25 +2631,23 @@ function submitGeneralDetails() {
  * @returns {Object} - Structured form data object
  */
 function collectFormData() {
-    // Collect basic form fields - FIX IDs to match HTML
+    // Collect basic form fields
     const firstName = document.getElementById('first-name')?.value?.trim() || '';
     const lastName = document.getElementById('last-name')?.value?.trim() || '';
     const email = document.getElementById('email')?.value?.trim() || '';
-    const idNumber = document.getElementById('id-number')?.value?.trim() || '';
-    const startDate = document.getElementById('start-date')?.value || '';
-    const productType = document.getElementById('product-type')?.value || '';
-    const coverageType = document.getElementById('coverage-type')?.value || '';
-    const propertyType = document.getElementById('property-type')?.value || '';
-    const floorCount = document.getElementById('floor-count')?.value || '';
+    const idNumber = document.getElementById('idNumber')?.value?.trim() || '';
+    const startDate = document.getElementById('startDate')?.value || '';
+    const productType = document.getElementById('productType')?.value || '';
+    const propertyType = document.getElementById('propertyType')?.value || '';
+    const floorCount = document.getElementById('floorCount')?.value || '';
     
     // Get city from the autocomplete input
     const cityInput = document.getElementById('city-autocomplete') || document.getElementById('city');
     const city = cityInput?.value?.trim() || '';
     
     const street = document.getElementById('street')?.value?.trim() || '';
-    const houseNumber = document.getElementById('house-number')?.value || '';
-    const postalCode = document.getElementById('postal-code')?.value || '';
-    const hasGarden = document.getElementById('has-garden')?.checked || false;
+    const houseNumber = document.getElementById('houseNumber')?.value || '';
+    const postalCode = document.getElementById('postalCode')?.value || '';
     
     // Collect selected product sections
     const selectedProducts = [];
@@ -2475,11 +2668,6 @@ function collectFormData() {
         startDate: startDate,
         productType: productType,
         
-        // Coverage Information (only if visible)
-        ...(coverageType && {
-            coverageType: coverageType
-        }),
-        
         // Property Information
         propertyType: propertyType,
         assetType: propertyType, // Keep for backward compatibility
@@ -2495,7 +2683,6 @@ function collectFormData() {
         houseNumber: houseNumber,
         zipCode: postalCode,
         postalCode: postalCode, // Both names for compatibility
-        hasGarden: hasGarden,
         
         // Selected Insurance Products
         selectedProducts: selectedProducts
@@ -2603,18 +2790,7 @@ function validateGeneralDetailsForm() {
         isValid = false;
     }
     
-    // Validate Coverage Type (only if visible)
-    const coverageType = document.getElementById('coverageType');
-    const coverageTypeField = coverageType ? coverageType.closest('.form-group') : null;
-    if (coverageTypeField && coverageTypeField.classList.contains('hidden')) {
-        // If the field is hidden, skip validation for it
-    } else {
-        // If the field is visible, validate it
-        if (coverageType && !coverageType.value) {
-            showFormError(coverageType, 'שדה חובה');
-            isValid = false;
-        }
-    }
+
     
     // Validate Property Type
     const propertyType = document.getElementById('propertyType');
@@ -3884,33 +4060,7 @@ function clearFormError(field) {
      }
 }
 
-// Garden checkbox functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const propertyTypeSelect = document.getElementById('propertyType');
-    const gardenCheckboxContainer = document.getElementById('garden-checkbox-container');
-    const gardenCheckbox = document.getElementById('garden-checkbox');
-    
-    if (propertyTypeSelect && gardenCheckboxContainer && gardenCheckbox) {
-        // Add event listener to property type select
-        propertyTypeSelect.addEventListener('change', function() {
-            const selectedValue = this.value;
-            toggleGardenCheckbox(selectedValue === 'משותף קומת קרקע');
-        });
-    }
-    
-    /**
-     * Toggle garden checkbox visibility and reset state
-     * @param {boolean} show - Whether to show the garden checkbox
-     */
-    function toggleGardenCheckbox(show) {
-        if (show) {
-            gardenCheckboxContainer.style.display = 'block';
-        } else {
-            gardenCheckboxContainer.style.display = 'none';
-            gardenCheckbox.checked = false;
-        }
-    }
-});
+
 
 /**
  * Comprehensive test function to validate all conditional logic
@@ -3953,7 +4103,7 @@ function testConditionalLogic() {
                 description: 'Mortgaged checkbox should be disabled'
             },
             { 
-                element: document.getElementById('renewals-group'), 
+                element: document.getElementById('loanEndDate-group'), 
                 expected: 'block',
                 description: 'Renewals dropdown should be visible'
             },
@@ -4140,15 +4290,8 @@ function validateBuildingSection() {
     }
     
     // Renewals dropdown (only if visible and required)
-    const renewalsGroup = document.getElementById('renewals-group');
-    const renewalsSelect = document.getElementById('renewals');
-    if (renewalsSelect && renewalsGroup && renewalsGroup.style.display !== 'none' && renewalsSelect.required && !renewalsSelect.value) {
-        showBuildingFormError(renewalsSelect, 'שדה חובה - יש לבחור סוג חידוש');
-        isValid = false;
-    }
-    
-    // Section 2: כיסויים נוספים למבנה (Additional Coverages)
-    // Water damage type
+    const loanEndDateGroup = document.getElementById('loanEndDate-group');
+    const loanEndDateInput = document.getElementById('loanEndDate');
     const waterDamageType = document.getElementById('water-damage-type');
     if (waterDamageType && waterDamageType.required && !waterDamageType.value) {
         showBuildingFormError(waterDamageType, 'שדה חובה - יש לבחור סוג כיסוי נזקי מים');
@@ -4283,9 +4426,8 @@ if (typeof window.addBuildingFormListeners === 'undefined') {
  * Initialize contents section conditional fields
  */
 function initializeContentsFields() {
-    // Product type and coverage type from general details
+    // Product type from general details
     const productTypeSelect = document.getElementById('productType');
-    const coverageTypeSelect = document.getElementById('coverageType');
     
     // Contents section fields
     const contentsBuilingAgeGroup = document.getElementById('contents-building-age-group');
@@ -4295,14 +4437,14 @@ function initializeContentsFields() {
     const watchesCoverageGroup = document.getElementById('watches-coverage-group');
     const valuableItemsSection = document.getElementById('valuable-items-section');
     const contentsWaterDamageGroup = document.getElementById('contents-water-damage-group');
-    const contentsEarthquakeSelect = document.getElementById('contents-earthquake');
-    const contentsEarthquakeDeductibleGroup = document.getElementById('contents-earthquake-deductible-group');
     
     // Update contents fields based on product type
     updateContentsFieldsForProductType();
     
-    // Update valuable items section based on coverage type
-    updateValuableItemsSection();
+    // Always show valuable items section since we removed coverageType
+    if (valuableItemsSection) {
+        valuableItemsSection.style.display = 'block';
+    }
     
     // Jewelry amount change handler
     if (jewelryAmountInput) {
@@ -4315,13 +4457,6 @@ function initializeContentsFields() {
     if (watchesAmountInput) {
         watchesAmountInput.addEventListener('input', function() {
             updateWatchesCoverageField(this.value);
-        });
-    }
-    
-    // Contents earthquake change handler
-    if (contentsEarthquakeSelect) {
-        contentsEarthquakeSelect.addEventListener('change', function() {
-            updateContentsEarthquakeDeductible(this.value);
         });
     }
 }
@@ -4365,34 +4500,7 @@ function updateContentsFieldsForProductType() {
     }
 }
 
-/**
- * Update valuable items section based on coverage type
- */
-function updateValuableItemsSection() {
-    const coverageType = document.getElementById('coverageType')?.value;
-    const valuableItemsSection = document.getElementById('valuable-items-section');
-    
-    if (coverageType === 'חלק מהתכולה בכה״ס' || coverageType === 'כל התכולה בכה״ס') {
-        // Show valuable items section
-        if (valuableItemsSection) {
-            valuableItemsSection.style.display = 'block';
-        }
-    } else {
-        // Hide valuable items section
-        if (valuableItemsSection) {
-            valuableItemsSection.style.display = 'none';
-            
-            // Clear values in hidden fields
-            const fields = valuableItemsSection.querySelectorAll('input[type="number"]');
-            fields.forEach(field => {
-                field.value = '';
-            });
-        }
-    }
-    
-    // Handle special case for תכולה מקיף בלבד
-    updateContentsDropdownsForCoverageType(coverageType);
-}
+
 
 /**
  * Update jewelry coverage field based on jewelry amount
@@ -4450,78 +4558,6 @@ function updateWatchesCoverageField(amount) {
     }
 }
 
-/**
- * Update contents earthquake deductible field based on earthquake selection
- * @param {string} earthquakeCoverage - The earthquake coverage selection
- */
-function updateContentsEarthquakeDeductible(earthquakeCoverage) {
-    const contentsEarthquakeDeductibleGroup = document.getElementById('contents-earthquake-deductible-group');
-    const contentsEarthquakeDeductibleSelect = document.getElementById('contents-earthquake-deductible');
-    
-    if (earthquakeCoverage === 'כן') {
-        // Show earthquake deductible field
-        if (contentsEarthquakeDeductibleGroup) {
-            contentsEarthquakeDeductibleGroup.style.display = 'block';
-            if (contentsEarthquakeDeductibleSelect) {
-                contentsEarthquakeDeductibleSelect.required = true;
-            }
-        }
-    } else {
-        // Hide earthquake deductible field
-        if (contentsEarthquakeDeductibleGroup) {
-            contentsEarthquakeDeductibleGroup.style.display = 'none';
-            if (contentsEarthquakeDeductibleSelect) {
-                contentsEarthquakeDeductibleSelect.required = false;
-                contentsEarthquakeDeductibleSelect.value = '';
-            }
-        }
-    }
-}
-
-/**
- * Update contents dropdowns for תכולה מקיף בלבד coverage type
- * @param {string} coverageType - The coverage type selection
- */
-function updateContentsDropdownsForCoverageType(coverageType) {
-    const jewelryCoverageSelect = document.getElementById('jewelry-coverage');
-    const watchesCoverageSelect = document.getElementById('watches-coverage');
-    
-    if (coverageType === 'תכולה מקיף בלבד') {
-        // Set jewelry coverage to מקיף and disable
-        if (jewelryCoverageSelect) {
-            jewelryCoverageSelect.value = 'מקיף';
-            jewelryCoverageSelect.disabled = true;
-        }
-        
-        // Set watches coverage to מקיף and disable
-        if (watchesCoverageSelect) {
-            watchesCoverageSelect.value = 'מקיף';
-            watchesCoverageSelect.disabled = true;
-            
-            // Update the default option text to show "מקיף"
-            const defaultOption = watchesCoverageSelect.querySelector('option[value=""]');
-            if (defaultOption) {
-                defaultOption.textContent = 'מקיף';
-            }
-        }
-    } else {
-        // Enable jewelry coverage dropdown
-        if (jewelryCoverageSelect) {
-            jewelryCoverageSelect.disabled = false;
-        }
-        
-        // Enable watches coverage dropdown
-        if (watchesCoverageSelect) {
-            watchesCoverageSelect.disabled = false;
-            
-            // Restore the default option text
-            const defaultOption = watchesCoverageSelect.querySelector('option[value=""]');
-            if (defaultOption) {
-                defaultOption.textContent = 'בחר סוג כיסוי';
-            }
-        }
-    }
-}
 
 /**
  * Validate contents section fields
@@ -4529,13 +4565,6 @@ function updateContentsDropdownsForCoverageType(coverageType) {
  */
 function validateContentsSection() {
     let isValid = true;
-    
-    // Contents insurance amount
-    const contentsInsuranceAmount = document.getElementById('contents-insurance-amount');
-    if (contentsInsuranceAmount && contentsInsuranceAmount.required && !contentsInsuranceAmount.value) {
-        showContentsFormError(contentsInsuranceAmount, 'שדה חובה - יש למלא סכום ביטוח תכולה');
-        isValid = false;
-    }
     
     // Building age (only if visible)
     const contentsBuildingAge = document.getElementById('contents-building-age');
@@ -4558,21 +4587,6 @@ function validateContentsSection() {
     const watchesCoverageSelect = document.getElementById('watches-coverage');
     if (watchesCoverageSelect && watchesCoverageGroup && watchesCoverageGroup.style.display !== 'none' && watchesCoverageSelect.required && !watchesCoverageSelect.value) {
         showContentsFormError(watchesCoverageSelect, 'שדה חובה - יש לבחור סוג כיסוי לשעונים');
-        isValid = false;
-    }
-    
-    // Earthquake coverage
-    const contentsEarthquake = document.getElementById('contents-earthquake');
-    if (contentsEarthquake && contentsEarthquake.required && !contentsEarthquake.value) {
-        showContentsFormError(contentsEarthquake, 'שדה חובה - יש לבחור האם לכלול כיסוי רעידת אדמה');
-        isValid = false;
-    }
-    
-    // Earthquake deductible (only if visible and required)
-    const contentsEarthquakeDeductibleGroup = document.getElementById('contents-earthquake-deductible-group');
-    const contentsEarthquakeDeductibleSelect = document.getElementById('contents-earthquake-deductible');
-    if (contentsEarthquakeDeductibleSelect && contentsEarthquakeDeductibleGroup && contentsEarthquakeDeductibleGroup.style.display !== 'none' && contentsEarthquakeDeductibleSelect.required && !contentsEarthquakeDeductibleSelect.value) {
-        showContentsFormError(contentsEarthquakeDeductibleSelect, 'שדה חובה - יש לבחור השתתפות עצמית לרעידת אדמה');
         isValid = false;
     }
     
@@ -5484,7 +5498,7 @@ function collectFullFormData() {
         constructionStandard: document.getElementById('construction-standard')?.value || '',
         mortgaged: document.getElementById('mortgaged-property')?.checked || false,
         mortgagedProperty: document.getElementById('mortgaged-property')?.checked || false,
-        renewals: document.getElementById('renewals')?.value || '',
+        loanEndDate: document.getElementById("loan-end-date")?.value || "",
         // Water damage fields
         waterDamageType: document.getElementById('water-damage-type')?.value || '',
         waterDeductible: document.getElementById('water-deductible')?.value || '',
@@ -5501,15 +5515,11 @@ function collectFullFormData() {
         // Extensions
         buildingContentsInsurance: document.getElementById('building-contents-insurance')?.value || '',
         storageInsurance: document.getElementById('storage-insurance')?.value || '',
-        swimmingPoolInsurance: document.getElementById('swimming-pool-insurance')?.value || '',
-        glassBreakageInsurance: document.getElementById('glass-breakage-insurance')?.value || '',
-        boilersCoverage: document.getElementById('boilers-coverage')?.checked || false
+        swimmingPoolInsurance: document.getElementById('swimming-pool-insurance')?.value || ''
     };
     
     // Add contents data
     const contentsData = {
-        contentsInsuranceAmount: document.getElementById('contents-insurance-amount')?.value || '',
-        insuranceAmount: document.getElementById('contents-insurance-amount')?.value || '',
         contentsBuildingAge: document.getElementById('contents-building-age')?.value || '',
         jewelryAmount: document.getElementById('jewelry-amount')?.value || '',
         jewelryCoverage: document.getElementById('jewelry-coverage')?.value || '',
@@ -5519,15 +5529,11 @@ function collectFullFormData() {
         electronicsAmount: document.getElementById('electronics-amount')?.value || '',
         bicyclesAmount: document.getElementById('bicycles-amount')?.value || '',
         musicalInstrumentsAmount: document.getElementById('musical-instruments-amount')?.value || '',
-        contentsWaterDamage: document.getElementById('contents-water-damage')?.checked || false,
-        contentsBurglary: document.getElementById('contents-burglary')?.checked || false,
-        contentsEarthquake: document.getElementById('contents-earthquake')?.value || '',
-        contentsEarthquakeDeductible: document.getElementById('contents-earthquake-deductible')?.value || ''
+        contentsWaterDamage: document.getElementById('contents-water-damage')?.checked || false
     };
     
     // Add additional coverage data
     const additionalCoverage = {
-        businessContentsAmount: document.getElementById('business-contents-amount')?.value || '',
         businessEmployers: document.getElementById('business-employers')?.checked || false,
         businessThirdParty: document.getElementById('business-third-party')?.checked || false,
         thirdPartyCoverage: document.getElementById('third-party-coverage')?.checked || false,
@@ -5684,12 +5690,7 @@ function generateEmailHTML(data) {
                                 <strong>סוג נכס:</strong>
                                 <span>${data.assetType || data.propertyType || 'לא צוין'}</span>
                             </div>
-                            ${data.coverageType ? `
-                            <div class="info-item">
-                                <strong>סוג כיסוי:</strong>
-                                <span>${data.coverageType}</span>
-                            </div>
-                            ` : ''}
+
                         </div>
                         
                         <div class="subsection">
@@ -5773,10 +5774,10 @@ function generateEmailHTML(data) {
                                 <strong>נכס משועבד:</strong>
                                 <span class="badge ${data.building.mortgaged ? 'active' : 'inactive'}">${formatBoolean(data.building.mortgaged)}</span>
                             </div>
-                            ${data.building.renewals ? `
+                            ${data.building.loanEndDate ? `
                             <div class="info-item">
                                 <strong>חידושים:</strong>
-                                <span>${data.building.renewals}</span>
+                                <span>${data.building.loanEndDate}</span>
                             </div>
                             ` : ''}
                         </div>
@@ -5838,27 +5839,16 @@ function generateEmailHTML(data) {
                                 <strong>₪${formatCurrency(data.building.swimmingPoolInsurance)}</strong>
                             </div>
                             ` : ''}
-                            ${data.building.glassBreakageInsurance ? `
-                            <div class="value-item">
-                                <span>שבר זכוכית:</span>
-                                <strong>₪${formatCurrency(data.building.glassBreakageInsurance)}</strong>
-                            </div>
-                            ` : ''}
-                            <div class="value-item">
-                                <span>דודי חימום:</span>
-                                <strong class="badge ${data.building.boilersCoverage ? 'active' : 'inactive'}">${formatBoolean(data.building.boilersCoverage)}</strong>
-                            </div>
                         </div>
                     </div>
                     ` : ''}
                     
                     <!-- פרטי תכולה -->
-                    ${data.contents && data.contents.contentsInsuranceAmount ? `
+                    ${data.contents && (data.contents.jewelryAmount || data.contents.watchesAmount || 
+                       data.contents.camerasAmount || data.contents.electronicsAmount || 
+                       data.contents.bicyclesAmount || data.contents.musicalInstrumentsAmount) ? `
                     <div class="section">
                         <h2>📦 פרטי ביטוח תכולה</h2>
-                        <div class="highlight">
-                            <strong>סכום ביטוח תכולה:</strong> ₪${formatCurrency(data.contents.contentsInsuranceAmount)}
-                        </div>
                         <div class="info-grid">
                             ${data.contents.contentsBuildingAge ? `
                             <div class="info-item">
@@ -5913,43 +5903,25 @@ function generateEmailHTML(data) {
                         ` : ''}
                         
                         <!-- כיסויים לתכולה -->
+                        ${data.contents.contentsWaterDamage !== undefined ? `
                         <div class="subsection">
                             <h3 style="margin-top: 0;">כיסויים לתכולה</h3>
                             <div class="value-item">
                                 <span>נזקי מים:</span>
                                 <strong class="badge ${data.contents.contentsWaterDamage ? 'active' : 'inactive'}">${formatBoolean(data.contents.contentsWaterDamage)}</strong>
                             </div>
-                            <div class="value-item">
-                                <span>פריצה:</span>
-                                <strong class="badge ${data.contents.contentsBurglary ? 'active' : 'inactive'}">${formatBoolean(data.contents.contentsBurglary)}</strong>
-                            </div>
-                            <div class="value-item">
-                                <span>רעידת אדמה:</span>
-                                <strong>${data.contents.contentsEarthquake || 'לא'}</strong>
-                            </div>
-                            ${data.contents.contentsEarthquakeDeductible ? `
-                            <div class="value-item">
-                                <span>השתתפות עצמית רעידת אדמה:</span>
-                                <strong>${data.contents.contentsEarthquakeDeductible}</strong>
-                            </div>
-                            ` : ''}
                         </div>
+                        ` : ''}
                     </div>
                     ` : ''}
                     
                     <!-- כיסויים נוספים -->
-                    ${data.additionalCoverage && (data.additionalCoverage.businessContentsAmount || 
-                       data.additionalCoverage.thirdPartyCoverage || data.additionalCoverage.employersLiability || 
-                       data.additionalCoverage.cyberCoverage || data.additionalCoverage.terrorCoverage) ? `
+                    ${data.additionalCoverage && (data.additionalCoverage.thirdPartyCoverage || data.additionalCoverage.employersLiability || 
+                       data.additionalCoverage.cyberCoverage || data.additionalCoverage.terrorCoverage || 
+                       data.additionalCoverage.businessEmployers || data.additionalCoverage.businessThirdParty) ? `
                     <div class="section">
                         <h2>🛡️ כיסויים נוספים</h2>
                         <div class="info-grid">
-                            ${data.additionalCoverage.businessContentsAmount ? `
-                            <div class="info-item">
-                                <strong>תכולה עסקית:</strong>
-                                <span>₪${formatCurrency(data.additionalCoverage.businessContentsAmount)}</span>
-                            </div>
-                            ` : ''}
                             ${data.additionalCoverage.businessEmployers !== undefined ? `
                             <div class="info-item">
                                 <strong>חבות מעבידים עסקית:</strong>
@@ -6214,16 +6186,15 @@ function generateLeadPDF(formData) {
                 { label: 'סוג בניה', value: formData.building.constructionType },
                 { label: 'סטנדרט בניה', value: formData.building.constructionStandard },
                 { label: 'משועבד/מוטב', value: formatBoolean(formData.building.mortgagedProperty) },
-                { label: 'חידושים', value: formData.building.renewals }
+                { label: 'חידושים', value: formData.building.loanEndDate }
             ].filter(item => item.value);
             
             addSection('ביטוח מבנה', buildingItems);
         }
         
         // Contents Insurance
-        if (formData.contents && formData.contents.contentsInsuranceAmount) {
+        if (formData.contents && (formData.contents.jewelryAmount || formData.contents.watchesAmount)) {
             const contentsItems = [
-                { label: 'סכום ביטוח תכולה', value: formatCurrency(formData.contents.contentsInsuranceAmount) },
                 { label: 'תכשיטים', value: formData.contents.jewelryAmount ? formatCurrency(formData.contents.jewelryAmount) : null },
                 { label: 'שעונים', value: formData.contents.watchesAmount ? formatCurrency(formData.contents.watchesAmount) : null },
                 { label: 'מצלמות', value: formData.contents.camerasAmount ? formatCurrency(formData.contents.camerasAmount) : null },
@@ -6238,7 +6209,6 @@ function generateLeadPDF(formData) {
         // Additional Coverage
         if (formData.additionalCoverage) {
             const additionalItems = [
-                { label: 'תכולה עסקית', value: formData.additionalCoverage.businessContentsAmount ? formatCurrency(formData.additionalCoverage.businessContentsAmount) : null },
                 { label: 'חבות מעבידים עסקית', value: formData.additionalCoverage.businessEmployers ? 'כן' : null },
                 { label: 'צד ג\' עסקי', value: formData.additionalCoverage.businessThirdParty ? 'כן' : null },
                 { label: 'צד שלישי', value: formData.additionalCoverage.thirdPartyCoverage ? 'כן' : null },
@@ -6505,31 +6475,32 @@ function collectAllFormData() {
  * Collect building insurance data
  */
 function collectBuildingData() {
-    const productType = document.getElementById('product-type')?.value;
+    const productType = document.getElementById('productType')?.value;
     if (!productType || !productType.includes('מבנה')) {
         return null;
     }
     
     return {
-        insuranceAmount: parseFloat(document.getElementById('building-insurance-amount')?.value) || 0,
         age: parseInt(document.getElementById('building-age')?.value) || 0,
-        area: parseFloat(document.getElementById('area')?.value) || 0,
+        area: parseFloat(document.getElementById('building-area')?.value) || 0,
+        hasTerrace: document.getElementById('has-terrace')?.value || '',
+        terraceArea: parseFloat(document.getElementById('terrace-area')?.value) || 0,
+        hasGarden: document.getElementById('has-garden')?.value || '',
+        gardenArea: parseFloat(document.getElementById('garden-area')?.value) || 0,
+        roofType: document.getElementById('roof-type')?.value || '',
         constructionType: document.getElementById('construction-type')?.value || '',
-        constructionStandard: document.getElementById('construction-standard')?.value || '',
         mortgagedProperty: document.getElementById('mortgaged-property')?.checked || false,
-        renewals: document.getElementById('renewals')?.value || '',
+        loanEndDate: document.getElementById("loan-end-date")?.value || "",
         waterDamageType: document.getElementById('water-damage-type')?.value || '',
-        waterDeductible: document.getElementById('water-deductible')?.value || '',
-        burglary: document.getElementById('burglary')?.checked || false,
         earthquakeCoverage: document.getElementById('earthquake-coverage')?.value || '',
         earthquakeDeductible: document.getElementById('earthquake-deductible')?.value || '',
-        additionalSharedInsurance: parseFloat(document.getElementById('additional-shared-insurance')?.value) || 0,
+        earthquakeLandCoverage: document.getElementById('earthquake-land-coverage')?.value || '',
+        earthquakeCoverageAmount: parseFloat(document.getElementById('earthquake-coverage-amount')?.value) || 0,
+        hasSwimmingPool: document.getElementById('has-swimming-pool')?.checked || false,
+        swimmingPoolValue: parseFloat(document.getElementById('swimming-pool-value')?.value) || 0,
         extensions: {
             buildingContentsInsurance: parseFloat(document.getElementById('building-contents-insurance')?.value) || 0,
-            storageInsurance: parseFloat(document.getElementById('storage-insurance')?.value) || 0,
-            swimmingPoolInsurance: parseFloat(document.getElementById('swimming-pool-insurance')?.value) || 0,
-            glassBreakageInsurance: parseFloat(document.getElementById('glass-breakage-insurance')?.value) || 0,
-            boilersCoverage: document.getElementById('boilers-coverage')?.checked || false
+            storageInsurance: parseFloat(document.getElementById('storage-insurance')?.value) || 0
         }
     };
 }
@@ -6544,7 +6515,6 @@ function collectContentsData() {
     }
     
     return {
-        insuranceAmount: parseFloat(document.getElementById('contents-insurance-amount')?.value) || 0,
         buildingAge: parseInt(document.getElementById('contents-building-age')?.value) || 0,
         jewelry: {
             amount: parseFloat(document.getElementById('jewelry-amount')?.value) || 0,
@@ -6562,9 +6532,7 @@ function collectContentsData() {
         },
         coverages: {
             waterDamage: document.getElementById('contents-water-damage')?.checked || false,
-            burglary: document.getElementById('contents-burglary')?.checked || false,
-            earthquake: document.getElementById('contents-earthquake')?.value || '',
-            earthquakeDeductible: document.getElementById('contents-earthquake-deductible')?.value || ''
+            earthquakeCoverage: document.getElementById("contents-earthquake-coverage")?.value || ""
         }
     };
 }
@@ -6574,7 +6542,6 @@ function collectContentsData() {
  */
 function collectAdditionalCoverages() {
     return {
-        businessContents: parseFloat(document.getElementById('business-contents-amount')?.value) || 0,
         businessEmployers: document.getElementById('business-employers')?.checked || false,
         businessThirdParty: document.getElementById('business-third-party')?.checked || false,
         thirdPartyCoverage: document.getElementById('third-party-coverage')?.checked || false,

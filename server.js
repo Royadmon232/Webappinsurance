@@ -140,9 +140,7 @@ const insuranceFormSchema = new mongoose.Schema({
         extensions: {
             buildingContentsInsurance: Number,
             storageInsurance: Number,
-            swimmingPoolInsurance: Number,
-            glassBreakageInsurance: Number,
-            boilersCoverage: Boolean
+            swimmingPoolInsurance: Number
         }
     },
     
@@ -875,10 +873,38 @@ function formatEmailContent(data) {
                             <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.buildingAge || data.building.age} שנים</td>
                         </tr>
                         ` : ''}
-                        ${data.building.buildingArea || data.building.area ? `
+                        ${data.building.area ? `
                         <tr style="background: #f8f9fa;">
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>שטח:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.buildingArea || data.building.area} מ"ר</td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>שטח מבנה בנוי:</strong></td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.area} מ"ר</td>
+                        </tr>
+                        ` : ''}
+                        ${data.building.hasTerrace === 'כן' ? `
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>מרפסת:</strong></td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">✅ כן${data.building.terraceArea ? ` - ${data.building.terraceArea} מ"ר` : ''}</td>
+                        </tr>
+                        ` : data.building.hasTerrace === 'לא' ? `
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>מרפסת:</strong></td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">❌ לא</td>
+                        </tr>
+                        ` : ''}
+                        ${data.building.hasGarden === 'כן' ? `
+                        <tr style="background: #f8f9fa;">
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>גינה:</strong></td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">✅ כן${data.building.gardenArea ? ` - ${data.building.gardenArea} מ"ר` : ''}</td>
+                        </tr>
+                        ` : data.building.hasGarden === 'לא' ? `
+                        <tr style="background: #f8f9fa;">
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>גינה:</strong></td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">❌ לא</td>
+                        </tr>
+                        ` : ''}
+                        ${data.building.roofType ? `
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>סוג גג:</strong></td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.roofType}</td>
                         </tr>
                         ` : ''}
                         ${data.building.constructionType ? `
@@ -887,12 +913,7 @@ function formatEmailContent(data) {
                             <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.constructionType}</td>
                         </tr>
                         ` : ''}
-                        ${data.building.constructionStandard ? `
-                        <tr style="background: #f8f9fa;">
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>סטנדרט בניה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.constructionStandard}</td>
-                        </tr>
-                        ` : ''}
+
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>משועבד/מוטב:</strong></td>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;">${(data.building.mortgagedProperty || data.building.mortgaged) ? '✅ כן' : '❌ לא'}</td>
@@ -909,41 +930,36 @@ function formatEmailContent(data) {
                     <h4 style="margin-top: 20px; color: #333;">כיסויים:</h4>
                     <ul style="background: #f8f9fa; padding: 15px 30px; border-radius: 5px; list-style: none;">
                         <li style="padding: 5px 0;">${data.building.waterDamageType ? '💧 ' + data.building.waterDamageType : '❌ ללא נזקי מים'}</li>
-                        ${data.building.waterDeductible ? `<li style="padding: 5px 0;">💰 השתתפות עצמית: ${data.building.waterDeductible}</li>` : ''}
-                        <li style="padding: 5px 0;">${data.building.burglaryBuilding ? '🔒 פריצה גניבה ושוד' : '❌ ללא כיסוי פריצה'}</li>
                         <li style="padding: 5px 0;">${data.building.earthquakeCoverage === 'כן' ? '🌍 רעידת אדמה' : '❌ ללא כיסוי רעידת אדמה'}</li>
                         ${data.building.earthquakeDeductible ? `<li style="padding: 5px 0;">💰 השתתפות עצמית רעידת אדמה: ${data.building.earthquakeDeductible}</li>` : ''}
+                        ${data.building.earthquakeLandCoverage === 'כן' ? `<li style="padding: 5px 0;">🏢 כיסוי שווי קרקע מרעידת אדמה${data.building.earthquakeCoverageAmount ? `: ${formatCurrency(data.building.earthquakeCoverageAmount)}` : ''}</li>` : ''}
                     </ul>
 
-                    ${(data.building.buildingContentsInsurance || data.building.storageInsurance || data.building.swimmingPoolInsurance || data.building.glassBreakageInsurance || data.building.boilersCoverage) ? `
+                    ${(data.building.buildingContentsInsurance || data.building.storageInsurance || data.building.hasSwimmingPool) ? `
                     <h4 style="margin-top: 20px; color: #333;">הרחבות:</h4>
                     <ul style="background: #e8f5e9; padding: 15px 30px; border-radius: 5px; list-style: none;">
                         ${data.building.buildingContentsInsurance ? `<li style="padding: 5px 0;">🏠 תכולת דירה שבבניין משותף: ${formatCurrency(data.building.buildingContentsInsurance)}</li>` : ''}
                         ${data.building.storageInsurance ? `<li style="padding: 5px 0;">📦 מחסן: ${formatCurrency(data.building.storageInsurance)}</li>` : ''}
-                        ${data.building.swimmingPoolInsurance ? `<li style="padding: 5px 0;">🏊 בריכת שחייה: ${formatCurrency(data.building.swimmingPoolInsurance)}</li>` : ''}
-                        ${data.building.glassBreakageInsurance ? `<li style="padding: 5px 0;">🪟 שבר שמשות: ${formatCurrency(data.building.glassBreakageInsurance)}</li>` : ''}
-                        ${data.building.boilersCoverage ? `<li style="padding: 5px 0;">♨️ דוודים</li>` : ''}
+                        ${data.building.hasSwimmingPool ? `<li style="padding: 5px 0;">🏊 בריכת שחיה${data.building.swimmingPoolValue ? `: שווי ${formatCurrency(data.building.swimmingPoolValue)}` : ''}</li>` : ''}
                     </ul>
                     ` : ''}
                 </div>
                 ` : ''}
 
-                ${data.contents && data.contents.contentsInsuranceAmount ? `
+                ${data.contents && (data.contents.jewelryAmount || data.contents.watchesAmount || 
+                   data.contents.camerasAmount || data.contents.electronicsAmount || 
+                   data.contents.bicyclesAmount || data.contents.musicalInstrumentsAmount) ? `
                 <!-- Contents Insurance Details -->
-                <div style="margin-bottom: 30px;">
+                        ${data.contents.earthquakeCoverage ? `<li style="padding: 5px 0;">🌍 רעידת אדמה (תכולה): ${data.contents.earthquakeCoverage}</li>` : ""}                <div style="margin-bottom: 30px;">
                     <h3 style="color: #0052cc; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">📦 ביטוח תכולה</h3>
+                    ${data.contents.contentsBuildingAge ? `
                     <table style="width: 100%; border-collapse: collapse;">
-                        <tr style="background: #fff3cd;">
-                            <td style="padding: 10px; border: 1px solid #e0e0e0; width: 30%;"><strong>סכום ביטוח:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0; font-size: 18px; color: #0052cc;"><strong>${formatCurrency(data.contents.contentsInsuranceAmount)}</strong></td>
-                        </tr>
-                        ${data.contents.contentsBuildingAge ? `
                         <tr>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>גיל המבנה לתכולה:</strong></td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0; width: 30%;"><strong>גיל המבנה לתכולה:</strong></td>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.contents.contentsBuildingAge} שנים</td>
                         </tr>
-                        ` : ''}
                     </table>
+                    ` : ''}
 
                     ${(data.contents.jewelryAmount || data.contents.watchesAmount || data.contents.camerasAmount || data.contents.electronicsAmount || data.contents.bicyclesAmount || data.contents.musicalInstrumentsAmount) ? `
                     <h4 style="margin-top: 20px; color: #333;">דברי ערך בכל הסיכונים:</h4>
@@ -957,14 +973,13 @@ function formatEmailContent(data) {
                     </ul>
                     ` : ''}
 
+                    ${data.contents.contentsWaterDamage !== undefined ? `
                     <!-- Contents Coverages -->
                     <h4 style="margin-top: 20px; color: #333;">כיסויים:</h4>
                     <ul style="background: #f8f9fa; padding: 15px 30px; border-radius: 5px; list-style: none;">
                         <li style="padding: 5px 0;">${data.contents.contentsWaterDamage ? '💧 נזקי מים (תכולה בלבד)' : '❌ ללא נזקי מים'}</li>
-                        <li style="padding: 5px 0;">${data.contents.contentsBurglary ? '🔒 פריצה גניבה ושוד' : '❌ ללא כיסוי פריצה'}</li>
-                        <li style="padding: 5px 0;">${data.contents.contentsEarthquake === 'כן' ? '🌍 רעידת אדמה' : '❌ ללא כיסוי רעידת אדמה'}</li>
-                        ${data.contents.contentsEarthquakeDeductible ? `<li style="padding: 5px 0;">💰 השתתפות עצמית רעידת אדמה: ${data.contents.contentsEarthquakeDeductible}</li>` : ''}
                     </ul>
+                    ` : ''}
                 </div>
                 ` : ''}
 
@@ -973,7 +988,7 @@ function formatEmailContent(data) {
                 <div style="margin-bottom: 30px;">
                     <h3 style="color: #0052cc; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">➕ כיסויים נוספים</h3>
                     <ul style="background: #f0f8ff; padding: 15px 30px; border-radius: 5px; list-style: none;">
-                        ${data.additionalCoverage.businessContentsAmount ? `<li style="padding: 5px 0;">💼 תכולה עסקית: ${formatCurrency(data.additionalCoverage.businessContentsAmount)}</li>` : ''}
+
                         ${data.additionalCoverage.businessEmployers ? `<li style="padding: 5px 0;">👔 פעילות עסקית (מעבידים)</li>` : ''}
                         ${data.additionalCoverage.businessThirdParty ? `<li style="padding: 5px 0;">🤝 תכולה עסקית (צד ג')</li>` : ''}
                         ${data.additionalCoverage.thirdPartyCoverage ? `<li style="padding: 5px 0;">⚖️ כיסוי צד שלישי</li>` : ''}

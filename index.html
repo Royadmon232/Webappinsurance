@@ -605,15 +605,7 @@
                                             </select>
                                         </div>
                                         
-                                        <div class="form-group">
-                                            <label for="coverageType" data-required="*">סוג כיסוי</label>
-                                            <select id="coverageType" name="coverageType" required>
-                                                <option value="">בחר סוג כיסוי</option>
-                                                <option value="תכולה מקיף בלבד">תכולה מקיף בלבד</option>
-                                                <option value="חלק מהתכולה בכה״ס">חלק מהתכולה בכה״ס</option>
-                                                <option value="כל התכולה בכה״ס">כל התכולה בכה״ס</option>
-                                            </select>
-                                        </div>
+
                                     </div>
                                     
                                     <!-- Property Details Group -->
@@ -624,10 +616,10 @@
                                             <select id="propertyType" name="propertyType" required>
                                                 <option value="">בחר סוג נכס</option>
                                                 <option value="פרטי">פרטי</option>
-                                                <option value="משותף קומת קרקע">משותף קומת קרקע</option>
-                                                <option value="משותף קומה ראשונה">משותף קומה ראשונה</option>
-                                                <option value="משותף קומת ביניים">משותף קומת ביניים</option>
-                                                <option value="משותף קומה אחרונה">משותף קומה אחרונה</option>
+                                                <option value="דירה קומת קרקע">דירה קומת קרקע</option>
+                                                <option value="דירה קומה ראשונה">דירה קומה ראשונה</option>
+                                                <option value="דירה קומת ביניים">דירה קומת ביניים</option>
+                                                <option value="דירה קומה אחרונה">דירה קומה אחרונה</option>
                                             </select>
                                         </div>
                                         
@@ -701,14 +693,6 @@
                                                 <option value="64">64</option>
                                             </select>
                                         </div>
-                                        
-                                        <!-- Garden checkbox -->
-                                        <div class="form-group" id="garden-checkbox-container" style="display: none;">
-                                            <div class="checkbox-wrapper">
-                                                <input type="checkbox" id="garden-checkbox" name="garden">
-                                                <label for="garden-checkbox">קיום גינה</label>
-                                            </div>
-                                        </div>
                                     </div>
                                     
                                     <!-- Address Details Group -->
@@ -759,14 +743,7 @@
                                 <h3 class="building-section-title">מבנה</h3>
                                 <div class="building-section-form">
                                     <div class="building-form-grid">
-                                        <div class="building-form-group">
-                                            <label for="insurance-amount" data-required="*">
-                                                <span>סכום ביטוח מבנה (₪)</span>
-                                                <span class="form-icon">💰</span>
-                                            </label>
-                                            <input type="number" id="insurance-amount" name="insurance-amount" min="0" step="1000" placeholder="הכנס סכום ביטוח" required>
-                                            <small class="form-helper-text">סכום הביטוח צריך לכסות את עלות בניית הדירה מחדש</small>
-                                    </div>
+
                                         
                                         <div class="building-form-group">
                                             <label for="building-age" data-required="*">
@@ -779,11 +756,65 @@
                                         
                                         <div class="building-form-group">
                                             <label for="building-area" data-required="*">
-                                                <span>שטח מבנה (מ״ר)</span>
+                                                <span>שטח מבנה בנוי(מ״ר)</span>
                                                 <span class="form-icon">📐</span>
                                             </label>
                                             <input type="number" id="building-area" name="building-area" min="0" step="0.1" placeholder="הכנס שטח המבנה" required>
-                                            <small class="form-helper-text">השטח הכולל של הדירה כולל מרפסות</small>
+                                            <small class="form-helper-text">השטח הבנוי של הדירה</small>
+                                        </div>
+                                        
+                                        <div class="building-form-group">
+                                            <label for="has-terrace">
+                                                <span>האם בביתך יש מרפסת?</span>
+                                                <span class="form-icon">🏡</span>
+                                            </label>
+                                            <select id="has-terrace" name="has-terrace">
+                                                <option value="">בחר</option>
+                                                <option value="כן">כן</option>
+                                                <option value="לא">לא</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="building-form-group" id="terrace-area-group" style="display: none;">
+                                            <label for="terrace-area" data-required="*">
+                                                <span>מה שטח המרפסת במ"ר?</span>
+                                                <span class="form-icon">📏</span>
+                                            </label>
+                                            <input type="number" id="terrace-area" name="terrace-area" min="0" step="0.1" placeholder="הכנס שטח המרפסת">
+                                            <small class="form-helper-text">שטח המרפסת במטרים רבועים</small>
+                                        </div>
+                                        
+                                        <div class="building-form-group" id="has-garden-group" style="display: none;">
+                                            <label for="has-garden">
+                                                <span>האם יש גינה בביתך?</span>
+                                                <span class="form-icon">🌳</span>
+                                            </label>
+                                            <select id="has-garden" name="has-garden">
+                                                <option value="">בחר</option>
+                                                <option value="כן">כן</option>
+                                                <option value="לא">לא</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="building-form-group" id="garden-area-group" style="display: none;">
+                                            <label for="garden-area" data-required="*">
+                                                <span>מה שטח הגינה בביתך במ"ר?</span>
+                                                <span class="form-icon">📐</span>
+                                            </label>
+                                            <input type="number" id="garden-area" name="garden-area" min="0" step="0.1" placeholder="הכנס שטח הגינה">
+                                            <small class="form-helper-text">שטח הגינה במטרים רבועים</small>
+                                        </div>
+                                        
+                                        <div class="building-form-group" id="roof-type-group" style="display: none;">
+                                            <label for="roof-type" data-required="*">
+                                                <span>ממה עשוי הגג?</span>
+                                                <span class="form-icon">🏠</span>
+                                            </label>
+                                            <select id="roof-type" name="roof-type">
+                                                <option value="">בחר סוג גג</option>
+                                                <option value="בטון">בטון</option>
+                                                <option value="רעפים">רעפים</option>
+                                            </select>
                                         </div>
                                         
                                         <div class="building-form-group">
@@ -798,19 +829,7 @@
                                             <small class="form-helper-text">החומרים העיקריים מהם בנוי המבנה</small>
                                         </div>
                                         
-                                        <div class="building-form-group">
-                                            <label for="construction-standard" data-required="*">
-                                                <span>סטנדרט בניה</span>
-                                                <span class="form-icon">⭐</span>
-                                            </label>
-                                            <select id="construction-standard" name="construction-standard" required>
-                                                <option value="">בחר סטנדרט בניה</option>
-                                                <option value="רגיל">רגיל</option>
-                                                <option value="גבוה">גבוה</option>
-                                                <option value="גבוה מאד">גבוה מאד</option>
-                                            </select>
-                                            <small class="form-helper-text">רמת הגימור והאיכות של הנכס</small>
-                                        </div>
+
                                         
                                         <div class="building-form-group building-checkbox-group">
                                             <div class="building-checkbox-wrapper">
@@ -820,17 +839,13 @@
                                             <small class="form-helper-text">סמן אם הנכס משועבד לבנק או גוף פיננסי</small>
                                         </div>
                                         
-                                        <div class="building-form-group" id="renewals-group" style="display: none;">
-                                            <label for="renewals" data-required="*">
-                                                <span>חידושים</span>
-                                                <span class="form-icon">🔄</span>
+                                        <div class="building-form-group" id="loan-end-date-group" style="display: none;">
+                                            <label for="loan-end-date" data-required="*">
+                                                <span>צריך תום תקופת הלוואה לצורך קביעת תקופת הביטוח</span>
+                                                <span class="form-icon">📅</span>
                                             </label>
-                                            <select id="renewals" name="renewals">
-                                                <option value="">בחר סוג חידוש</option>
-                                                <option value="אין חידושים אוטומטיים">אין חידושים אוטומטיים</option>
-                                                <option value="חידוש אוטומטי בהסכמת המבוטח">חידוש אוטומטי בהסכמת המבוטח</option>
-                                            </select>
-                                            <small class="form-helper-text">בחר האם הביטוח יתחדש אוטומטית בתום התקופה</small>
+                                            <input type="date" id="loan-end-date" name="loan-end-date">
+                                            <small class="form-helper-text">תאריך תום תקופת הלוואה לקביעת תקופת הביטוח</small>
                                         </div>
                                     </div>
                                 </div>
@@ -843,50 +858,21 @@
                                     <div class="building-form-grid">
                                         <div class="building-form-group">
                                             <label for="water-damage-type" data-required="*">
-                                                <span>נזקי מים</span>
+                                                <span>האם מעוניין לכסות נזקים העלולים להיגרם מפיצוץ צנרת בדירתך?</span>
                                                 <span class="form-icon">💧</span>
                                             </label>
                                             <select id="water-damage-type" name="water-damage-type" required>
-                                                <option value="">בחר סוג כיסוי נזקי מים</option>
-                                                <option value="ללא נזקי מים">ללא נזקי מים</option>
-                                                <option value="שרברב שבהסדר">שרברב שבהסדר</option>
-                                                <option value="שרברב פרטי">שרברב פרטי</option>
+                                                <option value="">בחר</option>
+                                                <option value="לא מעוניין">לא מעוניין</option>
+                                                <option value="מעוניין בשרברב בהסדר עם חברת ביטוח">מעוניין בשרברב בהסדר עם חברת ביטוח</option>
                                             </select>
                                             <small class="form-helper-text">כיסוי לנזקים הנגרמים מנזילות מים וצנרת</small>
                                         </div>
                                         
-                                        <div class="building-form-group" id="water-deductible-group" style="display: none;">
-                                            <label for="water-deductible" data-required="*">
-                                                <span>השתתפות עצמית לנזקי מים</span>
-                                                <span class="form-icon">💸</span>
-                                            </label>
-                                            <select id="water-deductible" name="water-deductible">
-                                                <option value="">בחר השתתפות עצמית</option>
-                                                <option value="600 ש״ח">600 ש״ח</option>
-                                                <option value="850 ש״ח">850 ש״ח</option>
-                                                <option value="1750 ש״ח">1750 ש״ח</option>
-                                            </select>
-                                            <small class="form-helper-text">הסכום שתשלם מכיסך בעת תביעה לנזקי מים</small>
-                                        </div>
+
+
                                         
-                                        <div class="building-form-group" id="mortgage-water-damage-group" style="display: none;">
-                                            <label for="mortgage-water-damage" data-required="*">
-                                                <span>נזקי מים משכנתא</span>
-                                                <span class="form-icon">🏦</span>
-                                            </label>
-                                            <select id="mortgage-water-damage" name="mortgage-water-damage" disabled>
-                                                <option value="השתתפות עצמית 850 ש״ח - שרברב שבהסדר" selected>השתתפות עצמית 850 ש״ח - שרברב שבהסדר</option>
-                                            </select>
-                                            <small class="form-helper-text">תנאי כיסוי מיוחד לנכס ממושכן</small>
-                                        </div>
-                                        
-                                        <div class="building-form-group building-checkbox-group">
-                                            <div class="building-checkbox-wrapper">
-                                                <input type="checkbox" id="burglary-building" name="burglary-building" value="פריצה (מבנה)">
-                                                <label for="burglary-building">פריצה (מבנה)</label>
-                                            </div>
-                                            <small class="form-helper-text">כיסוי לנזקים שנגרמו למבנה בעת פריצה או ניסיון פריצה</small>
-                                        </div>
+
                                         
                                         <div class="building-form-group">
                                             <label for="earthquake-coverage" data-required="*">
@@ -916,12 +902,24 @@
                                         </div>
                                         
                                         <div class="building-form-group">
-                                            <label for="additional-shared-insurance">
-                                                <span>סכום ביטוח נוסף בבית משותף (₪)</span>
+                                            <label for="earthquake-land-coverage">
+                                                <span>האם מעוניין בכיסוי של שווי קרקע שעלול לחטוף נזק מרעידת אדמה? (ניתן לרכוש כיסוי עד פי 3 מסכום שווי ביטוח המבנה)</span>
                                                 <span class="form-icon">🏢</span>
                                             </label>
-                                            <input type="number" id="additional-shared-insurance" name="additional-shared-insurance" min="0" step="1000" placeholder="הכנס סכום ביטוח נוסף">
-                                            <small class="form-helper-text">סכום ביטוח נוסף עבור רכוש משותף בבניין (אופציונלי)</small>
+                                            <select id="earthquake-land-coverage" name="earthquake-land-coverage">
+                                                <option value="">בחר</option>
+                                                <option value="כן">כן</option>
+                                                <option value="לא">לא</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="building-form-group" id="earthquake-coverage-amount-group" style="display: none;">
+                                            <label for="earthquake-coverage-amount" data-required="*">
+                                                <span>איזה סכום כיסוי תהיה מעוניין לבטח?</span>
+                                                <span class="form-icon">💰</span>
+                                            </label>
+                                            <input type="number" id="earthquake-coverage-amount" name="earthquake-coverage-amount" min="0" step="1000" placeholder="הכנס סכום כיסוי">
+                                            <small class="form-helper-text">סכום הכיסוי לנזקי קרקע מרעידת אדמה</small>
                                         </div>
                                     </div>
                                 </div>
@@ -932,48 +930,23 @@
                                 <h3 class="building-section-title">הרחבות נוספות למבנה</h3>
                                 <div class="building-section-form">
                                     <div class="building-form-grid">
-                                        <div class="building-form-group">
-                                            <label for="building-contents-insurance">
-                                                <span>כהס מבנה (₪)</span>
-                                                <span class="form-icon">📦</span>
-                                            </label>
-                                            <input type="number" id="building-contents-insurance" name="building-contents-insurance" min="0" step="1000" placeholder="הכנס סכום כהס מבנה">
-                                            <small class="form-helper-text">כל הסיכונים למבנה - כיסוי מורחב (אופציונלי)</small>
-                                        </div>
+
+
                                         
-                                        <div class="building-form-group" id="storage-group" style="display: none;">
-                                            <label for="storage-insurance">
-                                                <span>מחסן (₪)</span>
-                                                <span class="form-icon">🗄️</span>
-                                            </label>
-                                            <input type="number" id="storage-insurance" name="storage-insurance" min="0" step="1000" placeholder="הכנס סכום מחסן">
-                                            <small class="form-helper-text">סכום ביטוח למחסן צמוד לדירה (אופציונלי)</small>
-                                        </div>
-                                        
-                                        <div class="building-form-group">
-                                            <label for="swimming-pool-insurance">
-                                                <span>בריכת שחיה</span>
-                                                <span class="form-icon">🏊</span>
-                                            </label>
-                                            <input type="number" id="swimming-pool-insurance" name="swimming-pool-insurance" min="0" step="1000" placeholder="הכנס סכום בריכת שחיה">
-                                            <small class="form-helper-text">סכום ביטוח לבריכה פרטית ומתקניה (אופציונלי)</small>
-                                        </div>
-                                        
-                                        <div class="building-form-group">
-                                            <label for="glass-breakage-insurance">
-                                                <span>שבר שמשות</span>
-                                                <span class="form-icon">🪟</span>
-                                            </label>
-                                            <input type="number" id="glass-breakage-insurance" name="glass-breakage-insurance" min="0" step="1000" placeholder="הכנס סכום שבר שמשות">
-                                            <small class="form-helper-text">כיסוי לשבר של חלונות, דלתות זכוכית ומראות (אופציונלי)</small>
-                                        </div>
-                                        
-                                        <div class="building-form-group building-checkbox-group" id="boilers-group">
+                                        <div class="building-form-group building-checkbox-group">
                                             <div class="building-checkbox-wrapper">
-                                                <input type="checkbox" id="boilers-coverage" name="boilers-coverage" value="דוודים">
-                                                <label for="boilers-coverage">דוודים</label>
+                                                <input type="checkbox" id="has-swimming-pool" name="has-swimming-pool">
+                                                <label for="has-swimming-pool">האם יש בריכת שחיה?</label>
                                             </div>
-                                            <small class="form-helper-text">כיסוי לנזקים לדוד החשמלי או דוד השמש</small>
+                                        </div>
+                                        
+                                        <div class="building-form-group" id="swimming-pool-value-group" style="display: none;">
+                                            <label for="swimming-pool-value" data-required="*">
+                                                <span>מה שווי בריכת השחיה?</span>
+                                                <span class="form-icon">💰</span>
+                                            </label>
+                                            <input type="number" id="swimming-pool-value" name="swimming-pool-value" min="0" step="1000" placeholder="הכנס שווי בריכת השחיה">
+                                            <small class="form-helper-text">שווי הבריכה ומתקניה</small>
                                         </div>
                                     </div>
                                 </div>
@@ -993,14 +966,7 @@
                                 <h3 class="building-section-title">תכולה</h3>
                                 <div class="building-section-form">
                                     <div class="building-form-grid">
-                                        <div class="building-form-group">
-                                            <label for="contents-insurance-amount" data-required="*">
-                                                <span>סכום ביטוח תכולה (₪)</span>
-                                                <span class="form-icon">💰</span>
-                                            </label>
-                                            <input type="number" id="contents-insurance-amount" name="contents-insurance-amount" min="0" step="1000" placeholder="הכנס סכום ביטוח" required>
-                                            <small class="form-helper-text">סכום הביטוח צריך לכסות את ערך התכולה של הדירה</small>
-                                    </div>
+
                                         
                                         <div class="building-form-group" id="contents-building-age-group" style="display: none;">
                                             <label for="contents-building-age" data-required="*">
@@ -1020,19 +986,6 @@
                                             <small class="form-helper-text">ערך התכשיטים שברצונך לבטח</small>
                                         </div>
                                         
-                                        <div class="building-form-group" id="jewelry-coverage-group" style="display: none;">
-                                            <label for="jewelry-coverage" data-required="*">
-                                                <span>כיסוי מקיף/כיסוי כל הסיכונים מלא</span>
-                                                <span class="form-icon">🛡️</span>
-                                            </label>
-                                            <select id="jewelry-coverage" name="jewelry-coverage">
-                                                <option value="">בחר סוג כיסוי</option>
-                                                <option value="מקיף">מקיף</option>
-                                                <option value="מקיף + כל הסיכונים">מקיף + כל הסיכונים</option>
-                                            </select>
-                                            <small class="form-helper-text">בחר את סוג הכיסוי לתכשיטים</small>
-                                        </div>
-                                        
                                         <div class="building-form-group">
                                             <label for="watches-amount">
                                                 <span>שעונים (₪)</span>
@@ -1042,18 +995,7 @@
                                             <small class="form-helper-text">ערך השעונים שברצונך לבטח</small>
                                         </div>
                                         
-                                        <div class="building-form-group" id="watches-coverage-group" style="display: none;">
-                                            <label for="watches-coverage" data-required="*">
-                                                <span>כיסוי שעונים</span>
-                                                <span class="form-icon">🛡️</span>
-                                            </label>
-                                            <select id="watches-coverage" name="watches-coverage">
-                                                <option value="">בחר סוג כיסוי</option>
-                                                <option value="מקיף">מקיף</option>
-                                                <option value="מקיף + כל הסיכונים">מקיף + כל הסיכונים</option>
-                                            </select>
-                                            <small class="form-helper-text">בחר את סוג הכיסוי לשעונים</small>
-                                        </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -1107,47 +1049,25 @@
                                 <h3 class="building-section-title">כיסויים נוספים לתכולה</h3>
                                 <div class="building-section-form">
                                     <div class="building-form-grid">
+                                        <div class="building-form-group">
+                                            <label for="contents-earthquake-coverage" data-required="*">
+                                                <span>רעידת אדמה (תכולה)</span>
+                                                <span class="form-icon">🌍</span>
+                                            </label>
+                                            <select id="contents-earthquake-coverage" name="contents-earthquake-coverage" required>
+                                                <option value="">בחר</option>
+                                                <option value="כן">כן</option>
+                                                <option value="לא">לא</option>
+                                            </select>
+                                            <small class="form-helper-text">כיסוי לנזקי רעידת אדמה לתכולה</small>
+                                        </div>
+
                                         <div class="building-form-group building-checkbox-group" id="contents-water-damage-group" style="display: none;">
                                             <div class="building-checkbox-wrapper">
                                                 <input type="checkbox" id="contents-water-damage" name="contents-water-damage" value="נזקי מים (תכולה בלבד)">
                                                 <label for="contents-water-damage">נזקי מים (תכולה בלבד)</label>
                                             </div>
                                             <small class="form-helper-text">כיסוי לנזקי מים לתכולה בלבד</small>
-                                        </div>
-                                        
-                                        <div class="building-form-group building-checkbox-group">
-                                            <div class="building-checkbox-wrapper">
-                                                <input type="checkbox" id="contents-burglary" name="contents-burglary" value="פריצה, גניבה ושוד (תכולה)">
-                                                <label for="contents-burglary">פריצה, גניבה ושוד (תכולה)</label>
-                                            </div>
-                                            <small class="form-helper-text">כיסוי לנזקים מפריצה, גניבה ושוד לתכולה</small>
-                                        </div>
-                                        
-                                        <div class="building-form-group">
-                                            <label for="contents-earthquake" data-required="*">
-                                                <span>רעידת אדמה</span>
-                                                <span class="form-icon">🌍</span>
-                                            </label>
-                                            <select id="contents-earthquake" name="contents-earthquake" required>
-                                                <option value="">בחר כיסוי רעידת אדמה</option>
-                                                <option value="כן">כן</option>
-                                                <option value="לא">לא</option>
-                                            </select>
-                                            <small class="form-helper-text">כיסוי לנזקים הנגרמים מרעידות אדמה</small>
-                                        </div>
-                                        
-                                        <div class="building-form-group" id="contents-earthquake-deductible-group" style="display: none;">
-                                            <label for="contents-earthquake-deductible" data-required="*">
-                                                <span>השתתפות עצמית רעידת אדמה (תכולה)</span>
-                                                <span class="form-icon">💵</span>
-                                            </label>
-                                            <select id="contents-earthquake-deductible" name="contents-earthquake-deductible">
-                                                <option value="">בחר השתתפות עצמית</option>
-                                                <option value="השתתפות עצמית 2%">השתתפות עצמית 2%</option>
-                                                <option value="השתתפות עצמית 4.2%">השתתפות עצמית 4.2%</option>
-                                                <option value="השתתפות עצמית 10%">השתתפות עצמית 10%</option>
-                                            </select>
-                                            <small class="form-helper-text">אחוז מסכום הנזק שתשלם בעת תביעה לרעידת אדמה</small>
                                         </div>
                                     </div>
                                 </div>
@@ -1168,14 +1088,7 @@
                                     <h3 class="building-section-title">💼 פעילות עסקית</h3>
                                     <div class="building-section-form">
                                         <div class="building-form-grid">
-                                            <div class="building-form-group">
-                                                <label for="business-contents-amount">
-                                                    <span>סכום ביטוח תכולה עסקית (₪)</span>
-                                                    <span class="form-icon">💼</span>
-                                                </label>
-                                                <input type="number" id="business-contents-amount" name="business-contents-amount" min="0" step="1000" placeholder="הכנס סכום תכולה עסקית">
-                                                <small class="form-helper-text">סכום הביטוח עבור התכולה העסקית שבבית</small>
-                                            </div>
+
                                             
                                             <div class="building-form-group building-checkbox-group">
                                                 <div class="building-checkbox-wrapper">
