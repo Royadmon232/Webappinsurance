@@ -1,11 +1,7 @@
 name: Claude Code – Opus 4
 
-# <<< 1. ה-API-Key גלובלי לשאיבה בכל צעד (גם Post)
-env:
-  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-
 on:
-  issue_comment:
+  issue_comment:               # … בלי שינוי …
     types: [created]
   pull_request_review_comment:
     types: [created]
@@ -16,14 +12,10 @@ jobs:
     permissions: write-all
 
     steps:
-      # 2. רק לשם דיבּוּג – להראות שהמשתנה אכן קיים
-      - name: Echo key exists
-        run: echo "API key length = ${#ANTHROPIC_API_KEY}"
-      
       - uses: actions/checkout@v4
 
-      # 3. ה-Step הראשי שמדבר עם קלוד
       - uses: anthropics/claude-code-action@v0.0.18
-        with:
-          github_token: ${{ secrets.GH_PAT }}
-          model: claude-opus-4-20250514
+        with:                                   # ⬅️ כאן!
+          github_token:        ${{ secrets.GH_PAT }}
+          model:               claude-opus-4-20250514
+          anthropic_api_key:   ${{ secrets.ANTHROPIC_API_KEY }}   # ← המפתח
