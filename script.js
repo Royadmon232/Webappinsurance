@@ -812,11 +812,12 @@ function collectAllFormData() {
         swimmingPoolInsurance: document.getElementById('swimming-pool-insurance')?.value || '',
         
         // Contents details (if applicable)
+        contentsValue: document.getElementById('contents-value')?.value || '',
         contentsBuildingAge: document.getElementById('contents-building-age')?.value || '',
+        hasJewelry: document.getElementById('has-jewelry')?.value || '',
         jewelryAmount: document.getElementById('jewelry-amount')?.value || '',
-        jewelryCoverage: document.getElementById('jewelry-coverage')?.value || '',
+        hasWatches: document.getElementById('has-watches')?.value || '',
         watchesAmount: document.getElementById('watches-amount')?.value || '',
-        watchesCoverage: document.getElementById('watches-coverage')?.value || '',
         
         // Valuable items
         camerasAmount: document.getElementById('cameras-amount')?.value || '',
@@ -825,7 +826,7 @@ function collectAllFormData() {
         musicalInstrumentsAmount: document.getElementById('musical-instruments-amount')?.value || '',
         
         // Contents coverages
-        contentsWaterDamage: document.getElementById('contents-water-damage')?.checked || false,
+        contentsEarthquakeCoverage: document.getElementById('contents-earthquake-coverage')?.value || '',
         
         // Additional coverages
         businessEmployers: document.getElementById('business-employers')?.checked || false,
@@ -4431,12 +4432,11 @@ function initializeContentsFields() {
     
     // Contents section fields
     const contentsBuilingAgeGroup = document.getElementById('contents-building-age-group');
-    const jewelryAmountInput = document.getElementById('jewelry-amount');
-    const jewelryCoverageGroup = document.getElementById('jewelry-coverage-group');
-    const watchesAmountInput = document.getElementById('watches-amount');
-    const watchesCoverageGroup = document.getElementById('watches-coverage-group');
+    const hasJewelrySelect = document.getElementById('has-jewelry');
+    const jewelryAmountGroup = document.getElementById('jewelry-amount-group');
+    const hasWatchesSelect = document.getElementById('has-watches');
+    const watchesAmountGroup = document.getElementById('watches-amount-group');
     const valuableItemsSection = document.getElementById('valuable-items-section');
-    const contentsWaterDamageGroup = document.getElementById('contents-water-damage-group');
     
     // Update contents fields based on product type
     updateContentsFieldsForProductType();
@@ -4446,17 +4446,17 @@ function initializeContentsFields() {
         valuableItemsSection.style.display = 'block';
     }
     
-    // Jewelry amount change handler
-    if (jewelryAmountInput) {
-        jewelryAmountInput.addEventListener('input', function() {
-            updateJewelryCoverageField(this.value);
+    // Jewelry dropdown change handler
+    if (hasJewelrySelect) {
+        hasJewelrySelect.addEventListener('change', function() {
+            updateJewelryAmountField(this.value);
         });
     }
     
-    // Watches amount change handler
-    if (watchesAmountInput) {
-        watchesAmountInput.addEventListener('input', function() {
-            updateWatchesCoverageField(this.value);
+    // Watches dropdown change handler
+    if (hasWatchesSelect) {
+        hasWatchesSelect.addEventListener('change', function() {
+            updateWatchesAmountField(this.value);
         });
     }
 }
@@ -4468,7 +4468,6 @@ function updateContentsFieldsForProductType() {
     const productType = document.getElementById('productType')?.value;
     const contentsBuilingAgeGroup = document.getElementById('contents-building-age-group');
     const contentsBuilingAgeInput = document.getElementById('contents-building-age');
-    const contentsWaterDamageGroup = document.getElementById('contents-water-damage-group');
     
     if (productType === 'תכולה בלבד') {
         // Show building age field for contents only
@@ -4477,11 +4476,6 @@ function updateContentsFieldsForProductType() {
             if (contentsBuilingAgeInput) {
                 contentsBuilingAgeInput.required = true;
             }
-        }
-        
-        // Show water damage checkbox for contents only
-        if (contentsWaterDamageGroup) {
-            contentsWaterDamageGroup.style.display = 'block';
         }
     } else {
         // Hide building age field
@@ -4492,67 +4486,62 @@ function updateContentsFieldsForProductType() {
                 contentsBuilingAgeInput.value = '';
             }
         }
-        
-        // Hide water damage checkbox
-        if (contentsWaterDamageGroup) {
-            contentsWaterDamageGroup.style.display = 'none';
-        }
     }
 }
 
 
 
 /**
- * Update jewelry coverage field based on jewelry amount
- * @param {string} amount - The jewelry amount value
+ * Update jewelry amount field based on jewelry selection
+ * @param {string} selection - The jewelry selection value (כן/לא)
  */
-function updateJewelryCoverageField(amount) {
-    const jewelryCoverageGroup = document.getElementById('jewelry-coverage-group');
-    const jewelryCoverageSelect = document.getElementById('jewelry-coverage');
+function updateJewelryAmountField(selection) {
+    const jewelryAmountGroup = document.getElementById('jewelry-amount-group');
+    const jewelryAmountInput = document.getElementById('jewelry-amount');
     
-    if (amount && parseFloat(amount) > 0) {
-        // Show jewelry coverage dropdown
-        if (jewelryCoverageGroup) {
-            jewelryCoverageGroup.style.display = 'block';
-            if (jewelryCoverageSelect) {
-                jewelryCoverageSelect.required = true;
+    if (selection === 'כן') {
+        // Show jewelry amount field
+        if (jewelryAmountGroup) {
+            jewelryAmountGroup.style.display = 'block';
+            if (jewelryAmountInput) {
+                jewelryAmountInput.required = true;
             }
         }
     } else {
-        // Hide jewelry coverage dropdown
-        if (jewelryCoverageGroup) {
-            jewelryCoverageGroup.style.display = 'none';
-            if (jewelryCoverageSelect) {
-                jewelryCoverageSelect.required = false;
-                jewelryCoverageSelect.value = '';
+        // Hide jewelry amount field
+        if (jewelryAmountGroup) {
+            jewelryAmountGroup.style.display = 'none';
+            if (jewelryAmountInput) {
+                jewelryAmountInput.required = false;
+                jewelryAmountInput.value = '';
             }
         }
     }
 }
 
 /**
- * Update watches coverage field based on watches amount
- * @param {string} amount - The watches amount value
+ * Update watches amount field based on watches selection
+ * @param {string} selection - The watches selection value (כן/לא)
  */
-function updateWatchesCoverageField(amount) {
-    const watchesCoverageGroup = document.getElementById('watches-coverage-group');
-    const watchesCoverageSelect = document.getElementById('watches-coverage');
+function updateWatchesAmountField(selection) {
+    const watchesAmountGroup = document.getElementById('watches-amount-group');
+    const watchesAmountInput = document.getElementById('watches-amount');
     
-    if (amount && parseFloat(amount) > 0) {
-        // Show watches coverage dropdown
-        if (watchesCoverageGroup) {
-            watchesCoverageGroup.style.display = 'block';
-            if (watchesCoverageSelect) {
-                watchesCoverageSelect.required = true;
+    if (selection === 'כן') {
+        // Show watches amount field
+        if (watchesAmountGroup) {
+            watchesAmountGroup.style.display = 'block';
+            if (watchesAmountInput) {
+                watchesAmountInput.required = true;
             }
         }
     } else {
-        // Hide watches coverage dropdown
-        if (watchesCoverageGroup) {
-            watchesCoverageGroup.style.display = 'none';
-            if (watchesCoverageSelect) {
-                watchesCoverageSelect.required = false;
-                watchesCoverageSelect.value = '';
+        // Hide watches amount field
+        if (watchesAmountGroup) {
+            watchesAmountGroup.style.display = 'none';
+            if (watchesAmountInput) {
+                watchesAmountInput.required = false;
+                watchesAmountInput.value = '';
             }
         }
     }
@@ -5520,16 +5509,17 @@ function collectFullFormData() {
     
     // Add contents data
     const contentsData = {
+        contentsValue: document.getElementById('contents-value')?.value || '',
         contentsBuildingAge: document.getElementById('contents-building-age')?.value || '',
+        hasJewelry: document.getElementById('has-jewelry')?.value || '',
         jewelryAmount: document.getElementById('jewelry-amount')?.value || '',
-        jewelryCoverage: document.getElementById('jewelry-coverage')?.value || '',
+        hasWatches: document.getElementById('has-watches')?.value || '',
         watchesAmount: document.getElementById('watches-amount')?.value || '',
-        watchesCoverage: document.getElementById('watches-coverage')?.value || '',
         camerasAmount: document.getElementById('cameras-amount')?.value || '',
         electronicsAmount: document.getElementById('electronics-amount')?.value || '',
         bicyclesAmount: document.getElementById('bicycles-amount')?.value || '',
         musicalInstrumentsAmount: document.getElementById('musical-instruments-amount')?.value || '',
-        contentsWaterDamage: document.getElementById('contents-water-damage')?.checked || false
+        contentsEarthquakeCoverage: document.getElementById('contents-earthquake-coverage')?.value || ''
     };
     
     // Add additional coverage data
@@ -5859,20 +5849,26 @@ function generateEmailHTML(data) {
                         </div>
                         
                         <!-- פריטי ערך -->
-                        ${(data.contents.jewelryAmount || data.contents.watchesAmount || data.contents.camerasAmount || 
+                        ${(data.contents.contentsValue || data.contents.jewelryAmount || data.contents.watchesAmount || data.contents.camerasAmount || 
                            data.contents.electronicsAmount || data.contents.bicyclesAmount || data.contents.musicalInstrumentsAmount) ? `
                         <div class="subsection">
                             <h3 style="margin-top: 0;">💎 פריטי ערך</h3>
-                            ${data.contents.jewelryAmount ? `
+                            ${data.contents.contentsValue ? `
                             <div class="value-item">
-                                <span>תכשיטים:</span>
-                                <strong>₪${formatCurrency(data.contents.jewelryAmount)} ${data.contents.jewelryCoverage ? `(${data.contents.jewelryCoverage})` : ''}</strong>
+                                <span>שווי התכולה:</span>
+                                <strong>₪${formatCurrency(data.contents.contentsValue)}</strong>
                             </div>
                             ` : ''}
-                            ${data.contents.watchesAmount ? `
+                            ${data.contents.hasJewelry === 'כן' && data.contents.jewelryAmount ? `
                             <div class="value-item">
-                                <span>שעונים:</span>
-                                <strong>₪${formatCurrency(data.contents.watchesAmount)} ${data.contents.watchesCoverage ? `(${data.contents.watchesCoverage})` : ''}</strong>
+                                <span>תכשיטים:</span>
+                                <strong>₪${formatCurrency(data.contents.jewelryAmount)}</strong>
+                            </div>
+                            ` : ''}
+                            ${data.contents.hasWatches === 'כן' && data.contents.watchesAmount ? `
+                            <div class="value-item">
+                                <span>שעוני יוקרה:</span>
+                                <strong>₪${formatCurrency(data.contents.watchesAmount)}</strong>
                             </div>
                             ` : ''}
                             ${data.contents.camerasAmount ? `
@@ -5903,12 +5899,12 @@ function generateEmailHTML(data) {
                         ` : ''}
                         
                         <!-- כיסויים לתכולה -->
-                        ${data.contents.contentsWaterDamage !== undefined ? `
+                        ${data.contents.contentsEarthquakeCoverage ? `
                         <div class="subsection">
                             <h3 style="margin-top: 0;">כיסויים לתכולה</h3>
                             <div class="value-item">
-                                <span>נזקי מים:</span>
-                                <strong class="badge ${data.contents.contentsWaterDamage ? 'active' : 'inactive'}">${formatBoolean(data.contents.contentsWaterDamage)}</strong>
+                                <span>נזקי מים בעת רעידת אדמה:</span>
+                                <strong class="badge ${data.contents.contentsEarthquakeCoverage === 'כן' ? 'active' : 'inactive'}">${data.contents.contentsEarthquakeCoverage}</strong>
                             </div>
                         </div>
                         ` : ''}
@@ -6515,14 +6511,15 @@ function collectContentsData() {
     }
     
     return {
+        contentsValue: document.getElementById('contents-value')?.value || '',
         buildingAge: parseInt(document.getElementById('contents-building-age')?.value) || 0,
         jewelry: {
-            amount: parseFloat(document.getElementById('jewelry-amount')?.value) || 0,
-            coverage: document.getElementById('jewelry-coverage')?.value || ''
+            hasJewelry: document.getElementById('has-jewelry')?.value || '',
+            amount: parseFloat(document.getElementById('jewelry-amount')?.value) || 0
         },
         watches: {
-            amount: parseFloat(document.getElementById('watches-amount')?.value) || 0,
-            coverage: document.getElementById('watches-coverage')?.value || ''
+            hasWatches: document.getElementById('has-watches')?.value || '',
+            amount: parseFloat(document.getElementById('watches-amount')?.value) || 0
         },
         valuableItems: {
             cameras: parseFloat(document.getElementById('cameras-amount')?.value) || 0,
@@ -6531,7 +6528,6 @@ function collectContentsData() {
             musicalInstruments: parseFloat(document.getElementById('musical-instruments-amount')?.value) || 0
         },
         coverages: {
-            waterDamage: document.getElementById('contents-water-damage')?.checked || false,
             earthquakeCoverage: document.getElementById("contents-earthquake-coverage")?.value || ""
         }
     };
