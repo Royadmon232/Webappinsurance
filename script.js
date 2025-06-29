@@ -1754,6 +1754,13 @@ function openGeneralDetailsModal() {
             startDateInput.min = today;
         }
         
+        // Set minimum date to today for loan end date
+        const loanEndDateInput = document.getElementById('loan-end-date');
+        if (loanEndDateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            loanEndDateInput.min = today;
+        }
+        
         // Initialize conditional field logic
         initializeConditionalFields();
         
@@ -2349,6 +2356,9 @@ function updateBuildingExtensionsForProduct(productType) {
             loanEndDateGroup.style.display = 'block';
             if (loanEndDateInput) {
                 loanEndDateInput.required = true;
+                // Set minimum date to today (only current or future dates allowed)
+                const today = new Date().toISOString().split('T')[0];
+                loanEndDateInput.min = today;
             }
         }
     } else {
