@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
             addBuildingFormListeners();
             initializeContentsFields();
             addContentsFormListeners();
+            initializeBankDropdowns();
             
             // Initialize building fields based on current product type
             const productType = document.getElementById('productType');
@@ -2095,8 +2096,10 @@ function updateAdditionalCoverages(productType) {
     if (productType === 'מבנה בלבד משועבד לבנק') {
         // Auto-select and disable water damage dropdown
         if (waterDamageSelect) {
-            waterDamageSelect.value = 'שרברב שבהסדר';
+            waterDamageSelect.value = 'מעוניין בשרברב בהסדר עם חברת ביטוח';
             waterDamageSelect.disabled = true;
+            // Call updateWaterDamageFields to apply the changes
+            updateWaterDamageFields('מעוניין בשרברב בהסדר עם חברת ביטוח');
         }
         
         // Hide regular water deductible field
@@ -2190,6 +2193,42 @@ function updateAdditionalCoverages(productType) {
 function updateWaterDamageFields(waterDamageType) {
     const waterDeductibleGroup = document.getElementById('water-deductible-group');
     const waterDeductibleSelect = document.getElementById('water-deductible');
+    const waterDamageSelect = document.getElementById('water-damage-type');
+    const productType = document.getElementById('productType')?.value || '';
+    
+    // If product type is "מבנה בלבד משועבד לבנק", force water damage to plumber option
+    if (productType === 'מבנה בלבד משועבד לבנק' && waterDamageSelect) {
+        waterDamageSelect.value = 'מעוניין בשרברב בהסדר עם חברת ביטוח';
+        waterDamageSelect.disabled = true;
+        waterDamageSelect.style.backgroundColor = '#f0f0f0';
+        waterDamageSelect.style.cursor = 'not-allowed';
+        
+        // Add a note to explain why it's disabled
+        const existingNote = waterDamageSelect.parentElement.querySelector('.form-note');
+        if (!existingNote) {
+            const note = document.createElement('small');
+            note.className = 'form-note text-muted';
+            note.textContent = 'שדה זה נקבע אוטומטית עבור נכס משועבד לבנק';
+            note.style.color = '#666';
+            note.style.fontSize = '12px';
+            note.style.marginTop = '5px';
+            note.style.display = 'block';
+            waterDamageSelect.parentElement.appendChild(note);
+        }
+        
+        // Force update the water damage type
+        waterDamageType = 'מעוניין בשרברב בהסדר עם חברת ביטוח';
+    } else if (waterDamageSelect) {
+        waterDamageSelect.disabled = false;
+        waterDamageSelect.style.backgroundColor = '';
+        waterDamageSelect.style.cursor = '';
+        
+        // Remove the note
+        const existingNote = waterDamageSelect.parentElement.querySelector('.form-note');
+        if (existingNote) {
+            existingNote.remove();
+        }
+    }
     
     if (waterDamageType === 'ללא נזקי מים' || !waterDamageType) {
         // Hide water deductible field
@@ -2314,6 +2353,8 @@ function updateBuildingExtensionsForProduct(productType) {
     const boilersCheckbox = document.getElementById('boilers-coverage');
     const loanEndDateGroup = document.getElementById('loan-end-date-group');
     const loanEndDateInput = document.getElementById('loan-end-date');
+    const mortgageBankGroup = document.getElementById('mortgage-bank-group');
+    const mortgageBranchGroup = document.getElementById('mortgage-branch-group');
     
     if (productType === 'מבנה בלבד משועבד לבנק') {
         // Hide boilers checkbox completely
@@ -2335,6 +2376,22 @@ function updateBuildingExtensionsForProduct(productType) {
                 loanEndDateInput.min = today;
             }
         }
+        
+        // Show bank and branch fields
+        if (mortgageBankGroup) {
+            mortgageBankGroup.style.display = 'block';
+            const bankInput = document.getElementById('mortgage-bank');
+            if (bankInput) {
+                bankInput.required = true;
+            }
+        }
+        if (mortgageBranchGroup) {
+            mortgageBranchGroup.style.display = 'block';
+            const branchInput = document.getElementById('mortgage-branch');
+            if (branchInput) {
+                branchInput.required = true;
+            }
+        }
     } else {
         // Show boilers checkbox
         if (boilersGroup) {
@@ -2347,6 +2404,25 @@ function updateBuildingExtensionsForProduct(productType) {
             if (loanEndDateInput) {
                 loanEndDateInput.required = false;
                 loanEndDateInput.value = '';
+            }
+        }
+        
+        // Hide bank and branch fields
+        if (mortgageBankGroup) {
+            mortgageBankGroup.style.display = 'none';
+            const bankInput = document.getElementById('mortgage-bank');
+            if (bankInput) {
+                bankInput.required = false;
+                bankInput.value = '';
+            }
+        }
+        if (mortgageBranchGroup) {
+            mortgageBranchGroup.style.display = 'none';
+            const branchInput = document.getElementById('mortgage-branch');
+            if (branchInput) {
+                branchInput.required = false;
+                branchInput.value = '';
+                branchInput.disabled = true;
             }
         }
     }
@@ -4301,6 +4377,26 @@ function validateBuildingSection() {
         isValid = false;
     }
     
+    // Validate mortgage bank if visible
+    const mortgageBankGroup = document.getElementById('mortgage-bank-group');
+    const mortgageBankInput = document.getElementById('mortgage-bank');
+    if (mortgageBankGroup && mortgageBankGroup.style.display !== 'none' && mortgageBankInput && mortgageBankInput.required) {
+        if (!mortgageBankInput.value.trim()) {
+            isValid = false;
+            showBuildingFormError(mortgageBankInput, 'אנא בחר בנק');
+        }
+    }
+    
+    // Validate mortgage branch if visible
+    const mortgageBranchGroup = document.getElementById('mortgage-branch-group');
+    const mortgageBranchInput = document.getElementById('mortgage-branch');
+    if (mortgageBranchGroup && mortgageBranchGroup.style.display !== 'none' && mortgageBranchInput && mortgageBranchInput.required) {
+        if (!mortgageBranchInput.value.trim()) {
+            isValid = false;
+            showBuildingFormError(mortgageBranchInput, 'אנא בחר סניף');
+        }
+    }
+    
     // Water damage type
     const waterDamageType = document.getElementById('water-damage-type');
     if (waterDamageType && waterDamageType.required && !waterDamageType.value) {
@@ -5889,6 +5985,18 @@ function generateEmailHTML(data) {
                                 <td>${formatDate(data.building.loanEndDate)}</td>
                             </tr>
                             ` : ''}
+                            ${data.building.mortgageBank ? `
+                            <tr>
+                                <td>בנק משעבד:</td>
+                                <td>${data.building.mortgageBank}</td>
+                            </tr>
+                            ` : ''}
+                            ${data.building.mortgageBranch ? `
+                            <tr>
+                                <td>סניף בנק:</td>
+                                <td>${data.building.mortgageBranch}</td>
+                            </tr>
+                            ` : ''}
                         </table>
                         
                         <h3 style="background: #f8f9fa; padding: 10px; margin: 20px 0 10px 0;">כיסויים נוספים למבנה:</h3>
@@ -6570,6 +6678,8 @@ function collectBuildingData() {
         constructionType: document.getElementById('construction-type')?.value || '',
         mortgagedProperty: document.getElementById('mortgaged-property')?.checked || false,
         loanEndDate: document.getElementById("loan-end-date")?.value || "",
+        mortgageBank: document.getElementById('mortgage-bank')?.value || '',
+        mortgageBranch: document.getElementById('mortgage-branch')?.value || '',
         waterDamageType: document.getElementById('water-damage-type')?.value || '',
         earthquakeCoverage: document.getElementById('earthquake-coverage')?.value || '',
         earthquakeDeductible: document.getElementById('earthquake-deductible')?.value || '',
@@ -6726,3 +6836,211 @@ function debugFormCollection() {
 
 // Make it globally available
 window.debugFormCollection = debugFormCollection;
+
+/**
+ * Initialize bank and branch dropdowns
+ */
+function initializeBankDropdowns() {
+    const bankInput = document.getElementById('mortgage-bank');
+    const branchInput = document.getElementById('mortgage-branch');
+    const bankDropdown = document.getElementById('bank-dropdown');
+    const branchDropdown = document.getElementById('branch-dropdown');
+    
+    if (!bankInput || !branchInput) return;
+    
+    let banksData = [];
+    let branchesData = [];
+    let selectedBank = null;
+    
+    // Fetch banks data from API
+    async function fetchBanks() {
+        try {
+            bankDropdown.innerHTML = '<div class="dropdown-loading">טוען רשימת בנקים...</div>';
+            bankDropdown.style.display = 'block';
+            
+            // Using the Israeli government data API
+            const response = await fetch('https://data.gov.il/api/3/action/datastore_search?resource_id=1c5bc716-8210-4ec7-85be-92e6271955c2&limit=100');
+            const data = await response.json();
+            
+            if (data.success && data.result && data.result.records) {
+                // Extract unique banks
+                const uniqueBanks = [];
+                const bankMap = new Map();
+                
+                data.result.records.forEach(record => {
+                    const bankCode = record['Bank_Code'];
+                    const bankName = record['Bank_Name'];
+                    
+                    if (bankCode && bankName && !bankMap.has(bankCode)) {
+                        bankMap.set(bankCode, {
+                            code: bankCode,
+                            name: bankName.trim()
+                        });
+                    }
+                });
+                
+                banksData = Array.from(bankMap.values()).sort((a, b) => a.name.localeCompare(b.name, 'he'));
+                branchesData = data.result.records;
+                
+                renderBankDropdown('');
+            } else {
+                throw new Error('Failed to load banks data');
+            }
+        } catch (error) {
+            console.error('Error fetching banks:', error);
+            bankDropdown.innerHTML = '<div class="dropdown-error">שגיאה בטעינת רשימת הבנקים</div>';
+        }
+    }
+    
+    // Render bank dropdown
+    function renderBankDropdown(searchTerm) {
+        const filteredBanks = banksData.filter(bank => 
+            bank.name.includes(searchTerm) || 
+            bank.code.toString().includes(searchTerm)
+        );
+        
+        if (filteredBanks.length === 0) {
+            bankDropdown.innerHTML = '<div class="dropdown-no-results">לא נמצאו בנקים</div>';
+            return;
+        }
+        
+        bankDropdown.innerHTML = filteredBanks.map(bank => `
+            <div class="dropdown-item" data-code="${bank.code}" data-name="${bank.name}">
+                <span class="bank-name">${bank.name}</span>
+                <span class="bank-code">${bank.code}</span>
+            </div>
+        `).join('');
+        
+        // Add click handlers
+        bankDropdown.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const code = this.getAttribute('data-code');
+                const name = this.getAttribute('data-name');
+                selectBank(code, name);
+            });
+        });
+    }
+    
+    // Select a bank
+    function selectBank(code, name) {
+        selectedBank = { code, name };
+        bankInput.value = name;
+        bankDropdown.style.display = 'none';
+        
+        // Enable branch input
+        branchInput.disabled = false;
+        branchInput.placeholder = 'חפש סניף...';
+        branchInput.value = '';
+        
+        // Clear validation error if exists
+        clearBuildingFormError(bankInput);
+    }
+    
+    // Render branch dropdown
+    function renderBranchDropdown(searchTerm) {
+        if (!selectedBank) return;
+        
+        const filteredBranches = branchesData.filter(branch => 
+            branch['Bank_Code'] === parseInt(selectedBank.code) &&
+            (branch['Branch_Name'] && branch['Branch_Name'].includes(searchTerm) ||
+             branch['Branch_Code'] && branch['Branch_Code'].toString().includes(searchTerm) ||
+             branch['City'] && branch['City'].includes(searchTerm))
+        );
+        
+        if (filteredBranches.length === 0) {
+            branchDropdown.innerHTML = '<div class="dropdown-no-results">לא נמצאו סניפים</div>';
+            return;
+        }
+        
+        branchDropdown.innerHTML = filteredBranches.map(branch => `
+            <div class="dropdown-item" data-code="${branch['Branch_Code']}" data-name="${branch['Branch_Name']}">
+                <div class="branch-details">
+                    <span class="branch-name">${branch['Branch_Name'] || 'סניף ' + branch['Branch_Code']}</span>
+                    <span class="branch-address">${branch['City'] || ''} ${branch['Street'] || ''} ${branch['House_Number'] || ''}</span>
+                </div>
+                <span class="branch-code">${branch['Branch_Code']}</span>
+            </div>
+        `).join('');
+        
+        // Add click handlers
+        branchDropdown.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const code = this.getAttribute('data-code');
+                const name = this.getAttribute('data-name');
+                selectBranch(code, name);
+            });
+        });
+    }
+    
+    // Select a branch
+    function selectBranch(code, name) {
+        branchInput.value = `${name} - סניף ${code}`;
+        branchDropdown.style.display = 'none';
+        
+        // Clear validation error if exists
+        clearBuildingFormError(branchInput);
+    }
+    
+    // Bank input handlers
+    bankInput.addEventListener('focus', function() {
+        if (banksData.length === 0) {
+            fetchBanks();
+        } else {
+            bankDropdown.style.display = 'block';
+            renderBankDropdown(this.value);
+        }
+    });
+    
+    bankInput.addEventListener('input', function() {
+        bankDropdown.style.display = 'block';
+        renderBankDropdown(this.value);
+    });
+    
+    // Branch input handlers
+    branchInput.addEventListener('focus', function() {
+        if (selectedBank && branchesData.length > 0) {
+            branchDropdown.style.display = 'block';
+            renderBranchDropdown(this.value);
+        }
+    });
+    
+    branchInput.addEventListener('input', function() {
+        if (selectedBank) {
+            branchDropdown.style.display = 'block';
+            renderBranchDropdown(this.value);
+        }
+    });
+    
+    // Click outside to close dropdowns
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.search-dropdown-container')) {
+            bankDropdown.style.display = 'none';
+            branchDropdown.style.display = 'none';
+        }
+    });
+}
+
+// Add to initialization
+document.addEventListener('DOMContentLoaded', function() {
+    // Existing initialization code...
+    initializeBankDropdowns();
+});
+
+/**
+ * Initialize all insurance app functionality
+ */
+window.HomeInsuranceApp = window.HomeInsuranceApp || {};
+Object.assign(window.HomeInsuranceApp, {
+    openModal,
+    openGeneralDetailsModal,
+    closeGeneralDetailsModal,
+    wizardNext,
+    wizardPrev,
+    sendVerificationCode,
+    verifyCode,
+    resendCode,
+    submitQuoteRequest,
+    testConditionalLogic,
+    logInitializationSummary,
+    debugFormCollection
+});
