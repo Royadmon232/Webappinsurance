@@ -13,9 +13,18 @@
     --light-gray-bg: #F7F9FB;
     --white: #FFFFFF;
     
+    /* Purple/Blue colors for hero section */
+    --hero-bg-dark: #0a0e27;
+    --hero-bg-darker: #020517;
+    --accent-purple: #7c3aed;
+    --accent-purple-light: #a78bfa;
+    --accent-blue: #3b82f6;
+    --accent-blue-light: #60a5fa;
+    
     /* Gradients */
     --primary-gradient: linear-gradient(135deg, var(--accent-teal) 0%, var(--primary-navy) 100%);
     --teal-gradient: linear-gradient(90deg, var(--accent-teal) 0%, var(--accent-teal-light) 100%);
+    --purple-gradient: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);
     --subtle-gradient: linear-gradient(135deg, rgba(0, 163, 224, 0.1) 0%, rgba(1, 51, 105, 0.05) 100%);
     
     /* Background & Text Colors */
@@ -136,7 +145,8 @@ header.scrolled {
 /* Hero Section - Enhanced Design */
 .main-hero {
     min-height: 100vh;
-    background: var(--dark-bg);
+    background: var(--hero-bg-dark);
+    background: linear-gradient(180deg, var(--hero-bg-darker) 0%, var(--hero-bg-dark) 100%);
     position: relative;
     overflow: hidden;
     display: flex;
@@ -152,10 +162,9 @@ header.scrolled {
     width: 100%;
     height: 100%;
     background: 
-        linear-gradient(135deg, rgba(0, 163, 224, 0.2) 0%, transparent 40%),
-        linear-gradient(225deg, rgba(1, 51, 105, 0.3) 0%, transparent 40%),
-        radial-gradient(ellipse at top right, rgba(0, 163, 224, 0.15) 0%, transparent 50%),
-        radial-gradient(ellipse at bottom left, rgba(1, 51, 105, 0.2) 0%, transparent 50%);
+        radial-gradient(circle at 20% 50%, rgba(124, 58, 237, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(59, 130, 246, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 50% 100%, rgba(167, 139, 250, 0.1) 0%, transparent 50%);
 }
 
 /* Diagonal gradient overlay for better text contrast */
@@ -163,36 +172,66 @@ header.scrolled {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(160deg, rgba(1, 51, 105, 0.6) 0%, transparent 60%);
+    background: linear-gradient(180deg, rgba(10, 14, 39, 0.3) 0%, rgba(2, 5, 23, 0.7) 100%);
     pointer-events: none;
 }
 
-/* Slowed down floating shapes */
+/* Circular animated shapes - like in the image */
 .floating-shape {
-    background: var(--primary-gradient);
-    opacity: 0.08;
-    animation: float 12s infinite ease-in-out;
-    filter: blur(1px);
+    position: absolute;
+    border-radius: 50%;
+    background: var(--purple-gradient);
+    opacity: 0.15;
+    filter: blur(80px);
+    animation: pulse 8s ease-in-out infinite;
 }
 
 .floating-shape:nth-child(1) {
-    width: 350px;
-    height: 350px;
-    animation-duration: 15s;
+    width: 600px;
+    height: 600px;
+    top: -300px;
+    left: -100px;
+    animation-duration: 8s;
 }
 
 .floating-shape:nth-child(2) {
-    width: 250px;
-    height: 250px;
-    animation-duration: 18s;
-    animation-delay: 3s;
+    width: 500px;
+    height: 500px;
+    top: 50%;
+    right: -200px;
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+    animation-duration: 10s;
+    animation-delay: 2s;
 }
 
 .floating-shape:nth-child(3) {
+    width: 400px;
+    height: 400px;
+    bottom: -200px;
+    left: 30%;
+    background: radial-gradient(circle, var(--accent-purple-light) 0%, var(--accent-blue) 100%);
+    animation-duration: 12s;
+    animation-delay: 4s;
+}
+
+.floating-shape:nth-child(4) {
+    width: 350px;
+    height: 350px;
+    top: 40%;
+    left: -150px;
+    background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
+    animation-duration: 14s;
+    animation-delay: 1s;
+}
+
+.floating-shape:nth-child(5) {
     width: 450px;
     height: 450px;
-    animation-duration: 20s;
-    animation-delay: 6s;
+    bottom: 10%;
+    right: 10%;
+    background: radial-gradient(circle, var(--accent-purple) 0%, transparent 70%);
+    animation-duration: 16s;
+    animation-delay: 3s;
 }
 
 /* Enhanced Hero Content */
@@ -210,16 +249,17 @@ header.scrolled {
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-sm);
-    background: rgba(16, 185, 129, 0.15);
-    border: 1px solid rgba(16, 185, 129, 0.4);
+    background: rgba(124, 58, 237, 0.2);
+    border: 1px solid rgba(167, 139, 250, 0.4);
     padding: var(--spacing-xs) var(--spacing-md);
     border-radius: 50px;
     margin-bottom: var(--spacing-xl);
     animation: fadeInUp 0.6s ease-out;
+    backdrop-filter: blur(10px);
 }
 
 .agency-badge i {
-    color: var(--success-color);
+    color: var(--accent-purple-light);
     width: 20px;
     height: 20px;
 }
@@ -236,7 +276,7 @@ header.scrolled {
 }
 
 .gradient-text-main {
-    background: linear-gradient(135deg, var(--accent-teal-light) 0%, var(--accent-teal) 50%, #0090C8 100%);
+    background: linear-gradient(135deg, var(--accent-purple-light) 0%, var(--accent-purple) 50%, var(--accent-blue) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -284,7 +324,7 @@ header.scrolled {
 .stat-number-hero {
     font-size: 3.5rem;
     font-weight: 900;
-    background: var(--teal-gradient);
+    background: var(--purple-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -310,7 +350,7 @@ header.scrolled {
 
 .primary-cta-btn {
     padding: var(--spacing-sm) var(--spacing-xl);
-    background: var(--teal-gradient);
+    background: var(--purple-gradient);
     color: var(--white);
     border: none;
     border-radius: 50px;
@@ -321,7 +361,7 @@ header.scrolled {
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-sm);
-    box-shadow: 0 4px 12px rgba(0, 163, 224, 0.3);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -339,7 +379,7 @@ header.scrolled {
 
 .primary-cta-btn:hover {
     transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 8px 24px rgba(0, 163, 224, 0.4);
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
 }
 
 .primary-cta-btn:hover::before {
@@ -347,7 +387,7 @@ header.scrolled {
 }
 
 .primary-cta-btn:focus-visible {
-    outline: 3px solid rgba(0, 163, 224, 0.5);
+    outline: 3px solid rgba(167, 139, 250, 0.5);
     outline-offset: 3px;
 }
 
@@ -779,11 +819,11 @@ header.scrolled {
 @keyframes pulse {
     0%, 100% { 
         transform: scale(1);
-        opacity: 0.08;
+        opacity: 0.15;
     }
     50% { 
-        transform: scale(1.05);
-        opacity: 0.12;
+        transform: scale(1.1);
+        opacity: 0.25;
     }
 }
 
