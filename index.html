@@ -78,8 +78,8 @@
                     </div>
                     
                     <h1 class="main-title">
-                        ברוכים הבאים ל<span class="gradient-text-main">אדמון</span><br>
-                        סוכנות לביטוח
+                        ברוכים הבאים ל<br>
+                        <span class="gradient-text-main">אדמון</span> סוכנות לביטוח
                     </h1>
                     
                     <p class="main-subtitle">
@@ -204,7 +204,7 @@
                     </div>
                     
                     <!-- ביטוח רכב -->
-                    <div class="insurance-card" onclick="alert('עמוד ביטוח רכב בבנייה')">
+                    <div class="insurance-card" onclick="showConstructionModal('ביטוח רכב')">
                         <div class="insurance-icon">
                             <i data-feather="truck"></i>
                         </div>
@@ -216,7 +216,7 @@
                     </div>
                     
                     <!-- ביטוח חיים -->
-                    <div class="insurance-card" onclick="alert('עמוד ביטוח חיים בבנייה')">
+                    <div class="insurance-card" onclick="showConstructionModal('ביטוח חיים')">
                         <div class="insurance-icon">
                             <i data-feather="heart"></i>
                         </div>
@@ -228,7 +228,7 @@
                     </div>
                     
                     <!-- ביטוח בריאות -->
-                    <div class="insurance-card" onclick="alert('עמוד ביטוח בריאות בבנייה')">
+                    <div class="insurance-card" onclick="showConstructionModal('ביטוח בריאות')">
                         <div class="insurance-icon">
                             <i data-feather="activity"></i>
                         </div>
@@ -240,7 +240,7 @@
                     </div>
                     
                     <!-- ביטוח עסקי -->
-                    <div class="insurance-card" onclick="alert('עמוד ביטוח עסקי בבנייה')">
+                    <div class="insurance-card" onclick="showConstructionModal('ביטוח עסקי')">
                         <div class="insurance-icon">
                             <i data-feather="briefcase"></i>
                         </div>
@@ -252,7 +252,7 @@
                     </div>
                     
                     <!-- ביטוח נסיעות -->
-                    <div class="insurance-card" onclick="alert('עמוד ביטוח נסיעות בבנייה')">
+                    <div class="insurance-card" onclick="showConstructionModal('ביטוח נסיעות')">
                         <div class="insurance-icon">
                             <i data-feather="globe"></i>
                         </div>
@@ -431,6 +431,64 @@
                         top: targetPosition,
                         behavior: 'smooth'
                     });
+                }
+            });
+        });
+    </script>
+    
+    <!-- Under Construction Modal -->
+    <div id="constructionModal" class="construction-modal">
+        <div class="construction-modal-content">
+            <button class="close-modal" onclick="closeConstructionModal()">
+                <i data-feather="x"></i>
+            </button>
+            
+            <div class="construction-icon"></div>
+            
+            <h3>האתר עוד בבנייה</h3>
+            <p>כעת ניתן לקבל הצעת מחיר לביטוח דירה בלבד.<br>שאר סוגי הביטוח יהיו זמינים בקרוב!</p>
+            
+            <a href="home-insurance.html" class="construction-cta-btn">
+                <i data-feather="home"></i>
+                <span>קבל הצעת מחיר לביטוח דירה</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Modal JavaScript -->
+    <script>
+        function showConstructionModal(insuranceType) {
+            const modal = document.getElementById('constructionModal');
+            modal.classList.add('active');
+            
+            // Update feather icons in modal
+            setTimeout(() => {
+                feather.replace();
+            }, 10);
+        }
+        
+        function closeConstructionModal() {
+            const modal = document.getElementById('constructionModal');
+            modal.classList.remove('active');
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('constructionModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeConstructionModal();
+            }
+        });
+        
+        // Replace onclick handlers for insurance cards (except home insurance)
+        document.addEventListener('DOMContentLoaded', function() {
+            const insuranceCards = document.querySelectorAll('.insurance-card');
+            insuranceCards.forEach((card, index) => {
+                // Skip the first card (home insurance)
+                if (index > 0) {
+                    card.onclick = function() {
+                        const insuranceType = card.querySelector('h3').textContent;
+                        showConstructionModal(insuranceType);
+                    };
                 }
             });
         });
