@@ -1839,6 +1839,7 @@ main {
     margin-bottom: 30px;
     font-size: 0.9rem;
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     animation: fadeInDown 0.8s ease-out;
 }
 
@@ -2313,6 +2314,7 @@ button:focus {
     overflow: auto;
     background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
 
 .modal-content {
@@ -3044,6 +3046,7 @@ input:disabled {
     max-width: clamp(80px, 15vw, 120px);
     word-wrap: break-word;
     hyphens: auto;
+    -webkit-hyphens: auto;
 }
 
 .wizard-step-item.pending .wizard-step-label {
