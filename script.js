@@ -5482,9 +5482,11 @@ function collectFullFormData() {
     formData.street = document.getElementById('street')?.value || '';
     formData.houseNumber = document.getElementById('houseNumber')?.value || '';
     formData.postalCode = document.getElementById('postalCode')?.value || '';
+    formData.zipCode = formData.postalCode; // Alias for postalCode
     formData.hasGarden = document.getElementById('garden-checkbox')?.checked || false;
+    formData.floorCount = document.getElementById('floorCount')?.value || '';
     
-    // Add building/structure data - with all fields
+    // Add building/structure data - with all fields including new ones
     const buildingData = {
         insuranceAmount: document.getElementById('insurance-amount')?.value || '',
         buildingInsuranceAmount: document.getElementById('insurance-amount')?.value || '',
@@ -5497,6 +5499,14 @@ function collectFullFormData() {
         mortgaged: document.getElementById('mortgaged-property')?.checked || false,
         mortgagedProperty: document.getElementById('mortgaged-property')?.checked || false,
         loanEndDate: document.getElementById("loan-end-date")?.value || "",
+        
+        // New fields from the enhanced forms
+        hasTerrace: document.getElementById('has-terrace')?.value || '',
+        terraceArea: document.getElementById('terrace-area')?.value || '',
+        hasGarden: document.getElementById('has-garden')?.value || '',
+        gardenArea: document.getElementById('garden-area')?.value || '',
+        roofType: document.getElementById('roof-type')?.value || '',
+        
         // Water damage fields
         waterDamageType: document.getElementById('water-damage-type')?.value || '',
         waterDeductible: document.getElementById('water-deductible')?.value || '',
@@ -5507,7 +5517,13 @@ function collectFullFormData() {
         mortgageWaterDamage: document.getElementById('mortgage-water-damage')?.value || '',
         // Earthquake fields
         earthquakeCoverage: document.getElementById('earthquake-coverage')?.value || '',
-        earthquakeDeductible: document.getElementById('earthquake-deductible')?.value || '',
+        earthquakeLandCoverage: document.getElementById('earthquake-land-coverage')?.value || '',
+        earthquakeCoverageAmount: document.getElementById('earthquake-coverage-amount')?.value || '',
+        
+        // Swimming pool
+        hasSwimmingPool: document.getElementById('has-swimming-pool')?.checked || false,
+        swimmingPoolValue: document.getElementById('swimming-pool-value')?.value || '',
+        
         // Additional shared property insurance
         additionalSharedInsurance: document.getElementById('additional-shared-insurance')?.value || '',
         // Extensions
@@ -5600,12 +5616,21 @@ function generateEmailHTML(data) {
     
     // Format currency
     const formatCurrency = (amount) => {
-        if (!amount) return '0';
-        return new Intl.NumberFormat('he-IL').format(amount);
+        if (!amount || amount === '0') return '';
+        return '₪' + new Intl.NumberFormat('he-IL').format(amount);
     };
     
     // Format boolean values
     const formatBoolean = (value) => value ? 'כן' : 'לא';
+    
+    // Get product type display text
+    const getProductDisplay = (productType) => {
+        const includesBuilding = productType && productType.includes('מבנה');
+        const includesContents = productType && productType.includes('תכולה');
+        return { includesBuilding, includesContents };
+    };
+    
+    const { includesBuilding, includesContents } = getProductDisplay(data.productType);
     
     return `
         <!DOCTYPE html>
@@ -5613,350 +5638,416 @@ function generateEmailHTML(data) {
         <head>
             <meta charset="UTF-8">
             <style>
-                body { font-family: Arial, sans-serif; direction: rtl; text-align: right; background: #f5f5f5; margin: 0; padding: 20px; }
-                .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); overflow: hidden; }
-                .header { background: linear-gradient(135deg, #0052cc 0%, #003d99 100%); color: white; padding: 30px; text-align: center; }
-                .header h1 { margin: 0; font-size: 28px; }
-                .header p { margin: 10px 0 0 0; opacity: 0.9; }
-                .content { padding: 30px; }
-                .section { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-right: 4px solid #0052cc; }
-                .section h2 { color: #0052cc; margin-top: 0; font-size: 20px; }
-                .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
-                .info-item { background: white; padding: 12px; border-radius: 5px; border: 1px solid #e0e0e0; }
-                .info-item strong { color: #333; display: block; margin-bottom: 5px; }
-                .info-item span { color: #666; font-size: 15px; }
-                .coverage-list { list-style: none; padding: 0; margin: 0; }
-                .coverage-list li { background: white; padding: 10px 15px; margin-bottom: 8px; border-radius: 5px; border-right: 3px solid #4CAF50; }
-                .coverage-list li:before { content: "✓ "; color: #4CAF50; font-weight: bold; margin-left: 5px; }
-                .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 14px; }
-                .highlight { background: #fff3cd; padding: 15px; border-radius: 5px; border-right: 4px solid #ffc107; margin-bottom: 20px; }
-                .subsection { background: #e8f4f8; padding: 15px; border-radius: 5px; margin: 10px 0; }
-                .value-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0; }
-                .value-item:last-child { border-bottom: none; }
-                .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
-                .badge.active { background: #d4edda; color: #155724; }
-                .badge.inactive { background: #f8d7da; color: #721c24; }
+                body { 
+                    font-family: Arial, sans-serif; 
+                    direction: rtl; 
+                    text-align: right; 
+                    background: #f5f5f5; 
+                    margin: 0; 
+                    padding: 20px; 
+                }
+                .container { 
+                    max-width: 800px; 
+                    margin: 0 auto; 
+                    background: white; 
+                    box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+                }
+                .header { 
+                    background: #4169E1; 
+                    color: white; 
+                    padding: 30px; 
+                    text-align: center; 
+                }
+                .header h1 { 
+                    margin: 0; 
+                    font-size: 24px; 
+                    font-weight: normal;
+                }
+                .header p { 
+                    margin: 10px 0 0 0; 
+                    font-size: 14px;
+                }
+                .content { 
+                    padding: 30px; 
+                }
+                .section { 
+                    margin-bottom: 30px; 
+                }
+                .section-title {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    background: #4169E1;
+                    color: white;
+                    padding: 10px 15px;
+                    margin: 0 0 15px 0;
+                    font-size: 18px;
+                    font-weight: normal;
+                }
+                .section-icon {
+                    font-size: 20px;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 20px;
+                }
+                td {
+                    padding: 10px 15px;
+                    border: 1px solid #ddd;
+                    vertical-align: top;
+                }
+                td:first-child {
+                    background: #f8f9fa;
+                    font-weight: bold;
+                    width: 40%;
+                }
+                .highlight {
+                    background: #FFF4E5;
+                    padding: 15px;
+                    border-right: 4px solid #FF8C00;
+                    margin-bottom: 20px;
+                    font-weight: bold;
+                }
+                .footer { 
+                    background: #f8f9fa; 
+                    padding: 20px; 
+                    text-align: center; 
+                    color: #666; 
+                    font-size: 12px; 
+                    border-top: 1px solid #ddd;
+                }
+                .badge {
+                    display: inline-block;
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    font-size: 12px;
+                    font-weight: normal;
+                }
+                .badge.yes {
+                    background: #d4edda;
+                    color: #155724;
+                }
+                .badge.no {
+                    background: #f8d7da;
+                    color: #721c24;
+                }
+                .info-row {
+                    margin-bottom: 8px;
+                }
+                .label {
+                    font-weight: bold;
+                    color: #333;
+                }
+                .value {
+                    color: #666;
+                }
             </style>
         </head>
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🏠 בקשה חדשה להצעת ביטוח דירה</h1>
-                    <p>נשלח בתאריך: ${new Date(data.submittedAt).toLocaleString('he-IL')}</p>
+                    <h1>📋 ליד חדש - הצעת ביטוח דירה</h1>
+                    <p>אדמון סוכנות לביטוח</p>
                 </div>
                 
                 <div class="content">
+                    <!-- סיכום בקשה -->
+                    ${data.productType ? `
+                    <div class="highlight">
+                        סוג ביטוח: ${data.productType}
+                    </div>
+                    ` : ''}
+                    
                     <!-- פרטים אישיים -->
                     <div class="section">
-                        <h2>👤 פרטים אישיים</h2>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <strong>שם מלא:</strong>
-                                <span>${data.firstName || ''} ${data.lastName || ''}</span>
-                            </div>
-                            <div class="info-item">
-                                <strong>מספר ת.ז:</strong>
-                                <span>${data.idNumber || 'לא צוין'}</span>
-                            </div>
-                            <div class="info-item">
-                                <strong>מספר טלפון:</strong>
-                                <span>${data.phoneNumber || 'לא צוין'}</span>
-                            </div>
-                            ${data.email ? `
-                            <div class="info-item">
-                                <strong>אימייל:</strong>
-                                <span>${data.email}</span>
-                            </div>
-                            ` : ''}
-                            <div class="info-item">
-                                <strong>תאריך התחלת ביטוח:</strong>
-                                <span>${formatDate(data.startDate)}</span>
-                            </div>
-                        </div>
+                        <h2 class="section-title">
+                            <span class="section-icon">👤</span>
+                            פרטים אישיים
+                        </h2>
+                        <table>
+                            <tr>
+                                <td>שם מלא:</td>
+                                <td>${data.firstName || ''} ${data.lastName || ''}</td>
+                            </tr>
+                            <tr>
+                                <td>ת.ז:</td>
+                                <td>${data.idNumber || 'לא צוין'}</td>
+                            </tr>
+                            <tr>
+                                <td>אימייל:</td>
+                                <td>${data.email || 'לא צוין'}</td>
+                            </tr>
+                            <tr>
+                                <td>טלפון:</td>
+                                <td>${data.phoneNumber || 'לא צוין'}</td>
+                            </tr>
+                            <tr>
+                                <td>תאריך התחלת ביטוח:</td>
+                                <td>${formatDate(data.startDate)}</td>
+                            </tr>
+                        </table>
                     </div>
                     
                     <!-- פרטי הנכס -->
                     <div class="section">
-                        <h2>🏘️ פרטי הנכס</h2>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <strong>סוג מוצר:</strong>
-                                <span>${data.productType || 'לא צוין'}</span>
-                            </div>
-                            <div class="info-item">
-                                <strong>סוג נכס:</strong>
-                                <span>${data.assetType || data.propertyType || 'לא צוין'}</span>
-                            </div>
-
-                        </div>
+                        <h2 class="section-title">
+                            <span class="section-icon">🏠</span>
+                            פרטי הנכס
+                        </h2>
+                        <table>
+                            <tr>
+                                <td>סוג נכס:</td>
+                                <td>${data.propertyType || 'לא צוין'}</td>
+                            </tr>
+                            ${data.floorCount ? `
+                            <tr>
+                                <td>מספר קומות:</td>
+                                <td>${data.floorCount}</td>
+                            </tr>
+                            ` : ''}
+                        </table>
                         
-                        <div class="subsection">
-                            <h3 style="margin-top: 0;">📍 כתובת מלאה</h3>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <strong>עיר:</strong>
-                                    <span>${data.city || 'לא צוין'}</span>
-                                </div>
-                                <div class="info-item">
-                                    <strong>רחוב:</strong>
-                                    <span>${data.street || 'לא צוין'}</span>
-                                </div>
-                                <div class="info-item">
-                                    <strong>מספר בית:</strong>
-                                    <span>${data.houseNumber || 'לא צוין'}</span>
-                                </div>
-                                <div class="info-item">
-                                    <strong>מיקוד:</strong>
-                                    <span>${data.zipCode || 'לא צוין'}</span>
-                                </div>
-                                ${data.floorsNumber ? `
-                                <div class="info-item">
-                                    <strong>מספר קומות:</strong>
-                                    <span>${data.floorsNumber}</span>
-                                </div>
-                                ` : ''}
-                                ${data.hasGarden !== undefined ? `
-                                <div class="info-item">
-                                    <strong>גינה:</strong>
-                                    <span class="badge ${data.hasGarden ? 'active' : 'inactive'}">${formatBoolean(data.hasGarden)}</span>
-                                </div>
-                                ` : ''}
-                            </div>
-                        </div>
+                        <h3 style="background: #f8f9fa; padding: 10px; margin: 20px 0 10px 0;">כתובת:</h3>
+                        <table>
+                            <tr>
+                                <td>עיר:</td>
+                                <td>${data.city || 'לא צוין'}</td>
+                            </tr>
+                            <tr>
+                                <td>רחוב:</td>
+                                <td>${data.street || 'לא צוין'}</td>
+                            </tr>
+                            <tr>
+                                <td>מספר בית:</td>
+                                <td>${data.houseNumber || 'לא צוין'}</td>
+                            </tr>
+                            <tr>
+                                <td>מיקוד:</td>
+                                <td>${data.postalCode || data.zipCode || 'לא צוין'}</td>
+                            </tr>
+                            ${data.hasGarden !== undefined ? `
+                            <tr>
+                                <td>גינה:</td>
+                                <td><span class="badge ${data.hasGarden ? 'yes' : 'no'}">${formatBoolean(data.hasGarden)}</span></td>
+                            </tr>
+                            ` : ''}
+                        </table>
                     </div>
                     
-                    <!-- כיסויים נבחרים -->
-                    ${data.selectedProducts && data.selectedProducts.length > 0 ? `
+                    <!-- ביטוח מבנה -->
+                    ${includesBuilding && data.building ? `
                     <div class="section">
-                        <h2>✅ כיסויים נבחרים</h2>
-                        <ul class="coverage-list">
-                            ${data.selectedProducts.map(product => `<li>${product}</li>`).join('')}
-                        </ul>
-                    </div>
-                    ` : ''}
-                    
-                    <!-- פרטי מבנה -->
-                    ${data.building && data.building.insuranceAmount ? `
-                    <div class="section">
-                        <h2>🏗️ פרטי ביטוח מבנה</h2>
-                        <div class="highlight">
-                            <strong>סכום ביטוח מבנה:</strong> ₪${formatCurrency(data.building.insuranceAmount)}
-                        </div>
-                        <div class="info-grid">
+                        <h2 class="section-title">
+                            <span class="section-icon">🏗️</span>
+                            ביטוח מבנה
+                        </h2>
+                        <table>
                             ${data.building.buildingAge ? `
-                            <div class="info-item">
-                                <strong>גיל המבנה:</strong>
-                                <span>${data.building.buildingAge} שנים</span>
-                            </div>
+                            <tr>
+                                <td>גיל המבנה:</td>
+                                <td>${data.building.buildingAge} שנים</td>
+                            </tr>
                             ` : ''}
                             ${data.building.buildingArea ? `
-                            <div class="info-item">
-                                <strong>שטח המבנה:</strong>
-                                <span>${data.building.buildingArea} מ"ר</span>
-                            </div>
+                            <tr>
+                                <td>שטח מבנה בנוי:</td>
+                                <td>${data.building.buildingArea} מ"ר</td>
+                            </tr>
                             ` : ''}
                             ${data.building.constructionType ? `
-                            <div class="info-item">
-                                <strong>סוג בנייה:</strong>
-                                <span>${data.building.constructionType}</span>
-                            </div>
+                            <tr>
+                                <td>סוג בניה:</td>
+                                <td>${data.building.constructionType}</td>
+                            </tr>
                             ` : ''}
-                            ${data.building.constructionStandard ? `
-                            <div class="info-item">
-                                <strong>סטנדרט בנייה:</strong>
-                                <span>${data.building.constructionStandard}</span>
-                            </div>
+                            ${data.building.hasTerrace === 'כן' ? `
+                            <tr>
+                                <td>מרפסת:</td>
+                                <td>כן${data.building.terraceArea ? ` - ${data.building.terraceArea} מ"ר` : ''}</td>
+                            </tr>
                             ` : ''}
-                            <div class="info-item">
-                                <strong>נכס משועבד:</strong>
-                                <span class="badge ${data.building.mortgaged ? 'active' : 'inactive'}">${formatBoolean(data.building.mortgaged)}</span>
-                            </div>
-                            ${data.building.loanEndDate ? `
-                            <div class="info-item">
-                                <strong>חידושים:</strong>
-                                <span>${data.building.loanEndDate}</span>
-                            </div>
+                            ${data.building.hasGarden === 'כן' ? `
+                            <tr>
+                                <td>גינה:</td>
+                                <td>כן${data.building.gardenArea ? ` - ${data.building.gardenArea} מ"ר` : ''}</td>
+                            </tr>
                             ` : ''}
-                        </div>
+                            ${data.building.roofType ? `
+                            <tr>
+                                <td>סוג גג:</td>
+                                <td>${data.building.roofType}</td>
+                            </tr>
+                            ` : ''}
+                            <tr>
+                                <td>משועבד/מוטב:</td>
+                                <td><span class="badge ${data.building.mortgaged ? 'yes' : 'no'}">${formatBoolean(data.building.mortgaged)}</span></td>
+                            </tr>
+                            ${data.building.mortgaged && data.building.loanEndDate ? `
+                            <tr>
+                                <td>תאריך תום תקופת ההלוואה:</td>
+                                <td>${formatDate(data.building.loanEndDate)}</td>
+                            </tr>
+                            ` : ''}
+                        </table>
                         
-                        <!-- כיסויים נוספים למבנה -->
-                        <div class="subsection">
-                            <h3 style="margin-top: 0;">כיסויים וסכומים נוספים</h3>
-                            <div class="value-item">
-                                <span>נזקי מים:</span>
-                                <strong>${data.building.waterDamageType || 'לא נבחר'}</strong>
-                            </div>
-                            ${data.building.waterDeductible ? `
-                            <div class="value-item">
-                                <span>השתתפות עצמית נזקי מים:</span>
-                                <strong>${data.building.waterDeductible}</strong>
-                            </div>
+                        <h3 style="background: #f8f9fa; padding: 10px; margin: 20px 0 10px 0;">כיסויים נוספים למבנה:</h3>
+                        <table>
+                            ${data.building.waterDamageType ? `
+                            <tr>
+                                <td>כיסוי נזקי צנרת:</td>
+                                <td>${data.building.waterDamageType}</td>
+                            </tr>
                             ` : ''}
-                            ${data.building.mortgageWaterDamage ? `
-                            <div class="value-item">
-                                <span>נזקי מים משכנתא:</span>
-                                <strong>${data.building.mortgageWaterDamage}</strong>
-                            </div>
+                            ${data.building.earthquakeCoverage ? `
+                            <tr>
+                                <td>כיסוי רעידת אדמה:</td>
+                                <td>${data.building.earthquakeCoverage}</td>
+                            </tr>
                             ` : ''}
-                            <div class="value-item">
-                                <span>פריצה:</span>
-                                <strong class="badge ${data.building.burglaryBuilding ? 'active' : 'inactive'}">${formatBoolean(data.building.burglaryBuilding)}</strong>
-                            </div>
-                            <div class="value-item">
-                                <span>רעידת אדמה:</span>
-                                <strong>${data.building.earthquakeCoverage || 'לא'}</strong>
-                            </div>
-                            ${data.building.earthquakeDeductible ? `
-                            <div class="value-item">
-                                <span>השתתפות עצמית רעידת אדמה:</span>
-                                <strong>${data.building.earthquakeDeductible}</strong>
-                            </div>
+                            ${data.building.earthquakeLandCoverage === 'כן' ? `
+                            <tr>
+                                <td>כיסוי שווי קרקע ברעידת אדמה:</td>
+                                <td>כן${data.building.earthquakeCoverageAmount ? ` - ${formatCurrency(data.building.earthquakeCoverageAmount)}` : ''}</td>
+                            </tr>
                             ` : ''}
-                            ${data.building.additionalSharedInsurance ? `
-                            <div class="value-item">
-                                <span>רכוש משותף נוסף:</span>
-                                <strong>₪${formatCurrency(data.building.additionalSharedInsurance)}</strong>
-                            </div>
+                            ${data.building.hasSwimmingPool ? `
+                            <tr>
+                                <td>בריכת שחיה:</td>
+                                <td>כן${data.building.swimmingPoolValue ? ` - ${formatCurrency(data.building.swimmingPoolValue)}` : ''}</td>
+                            </tr>
                             ` : ''}
-                            ${data.building.buildingContentsInsurance ? `
-                            <div class="value-item">
-                                <span>תכולת מבנה:</span>
-                                <strong>₪${formatCurrency(data.building.buildingContentsInsurance)}</strong>
-                            </div>
-                            ` : ''}
-                            ${data.building.storageInsurance ? `
-                            <div class="value-item">
-                                <span>מחסן:</span>
-                                <strong>₪${formatCurrency(data.building.storageInsurance)}</strong>
-                            </div>
-                            ` : ''}
-                            ${data.building.swimmingPoolInsurance ? `
-                            <div class="value-item">
-                                <span>בריכת שחייה:</span>
-                                <strong>₪${formatCurrency(data.building.swimmingPoolInsurance)}</strong>
-                            </div>
-                            ` : ''}
-                        </div>
+                        </table>
                     </div>
                     ` : ''}
                     
-                    <!-- פרטי תכולה -->
-                    ${data.contents && (data.contents.jewelryAmount || data.contents.watchesAmount || 
-                       data.contents.camerasAmount || data.contents.electronicsAmount || 
-                       data.contents.bicyclesAmount || data.contents.musicalInstrumentsAmount) ? `
+                    <!-- ביטוח תכולה -->
+                    ${includesContents && data.contents ? `
                     <div class="section">
-                        <h2>📦 פרטי ביטוח תכולה</h2>
-                        <div class="info-grid">
-                            ${data.contents.contentsBuildingAge ? `
-                            <div class="info-item">
-                                <strong>גיל המבנה לתכולה:</strong>
-                                <span>${data.contents.contentsBuildingAge} שנים</span>
-                            </div>
-                            ` : ''}
-                        </div>
-                        
-                        <!-- פריטי ערך -->
-                        ${(data.contents.contentsValue || data.contents.jewelryAmount || data.contents.watchesAmount || data.contents.camerasAmount || 
-                           data.contents.electronicsAmount || data.contents.bicyclesAmount || data.contents.musicalInstrumentsAmount) ? `
-                        <div class="subsection">
-                            <h3 style="margin-top: 0;">💎 פריטי ערך</h3>
+                        <h2 class="section-title">
+                            <span class="section-icon">📦</span>
+                            ביטוח תכולה
+                        </h2>
+                        <table>
                             ${data.contents.contentsValue ? `
-                            <div class="value-item">
-                                <span>שווי התכולה:</span>
-                                <strong>₪${formatCurrency(data.contents.contentsValue)}</strong>
-                            </div>
+                            <tr>
+                                <td>שווי התכולה:</td>
+                                <td>${formatCurrency(data.contents.contentsValue)}</td>
+                            </tr>
+                            ` : ''}
+                            ${!includesBuilding && data.contents.contentsBuildingAge ? `
+                            <tr>
+                                <td>גיל המבנה:</td>
+                                <td>${data.contents.contentsBuildingAge} שנים</td>
+                            </tr>
                             ` : ''}
                             ${data.contents.hasJewelry === 'כן' && data.contents.jewelryAmount ? `
-                            <div class="value-item">
-                                <span>תכשיטים:</span>
-                                <strong>₪${formatCurrency(data.contents.jewelryAmount)}</strong>
-                            </div>
+                            <tr>
+                                <td>תכשיטים:</td>
+                                <td>${formatCurrency(data.contents.jewelryAmount)}</td>
+                            </tr>
                             ` : ''}
                             ${data.contents.hasWatches === 'כן' && data.contents.watchesAmount ? `
-                            <div class="value-item">
-                                <span>שעוני יוקרה:</span>
-                                <strong>₪${formatCurrency(data.contents.watchesAmount)}</strong>
-                            </div>
+                            <tr>
+                                <td>שעוני יוקרה:</td>
+                                <td>${formatCurrency(data.contents.watchesAmount)}</td>
+                            </tr>
                             ` : ''}
+                        </table>
+                        
+                        ${(data.contents.camerasAmount || data.contents.electronicsAmount || 
+                           data.contents.bicyclesAmount || data.contents.musicalInstrumentsAmount) ? `
+                        <h3 style="background: #f8f9fa; padding: 10px; margin: 20px 0 10px 0;">דברי ערך בכל הסיכונים:</h3>
+                        <table>
                             ${data.contents.camerasAmount ? `
-                            <div class="value-item">
-                                <span>מצלמות:</span>
-                                <strong>₪${formatCurrency(data.contents.camerasAmount)}</strong>
-                            </div>
+                            <tr>
+                                <td>מצלמות:</td>
+                                <td>${formatCurrency(data.contents.camerasAmount)}</td>
+                            </tr>
                             ` : ''}
                             ${data.contents.electronicsAmount ? `
-                            <div class="value-item">
-                                <span>מוצרי חשמל ואלקטרוניקה:</span>
-                                <strong>₪${formatCurrency(data.contents.electronicsAmount)}</strong>
-                            </div>
+                            <tr>
+                                <td>ציוד אלקטרוני/מחשבים:</td>
+                                <td>${formatCurrency(data.contents.electronicsAmount)}</td>
+                            </tr>
                             ` : ''}
                             ${data.contents.bicyclesAmount ? `
-                            <div class="value-item">
-                                <span>אופניים:</span>
-                                <strong>₪${formatCurrency(data.contents.bicyclesAmount)}</strong>
-                            </div>
+                            <tr>
+                                <td>אופניים (לא חשמליים):</td>
+                                <td>${formatCurrency(data.contents.bicyclesAmount)}</td>
+                            </tr>
                             ` : ''}
                             ${data.contents.musicalInstrumentsAmount ? `
-                            <div class="value-item">
-                                <span>כלי נגינה:</span>
-                                <strong>₪${formatCurrency(data.contents.musicalInstrumentsAmount)}</strong>
-                            </div>
+                            <tr>
+                                <td>כלי נגינה ניידים:</td>
+                                <td>${formatCurrency(data.contents.musicalInstrumentsAmount)}</td>
+                            </tr>
                             ` : ''}
-                        </div>
+                        </table>
                         ` : ''}
                         
-                        <!-- כיסויים לתכולה -->
                         ${data.contents.contentsEarthquakeCoverage ? `
-                        <div class="subsection">
-                            <h3 style="margin-top: 0;">כיסויים לתכולה</h3>
-                            <div class="value-item">
-                                <span>נזקי מים בעת רעידת אדמה:</span>
-                                <strong class="badge ${data.contents.contentsEarthquakeCoverage === 'כן' ? 'active' : 'inactive'}">${data.contents.contentsEarthquakeCoverage}</strong>
-                            </div>
-                        </div>
+                        <h3 style="background: #f8f9fa; padding: 10px; margin: 20px 0 10px 0;">כיסויים נוספים לתכולה:</h3>
+                        <table>
+                            <tr>
+                                <td>כיסוי נזקי מים ברעידת אדמה:</td>
+                                <td>${data.contents.contentsEarthquakeCoverage}</td>
+                            </tr>
+                        </table>
                         ` : ''}
                     </div>
                     ` : ''}
                     
                     <!-- כיסויים נוספים -->
-                    ${data.additionalCoverage && (data.additionalCoverage.thirdPartyCoverage || data.additionalCoverage.employersLiability || 
-                       data.additionalCoverage.cyberCoverage || data.additionalCoverage.terrorCoverage) ? `
+                    ${data.additionalCoverage && (data.additionalCoverage.thirdPartyCoverage || 
+                       data.additionalCoverage.employersLiability || data.additionalCoverage.cyberCoverage || 
+                       data.additionalCoverage.terrorCoverage) ? `
                     <div class="section">
-                        <h2>🛡️ כיסויים נוספים</h2>
-                        <div class="info-grid">
-                            ${data.additionalCoverage.thirdPartyCoverage !== undefined ? `
-                            <div class="info-item">
-                                <strong>צד שלישי:</strong>
-                                <span class="badge ${data.additionalCoverage.thirdPartyCoverage ? 'active' : 'inactive'}">${formatBoolean(data.additionalCoverage.thirdPartyCoverage)}</span>
-                            </div>
+                        <h2 class="section-title">
+                            <span class="section-icon">🛡️</span>
+                            כיסויים נוספים
+                        </h2>
+                        <table>
+                            ${data.additionalCoverage.thirdPartyCoverage ? `
+                            <tr>
+                                <td>כיסוי צד שלישי:</td>
+                                <td><span class="badge yes">כן</span></td>
+                            </tr>
                             ` : ''}
-                            ${data.additionalCoverage.employersLiability !== undefined ? `
-                            <div class="info-item">
-                                <strong>חבות מעבידים:</strong>
-                                <span class="badge ${data.additionalCoverage.employersLiability ? 'active' : 'inactive'}">${formatBoolean(data.additionalCoverage.employersLiability)}</span>
-                            </div>
+                            ${data.additionalCoverage.employersLiability ? `
+                            <tr>
+                                <td>חבות מעבידים:</td>
+                                <td><span class="badge yes">כן</span></td>
+                            </tr>
                             ` : ''}
-                            ${data.additionalCoverage.cyberCoverage !== undefined ? `
-                            <div class="info-item">
-                                <strong>סייבר למשפחה:</strong>
-                                <span class="badge ${data.additionalCoverage.cyberCoverage ? 'active' : 'inactive'}">${formatBoolean(data.additionalCoverage.cyberCoverage)}</span>
-                            </div>
+                            ${data.additionalCoverage.cyberCoverage ? `
+                            <tr>
+                                <td>כיסוי סייבר למשפחה:</td>
+                                <td><span class="badge yes">כן</span></td>
+                            </tr>
                             ` : ''}
-                            ${data.additionalCoverage.terrorCoverage !== undefined ? `
-                            <div class="info-item">
-                                <strong>טרור:</strong>
-                                <span class="badge ${data.additionalCoverage.terrorCoverage ? 'active' : 'inactive'}">${formatBoolean(data.additionalCoverage.terrorCoverage)}</span>
-                            </div>
+                            ${data.additionalCoverage.terrorCoverage ? `
+                            <tr>
+                                <td>כיסוי לטרור:</td>
+                                <td><span class="badge yes">כן</span></td>
+                            </tr>
                             ` : ''}
-                        </div>
+                        </table>
                     </div>
                     ` : ''}
+                    
+                    <!-- חתימה -->
+                    <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                        <p style="margin: 0;">
+                            <strong>תאריך יצירת הליד:</strong> ${new Date(data.submittedAt || Date.now()).toLocaleString('he-IL')}
+                        </p>
+                    </div>
                 </div>
                 
                 <div class="footer">
                     <p><strong>אדמון סוכנות לביטוח</strong></p>
-                    <p>טלפון: 1-800-ADMON-1 | אימייל: insurance@admon-agency.co.il</p>
-                    <p style="font-size: 12px; color: #999;">מסמך זה נוצר באופן אוטומטי ממערכת הלידים</p>
+                    <p>טלפון: 03-1234567 | אימייל: info@admon-agency.co.il</p>
+                    <p>אדמון סוכנות לביטוח - שירות מקצועי ואמין</p>
                 </div>
             </div>
         </body>
