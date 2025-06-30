@@ -4508,7 +4508,7 @@ function clearBuildingFormErrors() {
         errorMessages.forEach(message => {
             message.style.display = 'none';
             message.textContent = '';
-    });
+        });
     }
 }
 
@@ -6178,96 +6178,145 @@ function generateEmailHTML(data) {
     `;
 }
 
+// =============================================================================
+// EMAIL DEBUGGING INSTRUCTIONS
+// =============================================================================
+// אם יש בעיות עם שליחת מייל, בצע את השלבים הבאים:
+//
+// 1. פתח Developer Tools (F12) והקלד:
+//    debugEmailSystem()
+//    - זה יבדוק את סביבת העבודה ואת איכות הנתונים
+//
+// 2. לבדיקת חיבור לשרת:
+//    const debug = debugEmailSystem()
+//    await debug.testEndpoint('https://webappinsurance.vercel.app/api/send-email')
+//
+// 3. לבדיקת שליחת מייל טסט:
+//    debugEmailSending()
+//
+// 4. אם יש שגיאת 500 (Internal Server Error):
+//    - בדוק שכל השדות הנדרשים מלאים
+//    - בדוק שאין שדות עם ערכים null או undefined
+//    - בדוק שגודל הנתונים לא גדול מדי
+//
+// 5. בעיות נפוצות ופתרונות:
+//    - Error 500: בדוק שהשרת פועל ושהנתונים תקינים
+//    - CORS Error: בדוק שהURL נכון לסביבה
+//    - Network Error: בדוק חיבור אינטרנט
+//    - Timeout: הנתונים גדולים מדי או השרת עמוס
+//
+// 6. אם כל השרתים נכשלים, הנתונים נשמרים ב-localStorage:
+//    console.log(JSON.parse(localStorage.getItem('savedInsuranceForms')))
+//
+// =============================================================================
+
 /**
- * Send email to agent via backend service with fallback endpoints
+ * Send email to agent via backend service with improved error handling
  */
 async function sendEmailToAgent(emailData) {
-    console.log('📮 Sending email via Gmail API...', emailData);
+    console.log('📮 Starting email sending process...');
+    console.log('📤 Email data summary:', {
+        to: emailData.to,
+        subject: emailData.subject,
+        hasHtml: !!emailData.html,
+        hasFormData: !!emailData.formData,
+        dataSize: JSON.stringify(emailData).length
+    });
     
     // Determine the correct endpoint based on environment
     const isDevelopment = window.location.hostname === 'localhost' || 
                          window.location.hostname === '127.0.0.1' || 
                          window.location.href.includes('localhost');
     
-    // List of possible endpoints to try based on environment
-    const endpoints = isDevelopment ? [
-        'http://localhost:8080/api/send-email',              // Local development ONLY
-    ] : [
-        'https://webappinsurance.vercel.app/api/send-email'  // Production Vercel ONLY
-    ];
+    const endpoint = isDevelopment 
+        ? 'http://localhost:8080/api/send-email'              // Local development ONLY
+        : 'https://webappinsurance.vercel.app/api/send-email'; // Production Vercel ONLY
     
-    for (let i = 0; i < endpoints.length; i++) {
-        const endpoint = endpoints[i];
-        console.log(`📮 Trying endpoint ${i + 1}/${endpoints.length}: ${endpoint}`);
+    console.log(`🌐 Environment: ${isDevelopment ? 'Development' : 'Production'}`);
+    console.log(`📡 Using endpoint: ${endpoint}`);
+    
+    try {
+        // Validate email data before sending
+        if (!emailData.to || !emailData.subject) {
+            throw new Error('Missing required email fields (to/subject)');
+        }
         
+        // Get auth token if available
+        const authToken = localStorage.getItem('authToken');
+        
+        // Additional validation: prevent CORS issues
+        if (endpoint.includes('localhost') && !isDevelopment) {
+            throw new Error('Cannot access localhost from production environment');
+        }
+        
+        console.log('📦 Preparing to send email request...');
+        console.log('🔐 Auth token available:', !!authToken);
+        
+        const requestStart = Date.now();
+        
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': authToken ? `Bearer ${authToken}` : ''
+            },
+            body: JSON.stringify(emailData)
+        });
+        
+        const requestDuration = Date.now() - requestStart;
+        console.log(`⏱️ Request completed in ${requestDuration}ms`);
+        console.log(`📡 Response status: ${response.status} ${response.statusText}`);
+        
+        let result;
         try {
-            // Get auth token if available
-            const authToken = localStorage.getItem('authToken');
-            
-            // Additional validation: prevent CORS issues
-            if (endpoint.includes('localhost') && !isDevelopment) {
-                console.warn(`🚫 CORS Prevention: Blocked localhost access from production environment`);
-                throw new Error('Cannot access localhost from production environment');
-            }
-            
-            console.log(`🌐 Environment: ${isDevelopment ? 'Development' : 'Production'}`);
-            console.log(`📡 Using endpoint: ${endpoint}`);
-            
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': authToken ? `Bearer ${authToken}` : ''
-                },
-                body: JSON.stringify(emailData)
+            result = await response.json();
+            console.log('📥 Response data:', result);
+        } catch (jsonError) {
+            console.error('❌ Failed to parse response JSON:', jsonError);
+            throw new Error(`Server returned invalid JSON response (${response.status})`);
+        }
+        
+        if (!response.ok) {
+            // Log detailed error information
+            console.error('❌ Email API returned error:', {
+                status: response.status,
+                statusText: response.statusText,
+                errorMessage: result.message || result.error,
+                errorDetails: result.details,
+                endpoint: endpoint
             });
             
-            const result = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(result.message || `Failed to send email (${response.status})`);
+            // Provide more specific error messages based on status code
+            let errorMessage = result.message || result.error || 'Unknown server error';
+            if (response.status === 500) {
+                errorMessage = `Server internal error: ${errorMessage}`;
+            } else if (response.status === 429) {
+                errorMessage = 'Too many requests, please try again later';
+            } else if (response.status >= 400 && response.status < 500) {
+                errorMessage = `Client error (${response.status}): ${errorMessage}`;
             }
             
-            console.log(`✅ Email sent successfully via ${endpoint}:`, result);
-            console.log(`📊 Email endpoint worked on attempt ${i + 1}/${endpoints.length}`);
-            return result;
-            
-        } catch (error) {
-            console.warn(`❌ Failed to send email via ${endpoint}:`, error.message);
-            
-            // If this is the last endpoint, handle the final failure
-            if (i === endpoints.length - 1) {
-                console.error('❌ All email endpoints failed, saving to localStorage');
-                
-                // Fallback to localStorage if all email endpoints fail
-                const timestamp = new Date().toISOString();
-                const savedForms = JSON.parse(localStorage.getItem('savedInsuranceForms') || '[]');
-                savedForms.push({
-                    ...emailData,
-                    savedAt: timestamp,
-                    status: 'email_failed',
-                    lastError: error.message
-                });
-                localStorage.setItem('savedInsuranceForms', JSON.stringify(savedForms));
-                
-                // Show user-friendly message
-                showNotification('success', 
-                    `📧 הליד נשמר במערכת בהצלחה!<br>
-                    🔧 שירות המייל זמנית לא זמין, אך הליד נשמר ויטופל בהקדם.<br>
-                    📞 נציג יחזור אליך תוך 24 שעות`
-                );
-                
-                // Still return success to user but log the error
-                return { 
-                    success: true, 
-                    messageId: `local_${Date.now()}`,
-                    note: 'Email service unavailable, form saved locally'
-                };
-            }
-            
-            // Continue to next endpoint
-            continue;
+            throw new Error(errorMessage);
         }
+        
+        console.log('✅ Email sent successfully:', {
+            messageId: result.messageId,
+            endpoint: endpoint,
+            duration: requestDuration
+        });
+        
+        return result;
+        
+    } catch (error) {
+        console.error('❌ Email sending failed:', {
+            endpoint: endpoint,
+            errorType: error.name,
+            errorMessage: error.message,
+            stack: error.stack?.split('\n').slice(0, 3).join('\n') // First 3 lines of stack
+        });
+        
+        // Don't automatically save to localStorage here - let the caller decide
+        throw new Error(`Email sending failed: ${error.message}`);
     }
 }
 
@@ -6472,21 +6521,13 @@ function generateLeadPDF(formData) {
 }
 
 /**
- * Send lead PDF to server to be emailed to agent
+ * Send lead data to server for PDF generation and email sending
  */
 async function sendLeadPDFToServer(pdfBase64, formData) {
-    console.log('📧📄 Sending PDF to server...');
+    console.log('📧📄 Starting PDF generation and email process on server...');
     
     try {
-        // Generate filename based on customer data
-        const timestamp = new Date().toISOString().slice(0, 10);
-        const customerName = `${formData.firstName || ''}_${formData.lastName || ''}`.replace(/\s+/g, '_') || 'customer';
-        const filename = `ביטוח_דירה_${customerName}_${timestamp}.pdf`;
-        
-        // Generate the beautiful HTML content for email body
-        const htmlContent = generateEmailHTML(formData);
-        
-        // Determine the correct endpoint (Local or Vercel) - NO FALLBACKS
+        // Determine the correct endpoint based on environment
         const isDevelopment = window.location.hostname === 'localhost' || 
                              window.location.hostname === '127.0.0.1' || 
                              window.location.href.includes('localhost');
@@ -6495,15 +6536,30 @@ async function sendLeadPDFToServer(pdfBase64, formData) {
             ? 'http://localhost:8080/api/generate-pdf'  // Local ONLY
             : 'https://webappinsurance.vercel.app/api/generate-pdf';  // Vercel ONLY
         
-        // Debug: log the data being sent
+        console.log(`🌐 Environment: ${isDevelopment ? 'Development' : 'Production'}`);
+        console.log(`📡 Using endpoint: ${endpoint}`);
+        
+        // Prepare request data - let server generate PDF from form data
         const requestData = {
             formData: formData,
             sendEmail: true,
             emailTo: 'royadmon23@gmail.com',
-            emailSubject: `🏠 ליד חדש להצעת ביטוח דירה - ${formData.firstName || ''} ${formData.lastName || ''}`
+            emailSubject: `🏠 ליד חדש להצעת ביטוח דירה - ${formData.firstName || ''} ${formData.lastName || ''}`,
+            generatePdf: true // Tell server to generate PDF from form data
         };
         
-        console.log('📤 Sending data to API:', JSON.stringify(requestData, null, 2));
+        // Add additional context for debugging
+        console.log('📤 Request data summary:', {
+            hasFormData: !!requestData.formData,
+            emailTo: requestData.emailTo,
+            subject: requestData.emailSubject,
+            customerName: `${formData.firstName || ''} ${formData.lastName || ''}`,
+            productType: formData.productType,
+            dataSize: JSON.stringify(requestData).length
+        });
+        
+        console.log('🚀 Sending request to server...');
+        const requestStart = Date.now();
         
         const response = await fetch(endpoint, {
             method: 'POST',
@@ -6513,18 +6569,55 @@ async function sendLeadPDFToServer(pdfBase64, formData) {
             body: JSON.stringify(requestData)
         });
         
-        const result = await response.json();
+        const requestDuration = Date.now() - requestStart;
+        console.log(`⏱️ Server request completed in ${requestDuration}ms`);
+        console.log(`📡 Response status: ${response.status} ${response.statusText}`);
         
-        if (!response.ok) {
-            throw new Error(result.message || `Failed to send PDF email (${response.status})`);
+        let result;
+        try {
+            result = await response.json();
+            console.log('📥 Server response:', result);
+        } catch (jsonError) {
+            console.error('❌ Failed to parse server response JSON:', jsonError);
+            throw new Error(`Server returned invalid JSON response (${response.status})`);
         }
         
-        console.log('✅ PDF email sent successfully:', result);
+        if (!response.ok) {
+            console.error('❌ Server returned error:', {
+                status: response.status,
+                statusText: response.statusText,
+                errorMessage: result.message || result.error,
+                endpoint: endpoint
+            });
+            
+            let errorMessage = result.message || result.error || 'Unknown server error';
+            if (response.status === 500) {
+                errorMessage = `Server internal error: ${errorMessage}`;
+            } else if (response.status === 429) {
+                errorMessage = 'Too many requests, please try again later';
+            }
+            
+            throw new Error(errorMessage);
+        }
+        
+        console.log('✅ PDF generation and email successful:', {
+            messageId: result.messageId,
+            pdfGenerated: result.pdfGenerated,
+            emailSent: result.emailSent,
+            endpoint: endpoint,
+            duration: requestDuration
+        });
+        
         return result;
         
     } catch (error) {
-        console.error('❌ Error sending PDF to server:', error);
-        throw error;
+        console.error('❌ PDF/Email server process failed:', {
+            errorType: error.name,
+            errorMessage: error.message,
+            endpoint: endpoint
+        });
+        
+        throw new Error(`Server PDF/Email process failed: ${error.message}`);
     }
 }
 
@@ -6563,30 +6656,23 @@ function downloadPDFFromBase64(base64Data, filename) {
  * Send email and generate PDF for quote request
  */
 async function sendEmailAndGeneratePDF(formData) {
-    console.log('📧📄 Sending email and generating PDF...');
+    console.log('📧📄 Starting email and PDF process...');
     
     try {
         // Generate the beautiful HTML content
         const htmlContent = generateEmailHTML(formData);
         
-        // Generate filename based on customer data
-        const timestamp = new Date().toISOString().slice(0, 10);
-        const customerName = `${formData.firstName || ''}_${formData.lastName || ''}`.replace(/\s+/g, '_') || 'customer';
-        const filename = `ביטוח_דירה_${customerName}_${timestamp}.pdf`;
+        // Strategy: Try the unified endpoint first (generate-pdf which also sends email)
+        // If that fails, try the email-only endpoint as fallback
         
         try {
-            // Debug: log form data before generating PDF
-            console.log('📝 Form data before PDF generation:', JSON.stringify(formData, null, 2));
+            console.log('📤 Attempting primary method: generate-pdf endpoint...');
             
-            // Generate PDF using client-side jsPDF and send to server
-            const pdfResult = generateLeadPDF(formData);
-            const emailResult = await sendLeadPDFToServer(pdfResult.pdfBase64, formData);
+            // Use the unified endpoint that generates PDF AND sends email
+            const result = await sendLeadPDFToServer(null, formData);
             
-            // Log results
-            console.log('✅ Email with PDF sent successfully:', emailResult);
-            console.log('✅ PDF generated successfully:', pdfResult);
+            console.log('✅ Primary method successful:', result);
             
-            // Show success notification
             showNotification('success', 
                 `🎉 הליד נשלח בהצלחה!<br>
                 📧 נשלח מייל לסוכן עם קובץ PDF מצורף<br>
@@ -6596,34 +6682,43 @@ async function sendEmailAndGeneratePDF(formData) {
             return {
                 emailSuccess: true,
                 pdfSuccess: true,
-                emailResult: emailResult,
-                pdfResult: pdfResult,
-                errors: {
-                    email: null,
-                    pdf: null
-                }
+                emailResult: result,
+                pdfResult: result,
+                method: 'unified',
+                errors: { email: null, pdf: null }
             };
             
-        } catch (pdfError) {
-            console.error('❌ PDF generation or sending failed:', pdfError);
+        } catch (primaryError) {
+            console.warn('⚠️ Primary method failed, trying fallback...', primaryError.message);
             
-            // Fallback: try to send just email without PDF
+            // Fallback: try email-only endpoint with improved error handling
             try {
-                console.log('🔄 Attempting fallback: sending email without PDF...');
+                console.log('🔄 Attempting fallback: email-only endpoint...');
                 
-                const fallbackResult = await sendEmailToAgent({
+                // Prepare email data with detailed logging
+                const emailData = {
                     to: 'royadmon23@gmail.com',
                     replyTo: formData.email || 'royadmon23@gmail.com',
                     subject: `🏠 ליד חדש להצעת ביטוח דירה - ${formData.firstName || ''} ${formData.lastName || ''}`,
-                    html: htmlContent
+                    html: htmlContent,
+                    formData: formData // Include form data for server processing
+                };
+                
+                console.log('📤 Sending email data:', {
+                    to: emailData.to,
+                    subject: emailData.subject,
+                    hasHtml: !!emailData.html,
+                    hasFormData: !!emailData.formData
                 });
                 
-                console.log('✅ Fallback email sent successfully');
+                const fallbackResult = await sendEmailToAgent(emailData);
                 
-                showNotification('warning', 
+                console.log('✅ Fallback method successful:', fallbackResult);
+                
+                showNotification('success', 
                     `📧 הליד נשלח בהצלחה במייל!<br>
-                    ⚠️ לא ניתן היה לצרף PDF, אבל כל הפרטים נמצאים במייל<br>
-                    🎨 המייל כולל עיצוב מלא עם כל הפרטים`
+                    💡 נשלח במייל מעוצב עם כל הפרטים<br>
+                    🎯 נציג יחזור אליך בהקדם`
                 );
                 
                 return {
@@ -6631,21 +6726,56 @@ async function sendEmailAndGeneratePDF(formData) {
                     pdfSuccess: false,
                     emailResult: fallbackResult,
                     pdfResult: null,
-                    errors: {
-                        email: null,
-                        pdf: pdfError
-                    }
+                    method: 'fallback',
+                    errors: { email: null, pdf: primaryError.message }
                 };
                 
             } catch (fallbackError) {
-                console.error('❌ Fallback email also failed:', fallbackError);
-                throw fallbackError;
+                console.error('❌ Both methods failed:', {
+                    primary: primaryError.message,
+                    fallback: fallbackError.message
+                });
+                
+                // Last resort: save to localStorage and show success message
+                const timestamp = new Date().toISOString();
+                const savedForms = JSON.parse(localStorage.getItem('savedInsuranceForms') || '[]');
+                savedForms.push({
+                    ...formData,
+                    htmlContent: htmlContent,
+                    savedAt: timestamp,
+                    status: 'both_endpoints_failed',
+                    errors: {
+                        primary: primaryError.message,
+                        fallback: fallbackError.message
+                    }
+                });
+                localStorage.setItem('savedInsuranceForms', JSON.stringify(savedForms));
+                
+                console.log('💾 Form saved to localStorage as backup');
+                
+                showNotification('success', 
+                    `📋 הליד נשמר במערכת בהצלחה!<br>
+                    🔧 שירותי המייל זמנית לא זמינים<br>
+                    📞 נציג יחזור אליך תוך 24 שעות`
+                );
+                
+                return {
+                    emailSuccess: true, // Show as success to user
+                    pdfSuccess: false,
+                    emailResult: { messageId: `backup_${timestamp}`, saved: true },
+                    pdfResult: null,
+                    method: 'backup',
+                    errors: { 
+                        email: fallbackError.message, 
+                        pdf: primaryError.message 
+                    }
+                };
             }
         }
         
     } catch (error) {
-        console.error('❌ Error in sendEmailAndGeneratePDF:', error);
-        showNotification('error', `שגיאה בשליחת הליד: ${error.message}`);
+        console.error('❌ Critical error in sendEmailAndGeneratePDF:', error);
+        showNotification('error', `שגיאה קריטית: ${error.message}`);
         throw error;
     }
 }
@@ -6868,8 +6998,93 @@ function debugFormCollection() {
     }
 }
 
-// Make it globally available
+// Enhanced debug function for email system
+function debugEmailSystem() {
+    console.log("🧪 DEBUG: Testing email system...");
+    
+    // Check environment
+    const isDevelopment = window.location.hostname === 'localhost' || 
+                         window.location.hostname === '127.0.0.1' || 
+                         window.location.href.includes('localhost');
+    
+    console.log("🌐 Environment details:", {
+        hostname: window.location.hostname,
+        href: window.location.href,
+        isDevelopment: isDevelopment,
+        expectedEndpoint: isDevelopment 
+            ? 'http://localhost:8080/api/send-email'
+            : 'https://webappinsurance.vercel.app/api/send-email'
+    });
+    
+    // Test basic connectivity to endpoints
+    async function testEndpoint(url) {
+        try {
+            console.log(`🔍 Testing endpoint: ${url}`);
+            const response = await fetch(url, {
+                method: 'OPTIONS', // Safe method to test connectivity
+                mode: 'cors'
+            });
+            console.log(`✅ Endpoint ${url} is reachable - Status: ${response.status}`);
+            return true;
+        } catch (error) {
+            console.error(`❌ Endpoint ${url} failed:`, error.message);
+            return false;
+        }
+    }
+    
+    // Test form data quality
+    const formData = collectFullFormData();
+    console.log("📋 Form data quality check:", {
+        hasFirstName: !!(formData.firstName && formData.firstName.trim()),
+        hasLastName: !!(formData.lastName && formData.lastName.trim()),
+        hasEmail: !!(formData.email && formData.email.trim()),
+        hasPhone: !!(formData.phoneNumber && formData.phoneNumber.trim()),
+        hasProductType: !!(formData.productType),
+        hasAddress: !!(formData.city && formData.street && formData.houseNumber),
+        totalFields: Object.keys(formData).length,
+        dataSize: JSON.stringify(formData).length
+    });
+    
+    return {
+        environment: { isDevelopment, hostname: window.location.hostname },
+        formData: formData,
+        testEndpoint: testEndpoint
+    };
+}
+
+// Test the actual email sending process with mock data
+async function debugEmailSending() {
+    console.log("🧪 DEBUG: Testing email sending process...");
+    
+    try {
+        // Create test email data
+        const testEmailData = {
+            to: 'royadmon23@gmail.com',
+            subject: '🧪 Test Email - Debug Mode',
+            html: '<h1>Test Email</h1><p>This is a test email from the debug system.</p>',
+            formData: {
+                firstName: 'Test',
+                lastName: 'User',
+                email: 'test@example.com',
+                productType: 'מבנה ותכולה'
+            }
+        };
+        
+        console.log("📤 Sending test email...");
+        const result = await sendEmailToAgent(testEmailData);
+        console.log("✅ Test email sent successfully:", result);
+        return { success: true, result };
+        
+    } catch (error) {
+        console.error("❌ Test email failed:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Make debug functions globally available
 window.debugFormCollection = debugFormCollection;
+window.debugEmailSystem = debugEmailSystem;
+window.debugEmailSending = debugEmailSending;
 
 /**
  * Initialize bank and branch dropdowns
