@@ -415,8 +415,17 @@ window.HomeInsuranceApp.sendVerificationCode = async function() {
     sendBtn.querySelector('.btn-loader').style.display = 'inline-block';
     
     try {
+        // Determine the correct endpoint based on environment
+        const isDevelopment = window.location.hostname === 'localhost' || 
+                             window.location.hostname === '127.0.0.1' || 
+                             window.location.href.includes('localhost');
+        
+        const endpoint = isDevelopment 
+            ? 'http://localhost:8080/api/send-verification'  // Local ONLY
+            : 'https://webappinsurance.vercel.app/api/send-verification';  // Vercel ONLY
+        
         // Call backend API
-        const response = await fetch('http://localhost:3000/api/send-verification', {
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -607,8 +616,17 @@ async function verifyCode(enteredCode) {
     const codeInputs = document.querySelectorAll('.code-digit');
     
     try {
+        // Determine the correct endpoint based on environment
+        const isDevelopment = window.location.hostname === 'localhost' || 
+                             window.location.hostname === '127.0.0.1' || 
+                             window.location.href.includes('localhost');
+        
+        const endpoint = isDevelopment 
+            ? 'http://localhost:8080/api/verify-code'  // Local ONLY
+            : 'https://webappinsurance.vercel.app/api/verify-code';  // Vercel ONLY
+        
         // Call backend API
-        const response = await fetch('http://localhost:3000/api/verify-code', {
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -685,8 +703,17 @@ function startResendTimer() {
  */
 window.HomeInsuranceApp.resendCode = async function() {
     try {
+        // Determine the correct endpoint based on environment
+        const isDevelopment = window.location.hostname === 'localhost' || 
+                             window.location.hostname === '127.0.0.1' || 
+                             window.location.href.includes('localhost');
+        
+        const endpoint = isDevelopment 
+            ? 'http://localhost:8080/api/send-verification'  // Local ONLY
+            : 'https://webappinsurance.vercel.app/api/send-verification';  // Vercel ONLY
+        
         // Call backend API
-        const response = await fetch('http://localhost:3000/api/send-verification', {
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -732,8 +759,17 @@ async function submitFinalForm() {
         // Add phone number
         formData.phoneNumber = phoneNumber;
         
+        // Determine the correct endpoint based on environment
+        const isDevelopment = window.location.hostname === 'localhost' || 
+                             window.location.hostname === '127.0.0.1' || 
+                             window.location.href.includes('localhost');
+        
+        const endpoint = isDevelopment 
+            ? 'http://localhost:8080/api/submit-form'  // Local ONLY
+            : 'https://webappinsurance.vercel.app/api/submit-form';  // Vercel ONLY
+        
         // Send to backend
-        const response = await fetch('http://localhost:3000/api/submit-form', {
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -4472,7 +4508,7 @@ function clearBuildingFormErrors() {
         errorMessages.forEach(message => {
             message.style.display = 'none';
             message.textContent = '';
-        });
+    });
     }
 }
 
@@ -4858,26 +4894,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('generalDetailsModal');
     
     // Function to open modal
-    function openModal() {
-        if (modal) {
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-            
-            // Initialize modal functionality
-            initializeConditionalFields();
-            initializeProductSections();
-            addFormInputListeners();
-            setupModalCloseHandlers();
-            addAdditionalCoverageFormListeners();
-            
-            // Set min date
-            const startDateInput = document.getElementById('startDate');
-            if (startDateInput) {
-                const today = new Date().toISOString().split('T')[0];
-                startDateInput.min = today;
-            }
-        }
-    }
+    // Duplicate openModal function removed - using the primary one above
     
     // Add event listener to CTA button
     if (ctaButton) {
@@ -5852,8 +5869,8 @@ function generateEmailHTML(data) {
                     ${data.productType ? `
                     <div class="highlight">
                         סוג ביטוח: ${data.productType}
-                    </div>
-                    ` : ''}
+                            </div>
+                            ` : ''}
                     
                     <!-- פרטים אישיים -->
                     <div class="section">
@@ -5883,8 +5900,8 @@ function generateEmailHTML(data) {
                                 <td>${formatDate(data.startDate)}</td>
                             </tr>
                         </table>
-                    </div>
-                    
+                            </div>
+
                     <!-- פרטי הנכס -->
                     <div class="section">
                         <h2 class="section-title">
@@ -5901,7 +5918,7 @@ function generateEmailHTML(data) {
                                 <td>מספר קומות:</td>
                                 <td>${data.floorCount}</td>
                             </tr>
-                            ` : ''}
+                                ` : ''}
                         </table>
                         
                         <h3 style="background: #f8f9fa; padding: 10px; margin: 20px 0 10px 0;">כתובת:</h3>
@@ -5922,12 +5939,12 @@ function generateEmailHTML(data) {
                                 <td>מיקוד:</td>
                                 <td>${data.postalCode || data.zipCode || 'לא צוין'}</td>
                             </tr>
-                            ${data.hasGarden !== undefined ? `
+                                ${data.hasGarden !== undefined ? `
                             <tr>
                                 <td>גינה:</td>
                                 <td><span class="badge ${data.hasGarden ? 'yes' : 'no'}">${formatBoolean(data.hasGarden)}</span></td>
                             </tr>
-                            ` : ''}
+                                ` : ''}
                         </table>
                     </div>
                     
@@ -6024,10 +6041,10 @@ function generateEmailHTML(data) {
                                 <td>בריכת שחיה:</td>
                                 <td>כן${data.building.swimmingPoolValue ? ` - ${formatCurrency(data.building.swimmingPoolValue)}` : ''}</td>
                             </tr>
-                            ` : ''}
-                        </table>
-                    </div>
                     ` : ''}
+                        </table>
+                            </div>
+                            ` : ''}
                     
                     <!-- ביטוח תכולה -->
                     ${includesContents && data.contents ? `
@@ -6176,11 +6193,9 @@ async function sendEmailToAgent(emailData) {
     
     // List of possible endpoints to try based on environment
     const endpoints = isDevelopment ? [
-        'http://localhost:8080/api/send-email',              // Local development (PRIMARY)
-        'https://webappinsurance.vercel.app/api/send-email'  // Vercel fallback
+        'http://localhost:8080/api/send-email',              // Local development ONLY
     ] : [
-        'https://webappinsurance.vercel.app/api/send-email', // Production Vercel (PRIMARY)
-        'http://localhost:8080/api/send-email'               // Local fallback
+        'https://webappinsurance.vercel.app/api/send-email'  // Production Vercel ONLY
     ];
     
     for (let i = 0; i < endpoints.length; i++) {
@@ -6190,6 +6205,15 @@ async function sendEmailToAgent(emailData) {
         try {
             // Get auth token if available
             const authToken = localStorage.getItem('authToken');
+            
+            // Additional validation: prevent CORS issues
+            if (endpoint.includes('localhost') && !isDevelopment) {
+                console.warn(`🚫 CORS Prevention: Blocked localhost access from production environment`);
+                throw new Error('Cannot access localhost from production environment');
+            }
+            
+            console.log(`🌐 Environment: ${isDevelopment ? 'Development' : 'Production'}`);
+            console.log(`📡 Using endpoint: ${endpoint}`);
             
             const response = await fetch(endpoint, {
                 method: 'POST',
@@ -6207,6 +6231,7 @@ async function sendEmailToAgent(emailData) {
             }
             
             console.log(`✅ Email sent successfully via ${endpoint}:`, result);
+            console.log(`📊 Email endpoint worked on attempt ${i + 1}/${endpoints.length}`);
             return result;
             
         } catch (error) {
@@ -6228,10 +6253,10 @@ async function sendEmailToAgent(emailData) {
                 localStorage.setItem('savedInsuranceForms', JSON.stringify(savedForms));
                 
                 // Show user-friendly message
-                showNotification('warning', 
-                    `📧 הליד נשמר במערכת!<br>
-                    שירות המייל זמנית לא זמין, הליד נשמר ויישלח מאוחר יותר.<br>
-                    נציג יחזור אליך בהקדם.`
+                showNotification('success', 
+                    `📧 הליד נשמר במערכת בהצלחה!<br>
+                    🔧 שירות המייל זמנית לא זמין, אך הליד נשמר ויטופל בהקדם.<br>
+                    📞 נציג יחזור אליך תוך 24 שעות`
                 );
                 
                 // Still return success to user but log the error
@@ -6452,14 +6477,14 @@ async function sendLeadPDFToServer(pdfBase64, formData) {
         // Generate the beautiful HTML content for email body
         const htmlContent = generateEmailHTML(formData);
         
-        // Determine the correct endpoint (Local or Vercel)
+        // Determine the correct endpoint (Local or Vercel) - NO FALLBACKS
         const isDevelopment = window.location.hostname === 'localhost' || 
                              window.location.hostname === '127.0.0.1' || 
                              window.location.href.includes('localhost');
         
         const endpoint = isDevelopment 
-            ? 'http://localhost:8080/api/generate-pdf'  // Local
-            : 'https://webappinsurance.vercel.app/api/generate-pdf';  // Vercel
+            ? 'http://localhost:8080/api/generate-pdf'  // Local ONLY
+            : 'https://webappinsurance.vercel.app/api/generate-pdf';  // Vercel ONLY
         
         // Debug: log the data being sent
         const requestData = {
@@ -7055,16 +7080,19 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 window.HomeInsuranceApp = window.HomeInsuranceApp || {};
 Object.assign(window.HomeInsuranceApp, {
-    openModal,
+    openModal: openModal,  // Explicitly assign the function
     openGeneralDetailsModal,
     closeGeneralDetailsModal,
     wizardNext,
     wizardPrev,
     sendVerificationCode,
     verifyCode,
-    resendCode,
+    // resendCode is already defined above as window.HomeInsuranceApp.resendCode
     submitQuoteRequest,
     testConditionalLogic,
     logInitializationSummary,
     debugFormCollection
 });
+
+// Also make openModal globally available for backward compatibility
+window.openModal = openModal;
