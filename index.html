@@ -24,6 +24,9 @@
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Hebrew-friendly fonts for enhanced design -->
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Header -->
@@ -36,7 +39,7 @@
                     </div>
                     
                     <!-- Mobile Menu Toggle -->
-                    <button class="mobile-menu-toggle" aria-label="תפריט">
+                    <button class="mobile-menu-toggle" aria-label="תפריט ניווט ראשי" aria-expanded="false">
                         <span class="hamburger-line"></span>
                         <span class="hamburger-line"></span>
                         <span class="hamburger-line"></span>
@@ -137,36 +140,38 @@
                         <div class="about-features">
                             <div class="about-feature">
                                 <div class="feature-icon-wrapper">
-                                    <i data-feather="users"></i>
-                                </div>
-                                <div>
-                                    <h4>צוות מומחים</h4>
-                                    <p>צוות מקצועי ומנוסה הזמין לשירותכם 24/7</p>
-                                </div>
-                            </div>
-                            <div class="about-feature">
-                                <div class="feature-icon-wrapper">
                                     <i data-feather="shield"></i>
                                 </div>
                                 <div>
-                                    <h4>כיסוי מקיף</h4>
-                                    <p>פתרונות ביטוח מותאמים אישית לכל צורך</p>
+                                    <h4>הגנה מקסימלית</h4>
+                                    <p>כיסוי ביטוחי מקיף המותאם לצרכיך האישיים</p>
                                 </div>
                             </div>
+                            
                             <div class="about-feature">
                                 <div class="feature-icon-wrapper">
-                                    <i data-feather="heart"></i>
+                                    <i data-feather="users"></i>
                                 </div>
                                 <div>
-                                    <h4>שירות אישי</h4>
-                                    <p>ליווי צמוד ויחס חם לאורך כל הדרך</p>
+                                    <h4>יחס אישי</h4>
+                                    <p>ליווי צמוד ומענה מקצועי לכל שאלה ובקשה</p>
+                                </div>
+                            </div>
+                            
+                            <div class="about-feature">
+                                <div class="feature-icon-wrapper">
+                                    <i data-feather="trending-up"></i>
+                                </div>
+                                <div>
+                                    <h4>חיסכון משמעותי</h4>
+                                    <p>השוואת מחירים ומציאת התנאים הטובים ביותר</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="about-image">
-                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%234f46e5;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%236366f1;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='600' height='400' fill='%23f3f4f6'/%3E%3Cpath fill='url(%23grad1)' d='M100 100 L500 100 L500 300 L100 300 Z' opacity='0.1'/%3E%3Cpath fill='none' stroke='url(%23grad1)' stroke-width='2' d='M150 150 L450 150 L450 250 L150 250 Z'/%3E%3Ccircle cx='300' cy='200' r='50' fill='url(%23grad1)' opacity='0.3'/%3E%3Ctext x='300' y='210' font-family='Arial' font-size='24' font-weight='bold' text-anchor='middle' fill='%234f46e5'%3E30+ שנים%3C/text%3E%3C/svg%3E" alt="אדמון סוכנות לביטוח">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%230052cc;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%230066ff;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='600' height='400' fill='url(%23grad1)' /%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='white' font-size='48' font-weight='bold' font-family='Arial'%3E30+ שנות מצוינות%3C/text%3E%3C/svg%3E" alt="אדמון סוכנות לביטוח">
                         <div class="experience-badge">
                             <span class="years">30+</span>
                             <span class="label">שנות ניסיון</span>
@@ -180,9 +185,9 @@
         <section id="insurance-types" class="insurance-types-section">
             <div class="container">
                 <div class="section-header">
-                    <span class="section-tag">המוצרים שלנו</span>
-                    <h2 class="section-title">סוגי ביטוח מובילים</h2>
-                    <p class="section-subtitle">בחרו את סוג הביטוח המתאים לכם ותקבלו הצעה מותאמת אישית</p>
+                    <span class="section-tag">סוגי ביטוח</span>
+                    <h2 class="section-title">פתרונות ביטוח מקיפים לכל צורך</h2>
+                    <p class="section-subtitle">מגוון רחב של ביטוחים המותאמים במיוחד עבורך</p>
                 </div>
                 
                 <div class="insurance-grid">
@@ -192,7 +197,7 @@
                             <i data-feather="home"></i>
                         </div>
                         <h3>ביטוח דירה</h3>
-                        <p>הגנה מקיפה על הבית שלכם כולל מבנה, תכולה וצד שלישי עם כיסויים מורחבים</p>
+                        <p>הגנה מקיפה על הבית שלך כולל מבנה, תכולה וצד שלישי עם כיסוי לנזקי טבע ופריצה</p>
                         <div class="card-arrow">
                             <i data-feather="arrow-left"></i>
                         </div>
@@ -204,7 +209,7 @@
                             <i data-feather="truck"></i>
                         </div>
                         <h3>ביטוח רכב</h3>
-                        <p>ביטוח חובה ומקיף לכל סוגי הרכבים עם הטבות ייחודיות ושירות דרך מהיר</p>
+                        <p>ביטוח חובה ומקיף לרכב שלך עם הטבות ייחודיות וכיסוי נרחב לכל סוגי הנזקים</p>
                         <div class="card-arrow">
                             <i data-feather="arrow-left"></i>
                         </div>
@@ -216,7 +221,7 @@
                             <i data-feather="heart"></i>
                         </div>
                         <h3>ביטוח חיים</h3>
-                        <p>הבטחת העתיד הכלכלי של משפחתכם עם תכניות ביטוח חיים וחיסכון מותאמות</p>
+                        <p>הבטחת העתיד הכלכלי של משפחתך עם פוליסות חיים וחיסכון מותאמות אישית</p>
                         <div class="card-arrow">
                             <i data-feather="arrow-left"></i>
                         </div>
@@ -274,161 +279,53 @@
                     <div class="service-item">
                         <i data-feather="clock"></i>
                         <h4>זמינות 24/7</h4>
-                        <p>צוות מומחים זמין לשירותכם בכל שעה</p>
-                    </div>
-                    
-                    <div class="service-item">
-                        <i data-feather="zap"></i>
-                        <h4>טיפול מהיר בתביעות</h4>
-                        <p>טיפול מהיר ויעיל בכל תביעה</p>
-                    </div>
-                    
-                    <div class="service-item">
-                        <i data-feather="dollar-sign"></i>
-                        <h4>מחירים תחרותיים</h4>
-                        <p>המחירים הטובים ביותר בשוק</p>
-                    </div>
-                    
-                    <div class="service-item">
-                        <i data-feather="user-check"></i>
-                        <h4>ייעוץ אישי</h4>
-                        <p>התאמה אישית לצרכים שלכם</p>
-                    </div>
-                    
-                    <div class="service-item">
-                        <i data-feather="layers"></i>
-                        <h4>מגוון רחב</h4>
-                        <p>כל סוגי הביטוח תחת קורת גג אחת</p>
+                        <p>צוות מומחים זמין עבורך בכל שעה לטיפול בתביעות ומתן מענה מיידי</p>
                     </div>
                     
                     <div class="service-item">
                         <i data-feather="award"></i>
-                        <h4>מוניטין מוכח</h4>
-                        <p>30 שנות מצוינות ושירות</p>
+                        <h4>מקצועיות מוכחת</h4>
+                        <p>צוות מוסמך עם ידע מעמיק בכל תחומי הביטוח והחקיקה הרלוונטית</p>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Testimonials Section -->
-        <section id="testimonials" class="stats-section">
-            <div class="container">
-                <div class="section-header">
-                    <h2 class="section-title" style="color: white;">לקוחות ממליצים</h2>
-                    <p class="section-subtitle" style="color: rgba(255,255,255,0.8);">מה אומרים עלינו אלפי הלקוחות המרוצים שלנו</p>
-                </div>
-                
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-icon">
-                            <i data-feather="star"></i>
-                        </div>
-                        <div class="stat-number">4.9</div>
-                        <p class="stat-label">דירוג ממוצע</p>
+                    
+                    <div class="service-item">
+                        <i data-feather="trending-down"></i>
+                        <h4>חיסכון משמעותי</h4>
+                        <p>השוואת מחירים בין חברות הביטוח המובילות למציאת המחיר הטוב ביותר</p>
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-icon">
-                            <i data-feather="message-circle"></i>
-                        </div>
-                        <div class="stat-number">2,847</div>
-                        <p class="stat-label">המלצות לקוחות</p>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-icon">
-                            <i data-feather="percent"></i>
-                        </div>
-                        <div class="stat-number">98%</div>
-                        <p class="stat-label">שביעות רצון</p>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-icon">
-                            <i data-feather="repeat"></i>
-                        </div>
-                        <div class="stat-number">87%</div>
-                        <p class="stat-label">לקוחות חוזרים</p>
+                    
+                    <div class="service-item">
+                        <i data-feather="shield"></i>
+                        <h4>ליווי מלא בתביעות</h4>
+                        <p>טיפול מקצועי ומהיר בכל תביעה מול חברות הביטוח</p>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- CTA Section -->
-        <section class="main-cta-section">
+        <section id="contact" class="main-cta-section">
             <div class="container">
                 <div class="main-cta-content">
                     <h2>מוכנים להתחיל?</h2>
-                    <p>קבלו ייעוץ מקצועי והצעת מחיר מותאמת אישית עוד היום</p>
+                    <p>קבלו הצעת מחיר אטרקטיבית תוך דקות ספורות</p>
                     
                     <div class="cta-buttons-group">
-                        <button class="primary-cta-btn glow-effect" onclick="window.location.href='home-insurance.html'">
-                            <span>קבלו הצעת מחיר לביטוח דירה</span>
-                            <i data-feather="arrow-left"></i>
+                        <button class="primary-cta-btn" onclick="window.open('https://wa.me/9720508875945?text=שלום,%20אני%20מעוניין%20לקבל%20הצעת%20מחיר%20לביטוח', '_blank')">
+                            <i data-feather="message-circle"></i>
+                            <span>שלחו הודעת WhatsApp</span>
                         </button>
-                        <button class="secondary-cta-btn" onclick="window.open('tel:0508875945', '_self')">
+                        <button class="secondary-cta-btn" onclick="window.location.href='tel:0508875945'">
                             <i data-feather="phone-call"></i>
-                            <span>050-887-5945</span>
+                            <span>חייגו עכשיו</span>
                         </button>
                     </div>
                 </div>
             </div>
-        </section>
-
-        <!-- Contact Section -->
-        <section id="contact" class="contact-section">
-            <div class="container">
-                <div class="contact-wrapper">
-                    <div class="contact-info">
-                        <h2>צרו איתנו קשר</h2>
-                        <p>אנחנו כאן כדי לעזור לכם למצוא את הביטוח המושלם</p>
-                        
-                        <div class="contact-methods">
-                            <div class="contact-method">
-                                <div class="contact-icon">
-                                    <i data-feather="phone"></i>
-                                </div>
-                                <div class="contact-details">
-                                    <h4>טלפון</h4>
-                                    <p>050-887-5945</p>
-                                    <p>03-1234567</p>
-                                </div>
-                            </div>
-                            
-                            <div class="contact-method">
-                                <div class="contact-icon">
-                                    <i data-feather="mail"></i>
-                                </div>
-                                <div class="contact-details">
-                                    <h4>אימייל</h4>
-                                    <p>info@admon-insurance.co.il</p>
-                                </div>
-                            </div>
-                            
-                            <div class="contact-method">
-                                <div class="contact-icon">
-                                    <i data-feather="map-pin"></i>
-                                </div>
-                                <div class="contact-details">
-                                    <h4>כתובת</h4>
-                                    <p>רחוב הרצל 100, תל אביב</p>
-                                </div>
-                            </div>
-                            
-                            <div class="contact-method">
-                                <div class="contact-icon">
-                                    <i data-feather="clock"></i>
-                                </div>
-                                <div class="contact-details">
-                                    <h4>שעות פעילות</h4>
-                                    <p>ראשון-חמישי: 08:00-18:00</p>
-                                    <p>שישי: 08:00-13:00</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="contact-image">
-                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Cdefs%3E%3ClinearGradient id='contactGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%234f46e5;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%236366f1;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='300' fill='%23f3f4f6'/%3E%3Ccircle cx='200' cy='150' r='80' fill='url(%23contactGrad)' opacity='0.1'/%3E%3Ccircle cx='200' cy='150' r='60' fill='url(%23contactGrad)' opacity='0.2'/%3E%3Ccircle cx='200' cy='150' r='40' fill='url(%23contactGrad)' opacity='0.3'/%3E%3Cpath d='M180 140 L220 140 L220 160 L180 160 Z' fill='url(%23contactGrad)'/%3E%3Cpath d='M190 130 L210 130 L210 140 L190 140 Z' fill='url(%23contactGrad)' opacity='0.7'/%3E%3C/svg%3E" alt="צור קשר">
-                    </div>
-                </div>
+            
+            <!-- Background decoration -->
+            <div class="cta-bg-decoration">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200'%3E%3Cpath fill='%23ffffff' fill-opacity='0.05' d='M0,32L48,53.3C96,75,192,117,288,117.3C384,117,480,75,576,74.7C672,75,768,117,864,138.7C960,160,1056,160,1152,138.7C1248,117,1344,75,1392,53.3L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3Cpath fill='%23ffffff' fill-opacity='0.03' d='M0,160L48,165.3C96,171,192,181,288,165.3C384,149,480,107,576,106.7C672,107,768,149,864,154.7C960,160,1056,128,1152,112C1248,96,1344,96,1392,96L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E" alt="צור קשר">
             </div>
         </section>
     </main>
@@ -482,66 +379,61 @@
             
             <div class="footer-bottom">
                 <p>&copy; 2024 אדמון סוכנות לביטוח. כל הזכויות שמורות.</p>
-                <div class="footer-bottom-links">
-                    <a href="#">תנאי שימוש</a>
-                    <a href="#">מדיניות פרטיות</a>
-                    <a href="#">נגישות</a>
-                </div>
+                <p>עיצוב ופיתוח: <a href="#">שם החברה</a></p>
             </div>
         </div>
     </footer>
 
-    <!-- JavaScript -->
+    <!-- Initialize Feather Icons -->
     <script>
-        // Initialize Feather Icons
+        feather.replace();
+    </script>
+    
+    <!-- Main JavaScript -->
+    <script src="script.js"></script>
+    
+    <!-- Enhanced scroll and menu functionality -->
+    <script>
+        // Add scrolled class to header
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('header');
+            if (window.scrollY > 40) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile menu toggle functionality with ARIA support
         document.addEventListener('DOMContentLoaded', function() {
-            feather.replace();
-            
-            // Mobile menu functionality
-            const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+            const mobileToggle = document.querySelector('.mobile-menu-toggle');
             const navMenu = document.querySelector('.nav-menu');
             
-            if (mobileMenuToggle && navMenu) {
-                mobileMenuToggle.addEventListener('click', function() {
-                    this.classList.toggle('active');
+            if (mobileToggle && navMenu) {
+                mobileToggle.addEventListener('click', function() {
+                    const isActive = navMenu.classList.contains('active');
                     navMenu.classList.toggle('active');
+                    mobileToggle.classList.toggle('active');
+                    mobileToggle.setAttribute('aria-expanded', !isActive);
                 });
             }
-            
-            // Smooth scrolling for anchor links
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                });
-            });
-            
-            // Animate stats on scroll
-            const observerOptions = {
-                threshold: 0.5,
-                rootMargin: '0px'
-            };
-            
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        // Add animation classes
-                        entry.target.classList.add('animate');
-                    }
-                });
-            }, observerOptions);
-            
-            // Observe all stat numbers
-            document.querySelectorAll('.stat-number-hero').forEach(stat => {
-                observer.observe(stat);
+        });
+
+        // Smooth scroll with offset for fixed header
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const offset = 80; // Header height
+                    const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
             });
         });
     </script>
 </body>
-</html> 
+</html>
