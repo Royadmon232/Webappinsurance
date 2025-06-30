@@ -3017,6 +3017,7 @@ input:disabled {
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 0;
+    flex-direction: row-reverse;
 }
 
 .nav-menu {
