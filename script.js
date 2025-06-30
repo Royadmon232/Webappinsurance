@@ -2216,27 +2216,8 @@ function updateWaterDamageFields(waterDamageType) {
  * @param {string} earthquakeCoverage - The selected earthquake coverage
  */
 function updateEarthquakeFields(earthquakeCoverage) {
-    const earthquakeDeductibleGroup = document.getElementById('earthquake-deductible-group');
-    const earthquakeDeductibleSelect = document.getElementById('earthquake-deductible');
-    
-    if (earthquakeCoverage === 'כן') {
-        // Show earthquake deductible field
-        if (earthquakeDeductibleGroup) {
-            earthquakeDeductibleGroup.style.display = 'block';
-            if (earthquakeDeductibleSelect) {
-                earthquakeDeductibleSelect.required = true;
-            }
-        }
-    } else {
-        // Hide earthquake deductible field
-        if (earthquakeDeductibleGroup) {
-            earthquakeDeductibleGroup.style.display = 'none';
-            if (earthquakeDeductibleSelect) {
-                earthquakeDeductibleSelect.required = false;
-                earthquakeDeductibleSelect.value = '';
-            }
-        }
-    }
+    // This function is kept for compatibility but doesn't do anything
+    // since earthquake deductible fields have been removed
 }
 
 /**
@@ -4256,77 +4237,102 @@ function logInitializationSummary() {
 function validateBuildingSection() {
     let isValid = true;
     
-    // Section 1: מבנה (Building) fields
-    // Insurance amount
-    const insuranceAmount = document.getElementById('insurance-amount');
-    if (insuranceAmount && insuranceAmount.required && !insuranceAmount.value) {
-        showBuildingFormError(insuranceAmount, 'שדה חובה - יש למלא סכום ביטוח');
-        isValid = false;
+    // Get product type to determine which fields to validate
+    const productType = document.getElementById('productType').value;
+    
+    // If product type is תכולה בלבד, skip building validation
+    if (productType === 'תכולה בלבד') {
+        return true;
     }
     
-    // Building age (only if visible)
+    // Building age
     const buildingAge = document.getElementById('building-age');
-    const buildingAgeGroup = buildingAge ? buildingAge.closest('.building-form-group') : null;
-    if (buildingAge && buildingAgeGroup && buildingAgeGroup.style.display !== 'none' && buildingAge.required && !buildingAge.value) {
-        showBuildingFormError(buildingAge, 'שדה חובה - יש למלא גיל המבנה');
+    if (buildingAge && buildingAge.required && !buildingAge.value) {
+        showBuildingFormError(buildingAge, 'אנא הזן גיל מבנה תקין');
         isValid = false;
     }
     
     // Building area
     const buildingArea = document.getElementById('building-area');
     if (buildingArea && buildingArea.required && !buildingArea.value) {
-        showBuildingFormError(buildingArea, 'שדה חובה - יש למלא שטח המבנה');
+        showBuildingFormError(buildingArea, 'אנא הזן שטח מבנה תקין');
         isValid = false;
     }
     
     // Construction type
     const constructionType = document.getElementById('construction-type');
     if (constructionType && constructionType.required && !constructionType.value) {
-        showBuildingFormError(constructionType, 'שדה חובה - יש לבחור סוג בניה');
+        showBuildingFormError(constructionType, 'אנא בחר סוג בניה');
         isValid = false;
     }
     
-    // Construction standard
-    const constructionStandard = document.getElementById('construction-standard');
-    if (constructionStandard && constructionStandard.required && !constructionStandard.value) {
-        showBuildingFormError(constructionStandard, 'שדה חובה - יש לבחור סטנדרט בניה');
+    // Validate terrace area if terrace is selected
+    const hasTerrace = document.getElementById('has-terrace');
+    const terraceArea = document.getElementById('terrace-area');
+    const terraceAreaGroup = document.getElementById('terrace-area-group');
+    if (hasTerrace && hasTerrace.value === 'כן' && terraceAreaGroup && terraceAreaGroup.style.display !== 'none' && !terraceArea.value) {
+        showBuildingFormError(terraceArea, 'אנא הזן שטח מרפסת תקין');
         isValid = false;
     }
     
-    // Renewals dropdown (only if visible and required)
-    const loanEndDateGroup = document.getElementById('loanEndDate-group');
-    const loanEndDateInput = document.getElementById('loanEndDate');
+    // Validate garden area if garden is selected
+    const hasGarden = document.getElementById('has-garden');
+    const gardenArea = document.getElementById('garden-area');
+    const gardenAreaGroup = document.getElementById('garden-area-group');
+    if (hasGarden && hasGarden.value === 'כן' && gardenAreaGroup && gardenAreaGroup.style.display !== 'none' && !gardenArea.value) {
+        showBuildingFormError(gardenArea, 'אנא הזן שטח גינה תקין');
+        isValid = false;
+    }
+    
+    // Validate roof type if visible
+    const roofType = document.getElementById('roof-type');
+    const roofTypeGroup = document.getElementById('roof-type-group');
+    if (roofTypeGroup && roofTypeGroup.style.display !== 'none' && !roofType.value) {
+        showBuildingFormError(roofType, 'אנא בחר סוג גג');
+        isValid = false;
+    }
+    
+    // Validate loan end date if mortgaged property is checked
+    const mortgagedProperty = document.getElementById('mortgaged-property');
+    const loanEndDate = document.getElementById('loan-end-date');
+    const loanEndDateGroup = document.getElementById('loan-end-date-group');
+    if (mortgagedProperty && mortgagedProperty.checked && loanEndDateGroup && loanEndDateGroup.style.display !== 'none' && !loanEndDate.value) {
+        showBuildingFormError(loanEndDate, 'אנא בחר תאריך תום הלוואה');
+        isValid = false;
+    }
+    
+    // Water damage type
     const waterDamageType = document.getElementById('water-damage-type');
     if (waterDamageType && waterDamageType.required && !waterDamageType.value) {
-        showBuildingFormError(waterDamageType, 'שדה חובה - יש לבחור סוג כיסוי נזקי מים');
-        isValid = false;
-    }
-    
-    // Water deductible (only if visible and required)
-    const waterDeductibleGroup = document.getElementById('water-deductible-group');
-    const waterDeductibleSelect = document.getElementById('water-deductible');
-    if (waterDeductibleSelect && waterDeductibleGroup && waterDeductibleGroup.style.display !== 'none' && waterDeductibleSelect.required && !waterDeductibleSelect.value) {
-        showBuildingFormError(waterDeductibleSelect, 'שדה חובה - יש לבחור השתתפות עצמית');
+        showBuildingFormError(waterDamageType, 'אנא בחר אפשרות כיסוי נזקי צנרת');
         isValid = false;
     }
     
     // Earthquake coverage
     const earthquakeCoverage = document.getElementById('earthquake-coverage');
     if (earthquakeCoverage && earthquakeCoverage.required && !earthquakeCoverage.value) {
-        showBuildingFormError(earthquakeCoverage, 'שדה חובה - יש לבחור האם לכלול כיסוי רעידת אדמה');
+        showBuildingFormError(earthquakeCoverage, 'אנא בחר אפשרות כיסוי רעידת אדמה');
         isValid = false;
     }
     
-    // Earthquake deductible (only if visible and required)
-    const earthquakeDeductibleGroup = document.getElementById('earthquake-deductible-group');
-    const earthquakeDeductibleSelect = document.getElementById('earthquake-deductible');
-    if (earthquakeDeductibleSelect && earthquakeDeductibleGroup && earthquakeDeductibleGroup.style.display !== 'none' && earthquakeDeductibleSelect.required && !earthquakeDeductibleSelect.value) {
-        showBuildingFormError(earthquakeDeductibleSelect, 'שדה חובה - יש לבחור השתתפות עצמית לרעידת אדמה');
+    // Validate earthquake coverage amount if land coverage is selected
+    const earthquakeLandCoverage = document.getElementById('earthquake-land-coverage');
+    const earthquakeCoverageAmount = document.getElementById('earthquake-coverage-amount');
+    const earthquakeCoverageAmountGroup = document.getElementById('earthquake-coverage-amount-group');
+    if (earthquakeLandCoverage && earthquakeLandCoverage.value === 'כן' && 
+        earthquakeCoverageAmountGroup && earthquakeCoverageAmountGroup.style.display !== 'none' && !earthquakeCoverageAmount.value) {
+        showBuildingFormError(earthquakeCoverageAmount, 'אנא הזן סכום כיסוי תקין');
         isValid = false;
     }
     
-    // Section 3: הרחבות נוספות למבנה (Additional Extensions)
-    // No required fields in this section - all are optional
+    // Validate swimming pool value if pool is checked
+    const hasSwimmingPool = document.getElementById('has-swimming-pool');
+    const swimmingPoolValue = document.getElementById('swimming-pool-value');
+    const swimmingPoolValueGroup = document.getElementById('swimming-pool-value-group');
+    if (hasSwimmingPool && hasSwimmingPool.checked && swimmingPoolValueGroup && swimmingPoolValueGroup.style.display !== 'none' && !swimmingPoolValue.value) {
+        showBuildingFormError(swimmingPoolValue, 'אנא הזן שווי בריכה תקין');
+        isValid = false;
+    }
     
     return isValid;
 }
@@ -4340,26 +4346,13 @@ function showBuildingFormError(field, message) {
     // Add error class to field
     field.classList.add('error');
     
-    // Create error message element
-    const errorElement = document.createElement('div');
-    errorElement.className = 'form-error-message';
-    errorElement.textContent = message;
-    
-    // Insert error message after the field or helper text
-    const formGroup = field.closest('.building-form-group');
+    // Look for error message span
+    const formGroup = field.closest('.form-group');
     if (formGroup) {
-        // Remove any existing error message
-        const existingError = formGroup.querySelector('.form-error-message');
-        if (existingError) {
-            existingError.remove();
-        }
-        
-        // Find where to insert the error (after helper text if exists, otherwise after field)
-        const helperText = formGroup.querySelector('.form-helper-text');
-        if (helperText) {
-            helperText.insertAdjacentElement('afterend', errorElement);
-        } else {
-            field.insertAdjacentElement('afterend', errorElement);
+        const errorSpan = formGroup.querySelector('.error-message');
+        if (errorSpan) {
+            errorSpan.textContent = message;
+            errorSpan.style.display = 'block';
         }
     }
 }
@@ -4369,21 +4362,22 @@ function showBuildingFormError(field, message) {
  */
 function clearBuildingFormErrors() {
     // Find all error fields in building sections
-    const buildingSections = document.querySelectorAll('.building-section');
+    const buildingContainer = document.querySelector('#step-cover-structure');
     
-    buildingSections.forEach(section => {
+    if (buildingContainer) {
         // Remove error classes from fields
-        const errorFields = section.querySelectorAll('.error');
+        const errorFields = buildingContainer.querySelectorAll('.error');
         errorFields.forEach(field => {
             field.classList.remove('error');
         });
         
-        // Remove all error messages
-        const errorMessages = section.querySelectorAll('.form-error-message');
+        // Hide all error messages
+        const errorMessages = buildingContainer.querySelectorAll('.error-message');
         errorMessages.forEach(message => {
-            message.remove();
+            message.style.display = 'none';
+            message.textContent = '';
         });
-    });
+    }
 }
 
 /**
@@ -4558,27 +4552,51 @@ function updateWatchesAmountField(selection) {
 function validateContentsSection() {
     let isValid = true;
     
+    // Get product type to determine which fields to validate
+    const productType = document.getElementById('productType').value;
+    
+    // If product type is מבנה בלבד or מבנה בלבד משועבד לבנק, skip contents validation
+    if (productType === 'מבנה בלבד' || productType === 'מבנה בלבד משועבד לבנק') {
+        return true;
+    }
+    
+    // Contents value
+    const contentsValue = document.getElementById('contents-value');
+    if (contentsValue && contentsValue.required && !contentsValue.value) {
+        showContentsFormError(contentsValue, 'אנא בחר שווי תכולה');
+        isValid = false;
+    }
+    
     // Building age (only if visible)
     const contentsBuildingAge = document.getElementById('contents-building-age');
-    const contentsBuildingAgeGroup = contentsBuildingAge ? contentsBuildingAge.closest('.building-form-group') : null;
-    if (contentsBuildingAge && contentsBuildingAgeGroup && contentsBuildingAgeGroup.style.display !== 'none' && contentsBuildingAge.required && !contentsBuildingAge.value) {
-        showContentsFormError(contentsBuildingAge, 'שדה חובה - יש למלא גיל המבנה');
+    const contentsBuildingAgeGroup = document.getElementById('contents-building-age-group');
+    if (contentsBuildingAgeGroup && contentsBuildingAgeGroup.style.display !== 'none' && !contentsBuildingAge.value) {
+        showContentsFormError(contentsBuildingAge, 'אנא הזן גיל מבנה תקין');
         isValid = false;
     }
     
-    // Jewelry coverage (only if visible and required)
-    const jewelryCoverageGroup = document.getElementById('jewelry-coverage-group');
-    const jewelryCoverageSelect = document.getElementById('jewelry-coverage');
-    if (jewelryCoverageSelect && jewelryCoverageGroup && jewelryCoverageGroup.style.display !== 'none' && jewelryCoverageSelect.required && !jewelryCoverageSelect.value) {
-        showContentsFormError(jewelryCoverageSelect, 'שדה חובה - יש לבחור סוג כיסוי לתכשיטים');
+    // Jewelry amount (only if jewelry is selected)
+    const hasJewelry = document.getElementById('has-jewelry');
+    const jewelryAmount = document.getElementById('jewelry-amount');
+    const jewelryAmountGroup = document.getElementById('jewelry-amount-group');
+    if (hasJewelry && hasJewelry.value === 'כן' && jewelryAmountGroup && jewelryAmountGroup.style.display !== 'none' && !jewelryAmount.value) {
+        showContentsFormError(jewelryAmount, 'אנא הזן שווי תכשיטים תקין');
         isValid = false;
     }
     
-    // Watches coverage (only if visible and required)
-    const watchesCoverageGroup = document.getElementById('watches-coverage-group');
-    const watchesCoverageSelect = document.getElementById('watches-coverage');
-    if (watchesCoverageSelect && watchesCoverageGroup && watchesCoverageGroup.style.display !== 'none' && watchesCoverageSelect.required && !watchesCoverageSelect.value) {
-        showContentsFormError(watchesCoverageSelect, 'שדה חובה - יש לבחור סוג כיסוי לשעונים');
+    // Watches amount (only if watches is selected)
+    const hasWatches = document.getElementById('has-watches');
+    const watchesAmount = document.getElementById('watches-amount');
+    const watchesAmountGroup = document.getElementById('watches-amount-group');
+    if (hasWatches && hasWatches.value === 'כן' && watchesAmountGroup && watchesAmountGroup.style.display !== 'none' && !watchesAmount.value) {
+        showContentsFormError(watchesAmount, 'אנא הזן שווי שעונים תקין');
+        isValid = false;
+    }
+    
+    // Earthquake coverage for contents
+    const contentsEarthquakeCoverage = document.getElementById('contents-earthquake-coverage');
+    if (contentsEarthquakeCoverage && contentsEarthquakeCoverage.required && !contentsEarthquakeCoverage.value) {
+        showContentsFormError(contentsEarthquakeCoverage, 'אנא בחר אפשרות כיסוי');
         isValid = false;
     }
     
@@ -4594,26 +4612,13 @@ function showContentsFormError(field, message) {
     // Add error class to field
     field.classList.add('error');
     
-    // Create error message element
-    const errorElement = document.createElement('div');
-    errorElement.className = 'form-error-message';
-    errorElement.textContent = message;
-    
-    // Insert error message after the field or helper text
-    const formGroup = field.closest('.building-form-group');
+    // Look for error message span
+    const formGroup = field.closest('.form-group');
     if (formGroup) {
-        // Remove any existing error message
-        const existingError = formGroup.querySelector('.form-error-message');
-        if (existingError) {
-            existingError.remove();
-        }
-        
-        // Find where to insert the error (after helper text if exists, otherwise after field)
-        const helperText = formGroup.querySelector('.form-helper-text');
-        if (helperText) {
-            helperText.insertAdjacentElement('afterend', errorElement);
-        } else {
-            field.insertAdjacentElement('afterend', errorElement);
+        const errorSpan = formGroup.querySelector('.error-message');
+        if (errorSpan) {
+            errorSpan.textContent = message;
+            errorSpan.style.display = 'block';
         }
     }
 }
@@ -4623,7 +4628,7 @@ function showContentsFormError(field, message) {
  */
 function clearContentsFormErrors() {
     // Find all error fields in contents sections
-    const contentsContainer = document.querySelector('#step-cover-contents .building-sections-container');
+    const contentsContainer = document.querySelector('#step-cover-contents');
     
     if (contentsContainer) {
         // Remove error classes from fields
@@ -4632,10 +4637,11 @@ function clearContentsFormErrors() {
             field.classList.remove('error');
         });
         
-        // Remove all error messages
-        const errorMessages = contentsContainer.querySelectorAll('.form-error-message');
+        // Hide all error messages
+        const errorMessages = contentsContainer.querySelectorAll('.error-message');
         errorMessages.forEach(message => {
-            message.remove();
+            message.style.display = 'none';
+            message.textContent = '';
         });
     }
 }
