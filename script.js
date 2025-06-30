@@ -6858,16 +6858,38 @@ function initializeBankDropdowns() {
             bankDropdown.innerHTML = '<div class="dropdown-loading">טוען רשימת בנקים...</div>';
             bankDropdown.style.display = 'block';
             
-            // Using the Israeli government data API
-            const response = await fetch('https://data.gov.il/api/3/action/datastore_search?resource_id=1c5bc716-8210-4ec7-85be-92e6271955c2&limit=100');
-            const data = await response.json();
+            // Fetch all data from API - get all records
+            let allRecords = [];
+            let offset = 0;
+            const limit = 1000;
+            let hasMoreData = true;
             
-            if (data.success && data.result && data.result.records) {
+            while (hasMoreData) {
+                const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=1c5bc716-8210-4ec7-85be-92e6271955c2&limit=${limit}&offset=${offset}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success && data.result && data.result.records) {
+                    allRecords = allRecords.concat(data.result.records);
+                    
+                    // Check if we got fewer records than the limit - means no more data
+                    if (data.result.records.length < limit) {
+                        hasMoreData = false;
+                    } else {
+                        offset += limit;
+                    }
+                } else {
+                    hasMoreData = false;
+                }
+            }
+            
+            console.log(`📊 Loaded ${allRecords.length} total records from government API`);
+            
+            if (allRecords.length > 0) {
                 // Extract unique banks
-                const uniqueBanks = [];
                 const bankMap = new Map();
                 
-                data.result.records.forEach(record => {
+                allRecords.forEach(record => {
                     const bankCode = record['Bank_Code'];
                     const bankName = record['Bank_Name'];
                     
@@ -6880,11 +6902,13 @@ function initializeBankDropdowns() {
                 });
                 
                 banksData = Array.from(bankMap.values()).sort((a, b) => a.name.localeCompare(b.name, 'he'));
-                branchesData = data.result.records;
+                branchesData = allRecords;
+                
+                console.log(`🏦 Found ${banksData.length} unique banks`);
                 
                 renderBankDropdown('');
             } else {
-                throw new Error('Failed to load banks data');
+                throw new Error('No banks data received from API');
             }
         } catch (error) {
             console.error('Error fetching banks:', error);
