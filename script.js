@@ -5599,6 +5599,10 @@ function collectFullFormData() {
     formData.hasGarden = document.getElementById('garden-checkbox')?.checked || false;
     formData.floorCount = document.getElementById('floorCount')?.value || '';
     
+    // Add bank and branch fields for mortgaged properties
+    formData.selectedBank = document.getElementById('mortgage-bank')?.value || '';
+    formData.selectedBranch = document.getElementById('mortgage-branch')?.value || '';
+    
     // Add building/structure data - with all fields including new ones
     const buildingData = {
         insuranceAmount: document.getElementById('insurance-amount')?.value || '',
@@ -5939,12 +5943,6 @@ function generateEmailHTML(data) {
                                 <td>מיקוד:</td>
                                 <td>${data.postalCode || data.zipCode || 'לא צוין'}</td>
                             </tr>
-                                ${data.hasGarden !== undefined ? `
-                            <tr>
-                                <td>גינה:</td>
-                                <td><span class="badge ${data.hasGarden ? 'yes' : 'no'}">${formatBoolean(data.hasGarden)}</span></td>
-                            </tr>
-                                ` : ''}
                         </table>
                     </div>
                     
@@ -6002,16 +6000,16 @@ function generateEmailHTML(data) {
                                 <td>${formatDate(data.building.loanEndDate)}</td>
                             </tr>
                             ` : ''}
-                            ${data.building.mortgageBank ? `
+                            ${data.productType === 'מבנה בלבד משועבד לבנק' && data.selectedBank ? `
                             <tr>
                                 <td>בנק משעבד:</td>
-                                <td>${data.building.mortgageBank}</td>
+                                <td>${data.selectedBank}</td>
                             </tr>
                             ` : ''}
-                            ${data.building.mortgageBranch ? `
+                            ${data.productType === 'מבנה בלבד משועבד לבנק' && data.selectedBranch ? `
                             <tr>
                                 <td>סניף בנק:</td>
-                                <td>${data.building.mortgageBranch}</td>
+                                <td>${data.selectedBranch}</td>
                             </tr>
                             ` : ''}
                         </table>
@@ -6381,15 +6379,26 @@ function generateLeadPDF(formData) {
         ]);
         
         // Property Information
-        addSection('פרטי הנכס', [
+        const propertyItems = [
             { label: 'סוג מוצר', value: formData.productType },
             { label: 'סוג נכס', value: formData.assetType || formData.propertyType },
             { label: 'עיר', value: formData.city },
             { label: 'רחוב', value: formData.street },
             { label: 'מספר בית', value: formData.houseNumber },
-            { label: 'מיקוד', value: formData.zipCode || formData.postalCode },
-            { label: 'גינה', value: formatBoolean(formData.hasGarden) }
-        ]);
+            { label: 'מיקוד', value: formData.zipCode || formData.postalCode }
+        ];
+        
+        // Add bank information only for mortgaged product type
+        if (formData.productType === 'מבנה בלבד משועבד לבנק') {
+            if (formData.selectedBank) {
+                propertyItems.push({ label: 'בנק משעבד', value: formData.selectedBank });
+            }
+            if (formData.selectedBranch) {
+                propertyItems.push({ label: 'סניף בנק', value: formData.selectedBranch });
+            }
+        }
+        
+        addSection('פרטי הנכס', propertyItems);
         
         // Building Insurance
         if (formData.building && formData.building.buildingInsuranceAmount) {

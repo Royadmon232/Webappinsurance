@@ -138,12 +138,6 @@ function formatEmailContent(data) {
                             <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.postalCode}</td>
                         </tr>
                         ` : ''}
-                        ${typeof data.hasGarden !== 'undefined' ? `
-                        <tr>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>גינה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.hasGarden ? '✅ כן' : '❌ לא'}</td>
-                        </tr>
-                        ` : ''}
                     </table>
                 </div>
 
@@ -207,6 +201,18 @@ function formatEmailContent(data) {
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>משועבד/מוטב:</strong></td>
                             <td style="padding: 10px; border: 1px solid #e0e0e0;">${(data.building.mortgagedProperty || data.building.mortgaged) ? '✅ כן' : '❌ לא'}</td>
+                        </tr>
+                        ` : ''}
+                        ${data.productType === 'מבנה בלבד משועבד לבנק' && data.selectedBank ? `
+                        <tr style="background: #f8f9fa;">
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>בנק משעבד:</strong></td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.selectedBank}</td>
+                        </tr>
+                        ` : ''}
+                        ${data.productType === 'מבנה בלבד משועבד לבנק' && data.selectedBranch ? `
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>סניף בנק:</strong></td>
+                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.selectedBranch}</td>
                         </tr>
                         ` : ''}
                         ${data.building.renewals ? `
