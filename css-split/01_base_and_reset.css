@@ -300,6 +300,8 @@ main {
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.8);
     animation: fadeInUp 0.8s ease-out 0.4s both;
+    direction: rtl;
+    text-align: center;
 }
 
 .hero-features {
@@ -550,6 +552,8 @@ footer {
     
     .hero-subtitle {
         font-size: 1.2rem;
+        direction: rtl;
+        text-align: center;
     }
     
     .cta-button {
@@ -575,6 +579,8 @@ footer {
     
     .hero-subtitle {
         font-size: 1.1rem;
+        direction: rtl;
+        text-align: center;
     }
     
     .cta-button {
@@ -2146,10 +2152,12 @@ input:disabled {
 }
 
 .section-subtitle {
-    font-size: 1.2rem;
-    color: var(--text-gray);
+    font-size: 1.25rem;
+    color: var(--text-secondary);
     max-width: 600px;
     margin: 0 auto;
+    direction: rtl;
+    text-align: center;
 }
 
 .features-grid {
@@ -2435,6 +2443,8 @@ input:disabled {
     
     .hero-subtitle {
         font-size: 1.2rem;
+        direction: rtl;
+        text-align: center;
     }
     
     .hero-features {
@@ -2908,6 +2918,7 @@ input:disabled {
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--text-primary);
+    direction: rtl;
 }
 
 .faq-question i {
@@ -3020,6 +3031,8 @@ input:disabled {
 .footer-column p {
     color: rgba(255, 255, 255, 0.8);
     line-height: 1.6;
+    direction: rtl;
+    text-align: right;
 }
 
 .social-links {
@@ -3235,6 +3248,8 @@ input:disabled {
     
     .hero-subtitle {
         font-size: 1rem;
+        direction: rtl;
+        text-align: center;
     }
     
     .hero-features {

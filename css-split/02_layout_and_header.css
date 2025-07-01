@@ -1,5 +1,3 @@
-
-
 .coverage-explanation p {
     margin: 0 0 0.75rem 0;
     color: var(--text-primary);
@@ -792,6 +790,8 @@ main {
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.8);
     animation: fadeInUp 0.8s ease-out 0.4s both;
+    direction: rtl;
+    text-align: center;
 }
 
 .hero-features {

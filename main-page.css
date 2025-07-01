@@ -257,12 +257,19 @@ header.scrolled {
     animation: fadeInUp 0.6s ease-out;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    color: #fff;
+    font-weight: 600;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.25), 0 1px 0 #6c47c6;
 }
 
 .agency-badge i {
     color: var(--accent-purple-light);
     width: 20px;
     height: 20px;
+}
+
+.agency-badge span {
+    color: #fff;
 }
 
 /* Main Title - Better Contrast */
@@ -287,14 +294,15 @@ header.scrolled {
 
 /* Improved Subtitle */
 .main-subtitle {
-    font-size: 1.35rem;
-    color: rgba(255, 255, 255, 0.85);
-    margin-bottom: var(--spacing-3xl);
-    animation: fadeInUp 1s ease-out 0.4s both;
-    line-height: 1.6;
-    max-width: 800px;
+    font-size: 1.375rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: var(--spacing-lg);
+    max-width: 600px;
     margin-left: auto;
     margin-right: auto;
+    line-height: 1.7;
+    direction: rtl;
+    text-align: center;
 }
 
 /* Enhanced Stats Display */
@@ -467,6 +475,8 @@ header.scrolled {
     font-weight: 800;
     color: var(--text-primary);
     margin-bottom: var(--spacing-md);
+    direction: rtl;
+    text-align: center;
 }
 
 .section-subtitle {
@@ -474,6 +484,8 @@ header.scrolled {
     color: var(--text-secondary);
     max-width: 600px;
     margin: 0 auto;
+    direction: rtl;
+    text-align: center;
 }
 
 /* Enhanced Insurance Cards */
@@ -621,12 +633,16 @@ header.scrolled {
 .about-features {
     display: grid;
     gap: var(--spacing-md);
+    direction: rtl;
+    text-align: right;
 }
 
 .about-feature {
     display: flex;
     align-items: start;
     gap: var(--spacing-sm);
+    direction: rtl;
+    text-align: right;
 }
 
 .feature-icon-wrapper {
@@ -894,6 +910,8 @@ header.scrolled {
     
     .section-title {
         font-size: 2rem;
+        direction: rtl;
+        text-align: center;
     }
     
     /* Hero Adjustments */
@@ -1292,4 +1310,20 @@ html {
     .construction-modal p {
         font-size: 1rem;
     }
+}
+
+.feature-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+    direction: rtl;
+    text-align: center;
+}
+
+.feature-card p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    direction: rtl;
+    text-align: center;
 }
