@@ -564,12 +564,14 @@ header.scrolled {
     font-weight: 700;
     margin-bottom: var(--spacing-sm);
     color: var(--text-primary);
+    direction: rtl;
 }
 
 .insurance-card p {
     color: var(--text-secondary);
     line-height: 1.7;
     margin-bottom: var(--spacing-md);
+    direction: rtl;
 }
 
 /* Enhanced Card Arrow */

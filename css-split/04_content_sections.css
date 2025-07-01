@@ -472,12 +472,14 @@
     font-weight: 600;
     color: var(--text-dark);
     margin-bottom: 15px;
+    direction: rtl;
 }
 
 .feature-card p {
     font-size: 1rem;
     color: var(--text-gray);
     line-height: 1.6;
+    direction: rtl;
 }
 
 /* Statistics Section */
