@@ -67,186 +67,212 @@ function formatEmailContent(data) {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ליד חדש - ביטוח דירה</title>
     </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; direction: rtl; text-align: right; margin: 0; padding: 0; background-color: #f4f4f4;">
-        <div style="max-width: 800px; margin: 20px auto; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f5f7fa;">
+        <div style="max-width: 700px; margin: 0 auto; background-color: #ffffff;">
             <!-- Header -->
-            <div style="background: linear-gradient(135deg, #0052cc 0%, #003d99 100%); color: white; padding: 30px; text-align: center;">
-                <h1 style="margin: 0; font-size: 28px;">📋 ליד חדש - הצעת ביטוח דירה</h1>
-                <p style="margin: 10px 0 0 0; font-size: 16px;">אדמון סוכנות לביטוח</p>
+            <div style="background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); padding: 40px 30px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">
+                    🏠 ליד חדש - ביטוח דירה
+                </h1>
+                <p style="color: #ecf0f1; margin: 10px 0 0 0; font-size: 16px;">
+                    התקבלה בקשה חדשה להצעת מחיר
+                </p>
             </div>
 
-            <!-- Content -->
+            <!-- Timestamp -->
+            <div style="background-color: #ecf0f1; padding: 15px 30px; border-bottom: 2px solid #bdc3c7;">
+                <p style="margin: 0; color: #7f8c8d; font-size: 14px;">
+                    <strong>תאריך ושעה:</strong> ${formatDate(data.submittedAt)} ${new Date(data.submittedAt).toLocaleTimeString('he-IL')}
+                </p>
+            </div>
+
+            <!-- Main Content -->
             <div style="padding: 30px;">
-                <!-- Summary Box -->
-                <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-right: 4px solid #0052cc;">
-                    <h2 style="margin: 0 0 10px 0; color: #0052cc;">📊 סיכום בקשה</h2>
-                    <p style="margin: 5px 0;"><strong>שם הלקוח:</strong> ${data.firstName || ''} ${data.lastName || ''}</p>
-                    <p style="margin: 5px 0;"><strong>סוג ביטוח:</strong> ${data.productType || 'לא צוין'}</p>
-                    <p style="margin: 5px 0;"><strong>תאריך התחלה מבוקש:</strong> ${formatDate(data.startDate)}</p>
-                    <p style="margin: 5px 0;"><strong>תאריך קבלת הבקשה:</strong> ${formatDate(data.submittedAt)}</p>
-                </div>
-
-                <!-- Personal Details -->
-                <div style="margin-bottom: 30px;">
-                    <h3 style="color: #0052cc; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">👤 פרטים אישיים</h3>
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <tr style="background: #f8f9fa;">
-                            <td style="padding: 10px; border: 1px solid #e0e0e0; width: 30%;"><strong>שם מלא:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.firstName || ''} ${data.lastName || ''}</td>
-                        </tr>
+                <!-- Customer Info Section -->
+                <div style="background-color: #f8f9fa; border-radius: 10px; padding: 25px; margin-bottom: 25px; border-right: 4px solid #3498db;">
+                    <h2 style="color: #2c3e50; margin: 0 0 20px 0; font-size: 20px; display: flex; align-items: center;">
+                        <span style="background-color: #3498db; color: white; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 10px; font-size: 16px;">👤</span>
+                        פרטי הלקוח
+                    </h2>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">שם מלא</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${data.firstName || ''} ${data.lastName || ''}</p>
+                        </div>
                         ${data.phoneNumber ? `
-                        <tr>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>טלפון:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.phoneNumber}</td>
-                        </tr>
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">טלפון</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${data.phoneNumber}</p>
+                        </div>
                         ` : ''}
-                        ${data.email ? `
-                        <tr style="background: #f8f9fa;">
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>אימייל:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.email}</td>
-                        </tr>
-                        ` : ''}
-                        ${data.idNumber ? `
-                        <tr>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>תעודת זהות:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.idNumber}</td>
-                        </tr>
-                        ` : ''}
-                    </table>
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">דוא"ל</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${data.email || ''}</p>
+                        </div>
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">ת.ז.</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${data.idNumber || ''}</p>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Property Details -->
-                <div style="margin-bottom: 30px;">
-                    <h3 style="color: #0052cc; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">🏠 פרטי הנכס</h3>
-                    <table style="width: 100%; border-collapse: collapse;">
-                        ${data.propertyType ? `
-                        <tr style="background: #f8f9fa;">
-                            <td style="padding: 10px; border: 1px solid #e0e0e0; width: 30%;"><strong>סוג נכס:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.propertyType}</td>
-                        </tr>
-                        ` : ''}
-                        <tr>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>כתובת:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">
+                <!-- Property Info Section -->
+                <div style="background-color: #f8f9fa; border-radius: 10px; padding: 25px; margin-bottom: 25px; border-right: 4px solid #e74c3c;">
+                    <h2 style="color: #2c3e50; margin: 0 0 20px 0; font-size: 20px; display: flex; align-items: center;">
+                        <span style="background-color: #e74c3c; color: white; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 10px; font-size: 16px;">🏠</span>
+                        פרטי הנכס
+                    </h2>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">כתובת</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">
                                 ${data.street || ''} ${data.houseNumber || ''}, ${data.city || ''}
-                            </td>
-                        </tr>
-                        ${data.postalCode ? `
-                        <tr style="background: #f8f9fa;">
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>מיקוד:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.postalCode}</td>
-                        </tr>
+                                ${data.postalCode ? ` ${data.postalCode}` : ''}
+                            </p>
+                        </div>
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">סוג הנכס</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${data.propertyType || data.assetType || ''}</p>
+                        </div>
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">סוג מוצר</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${data.productType || ''}</p>
+                        </div>
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">תאריך התחלה</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatDate(data.startDate)}</p>
+                        </div>
+                        ${data.hasGarden ? `
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">גינה</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">כן</p>
+                        </div>
                         ` : ''}
-                    </table>
+                        ${data.floorCount ? `
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">מספר קומות</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${data.floorCount}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    ${data.productType === 'מבנה בלבד משועבד לבנק' && (data.selectedBank || data.selectedBranch) ? `
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+                        <p style="margin: 0 0 10px 0; color: #7f8c8d; font-size: 14px; font-weight: 600;">פרטי משכנתא:</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            ${data.selectedBank ? `
+                            <div>
+                                <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">בנק משעבד</p>
+                                <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${data.selectedBank}</p>
+                            </div>
+                            ` : ''}
+                            ${data.selectedBranch ? `
+                            <div>
+                                <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">סניף בנק</p>
+                                <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${data.selectedBranch}</p>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
 
-                ${showBuilding && data.building && (data.building.insuranceAmount || data.building.buildingInsuranceAmount) ? `
-                <!-- Building Insurance Details -->
-                <div style="margin-bottom: 30px;">
-                    <h3 style="color: #0052cc; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">🏗️ ביטוח מבנה</h3>
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <tr style="background: #fff3cd;">
-                            <td style="padding: 10px; border: 1px solid #e0e0e0; width: 30%;"><strong>סכום ביטוח:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0; font-size: 18px; color: #0052cc;"><strong>${formatCurrency(data.building.insuranceAmount || data.building.buildingInsuranceAmount)}</strong></td>
-                        </tr>
-                        ${data.building.age || data.building.buildingAge ? `
-                        <tr>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>גיל המבנה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.age || data.building.buildingAge} שנים</td>
-                        </tr>
+                ${showBuilding && data.building ? `
+                <!-- Building Insurance Details Section -->
+                <div style="background-color: #f8f9fa; border-radius: 10px; padding: 25px; margin-bottom: 25px; border-right: 4px solid #f39c12;">
+                    <h2 style="color: #2c3e50; margin: 0 0 20px 0; font-size: 20px; display: flex; align-items: center;">
+                        <span style="background-color: #f39c12; color: white; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 10px; font-size: 16px;">🏗️</span>
+                        פרטי ביטוח מבנה
+                    </h2>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        ${data.building.buildingInsuranceAmount || data.building.insuranceAmount ? `
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">סכום ביטוח מבנה</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatCurrency(data.building.buildingInsuranceAmount || data.building.insuranceAmount)}</p>
+                        </div>
                         ` : ''}
-                        ${data.building.area ? `
-                        <tr style="background: #f8f9fa;">
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>שטח מבנה בנוי:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.area} מ"ר</td>
-                        </tr>
+                        ${data.building.buildingAge || data.building.age ? `
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">גיל המבנה</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${data.building.buildingAge || data.building.age} שנים</p>
+                        </div>
                         ` : ''}
-                        ${data.building.hasTerrace === 'כן' ? `
-                        <tr>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>מרפסת:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">✅ כן${data.building.terraceArea ? ` - ${data.building.terraceArea} מ"ר` : ''}</td>
-                        </tr>
-                        ` : data.building.hasTerrace === 'לא' ? `
-                        <tr>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>מרפסת:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">❌ לא</td>
-                        </tr>
-                        ` : ''}
-                        ${data.building.hasGarden === 'כן' ? `
-                        <tr style="background: #f8f9fa;">
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>גינה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">✅ כן${data.building.gardenArea ? ` - ${data.building.gardenArea} מ"ר` : ''}</td>
-                        </tr>
-                        ` : data.building.hasGarden === 'לא' ? `
-                        <tr style="background: #f8f9fa;">
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>גינה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">❌ לא</td>
-                        </tr>
-                        ` : ''}
-                        ${data.building.roofType ? `
-                        <tr>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>סוג גג:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.roofType}</td>
-                        </tr>
+                        ${data.buildingArea ? `
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">שטח המבנה</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${data.buildingArea} מ"ר</p>
+                        </div>
+                        ` : data.building && (data.building.buildingArea || data.building.area) ? `
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">שטח המבנה</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${data.building.buildingArea || data.building.area} מ"ר</p>
+                        </div>
                         ` : ''}
                         ${data.building.constructionType ? `
-                        <tr>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>סוג בניה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.constructionType}</td>
-                        </tr>
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">סוג בניה</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${data.building.constructionType}</p>
+                        </div>
                         ` : ''}
-
-                        ${typeof (data.building.mortgagedProperty || data.building.mortgaged) !== 'undefined' ? `
-                        <tr>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>משועבד/מוטב:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${(data.building.mortgagedProperty || data.building.mortgaged) ? '✅ כן' : '❌ לא'}</td>
-                        </tr>
+                        ${data.building.constructionStandard ? `
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">סטנדרט בניה</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${data.building.constructionStandard}</p>
+                        </div>
                         ` : ''}
-                        ${data.productType === 'מבנה בלבד משועבד לבנק' && data.selectedBank ? `
-                        <tr style="background: #f8f9fa;">
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>בנק משעבד:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.selectedBank}</td>
-                        </tr>
+                        ${typeof data.building.mortgagedProperty !== 'undefined' ? `
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">משועבד/מוטב</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${data.building.mortgagedProperty ? 'כן' : 'לא'}</p>
+                        </div>
                         ` : ''}
-                        ${data.productType === 'מבנה בלבד משועבד לבנק' && data.selectedBranch ? `
-                        <tr>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>סניף בנק:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.selectedBranch}</td>
-                        </tr>
+                        ${data.building.loanEndDate ? `
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">תאריך סיום הלוואה</p>
+                            <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatDate(data.building.loanEndDate)}</p>
+                        </div>
                         ` : ''}
-                        ${data.building.renewals ? `
-                        <tr style="background: #f8f9fa;">
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>חידושים:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.building.renewals}</td>
-                        </tr>
-                        ` : ''}
-                    </table>
-
-                    <!-- Building Coverages - Only if they exist -->
-                    ${data.building.waterDamageType || data.building.earthquakeCoverage || 
-                      (typeof data.building.burglaryBuilding !== 'undefined') ? `
-                    <h4 style="margin-top: 20px; color: #333;">כיסויים:</h4>
-                    <ul style="background: #f8f9fa; padding: 15px 30px; border-radius: 5px; list-style: none;">
-                        ${data.building.waterDamageType ? `<li style="padding: 5px 0;">💧 ${data.building.waterDamageType}</li>` : ''}
-                        ${data.building.waterDeductible ? `<li style="padding: 5px 0;">💰 השתתפות עצמית נזקי מים: ${data.building.waterDeductible}</li>` : ''}
-                        ${typeof data.building.burglaryBuilding !== 'undefined' ? `<li style="padding: 5px 0;">${data.building.burglaryBuilding ? '🔒 פריצה גניבה ושוד' : '❌ ללא כיסוי פריצה'}</li>` : ''}
-                        ${data.building.earthquakeCoverage ? `<li style="padding: 5px 0;">${data.building.earthquakeCoverage === 'כן' ? '🌍 רעידת אדמה' : '❌ ללא כיסוי רעידת אדמה'}</li>` : ''}
-                        ${data.building.earthquakeDeductible ? `<li style="padding: 5px 0;">💰 השתתפות עצמית רעידת אדמה: ${data.building.earthquakeDeductible}</li>` : ''}
-                    </ul>
+                    </div>
+                    
+                    ${(data.building.waterDamageType || data.building.earthquakeCoverage || data.building.burglaryBuilding) ? `
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+                        <p style="margin: 0 0 10px 0; color: #7f8c8d; font-size: 14px; font-weight: 600;">כיסויים למבנה:</p>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            ${data.building.waterDamageType ? `<span style="background-color: #3498db; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">נזקי מים: ${data.building.waterDamageType}</span>` : ''}
+                            ${data.building.burglaryBuilding ? `<span style="background-color: #3498db; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">פריצה</span>` : ''}
+                            ${data.building.earthquakeCoverage && data.building.earthquakeCoverage !== 'לא' ? `<span style="background-color: #3498db; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">רעידת אדמה: ${data.building.earthquakeCoverage}</span>` : ''}
+                            ${data.building.waterDeductible ? `<span style="background-color: #95a5a6; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">השתתפות עצמית: ${data.building.waterDeductible}</span>` : ''}
+                        </div>
+                    </div>
                     ` : ''}
-
-                    <!-- Additional Building Amounts - Only if they exist -->
-                    ${(data.building.buildingContentsInsurance || data.building.storageInsurance || 
-                       data.building.hasSwimmingPool ||
-                       data.building.additionalSharedInsurance) ? `
-                    <h4 style="margin-top: 20px; color: #333;">סכומים נוספים:</h4>
-                    <ul style="background: #f8f9fa; padding: 15px 30px; border-radius: 5px; list-style: none;">
-                        ${data.building.buildingContentsInsurance ? `<li style="padding: 5px 0;">📦 תכולת מבנה: ${formatCurrency(data.building.buildingContentsInsurance)}</li>` : ''}
-                        ${data.building.storageInsurance ? `<li style="padding: 5px 0;">🏚️ מחסן: ${formatCurrency(data.building.storageInsurance)}</li>` : ''}
-                        ${data.building.hasSwimmingPool ? `<li style="padding: 5px 0;">🏊 בריכת שחיה${data.building.swimmingPoolValue ? `: שווי ${formatCurrency(data.building.swimmingPoolValue)}` : ''}</li>` : ''}
-                        ${data.building.additionalSharedInsurance ? `<li style="padding: 5px 0;">🏢 רכוש משותף נוסף: ${formatCurrency(data.building.additionalSharedInsurance)}</li>` : ''}
-                    </ul>
+                    
+                    ${(data.building.buildingContentsInsurance || data.building.storageInsurance || data.building.swimmingPoolInsurance) ? `
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+                        <p style="margin: 0 0 10px 0; color: #7f8c8d; font-size: 14px; font-weight: 600;">הרחבות מבנה:</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            ${data.building.buildingContentsInsurance ? `
+                            <div>
+                                <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">תכולת מבנה</p>
+                                <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatCurrency(data.building.buildingContentsInsurance)}</p>
+                            </div>
+                            ` : ''}
+                            ${data.building.storageInsurance ? `
+                            <div>
+                                <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">מחסן</p>
+                                <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatCurrency(data.building.storageInsurance)}</p>
+                            </div>
+                            ` : ''}
+                            ${data.building.swimmingPoolInsurance ? `
+                            <div>
+                                <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">בריכת שחיה</p>
+                                <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatCurrency(data.building.swimmingPoolInsurance)}</p>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
                     ` : ''}
                 </div>
                 ` : ''}
@@ -254,65 +280,125 @@ function formatEmailContent(data) {
                 ${showContents && data.contents && (data.contents.jewelryAmount || data.contents.watchesAmount || 
                    data.contents.camerasAmount || data.contents.electronicsAmount || 
                    data.contents.bicyclesAmount || data.contents.musicalInstrumentsAmount) ? `
-                <!-- Contents Insurance Details -->
-                        ${data.contents.earthquakeCoverage ? `<li style="padding: 5px 0;">🌍 רעידת אדמה (תכולה): ${data.contents.earthquakeCoverage}</li>` : ""}                <div style="margin-bottom: 30px;">
-                    <h3 style="color: #0052cc; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">🛋️ ביטוח תכולה</h3>
-                    ${(data.contents.contentsBuildingAge || data.contents.buildingAge) ? `
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <tr>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0; width: 30%;"><strong>גיל המבנה:</strong></td>
-                            <td style="padding: 10px; border: 1px solid #e0e0e0;">${data.contents.contentsBuildingAge || data.contents.buildingAge} שנים</td>
-                        </tr>
-                    </table>
+                <!-- Contents Insurance Details Section -->
+                <div style="background-color: #f8f9fa; border-radius: 10px; padding: 25px; margin-bottom: 25px; border-right: 4px solid #9b59b6;">
+                    <h2 style="color: #2c3e50; margin: 0 0 20px 0; font-size: 20px; display: flex; align-items: center;">
+                        <span style="background-color: #9b59b6; color: white; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 10px; font-size: 16px;">📦</span>
+                        פרטי ביטוח תכולה
+                    </h2>
+                    
+                    ${data.contents.contentsBuildingAge || data.contents.buildingAge ? `
+                    <div style="margin-bottom: 15px;">
+                        <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">גיל המבנה לתכולה</p>
+                        <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${data.contents.contentsBuildingAge || data.contents.buildingAge} שנים</p>
+                    </div>
                     ` : ''}
-
-                    <!-- Valuable Items - Only if they exist -->
-                    ${(data.contents.jewelryAmount || data.contents.watchesAmount || data.contents.camerasAmount ||
-                       data.contents.electronicsAmount || data.contents.bicyclesAmount || data.contents.musicalInstrumentsAmount) ? `
-                    <h4 style="margin-top: 20px; color: #333;">פריטי ערך:</h4>
-                    <ul style="background: #f8f9fa; padding: 15px 30px; border-radius: 5px; list-style: none;">
-                        ${data.contents.jewelryAmount ? `<li style="padding: 5px 0;">💍 תכשיטים: ${formatCurrency(data.contents.jewelryAmount)} ${data.contents.jewelryCoverage ? `(${data.contents.jewelryCoverage})` : ''}</li>` : ''}
-                        ${data.contents.watchesAmount ? `<li style="padding: 5px 0;">⌚ שעונים: ${formatCurrency(data.contents.watchesAmount)} ${data.contents.watchesCoverage ? `(${data.contents.watchesCoverage})` : ''}</li>` : ''}
-                        ${data.contents.camerasAmount ? `<li style="padding: 5px 0;">📷 מצלמות: ${formatCurrency(data.contents.camerasAmount)}</li>` : ''}
-                        ${data.contents.electronicsAmount ? `<li style="padding: 5px 0;">📱 מכשירים אלקטרוניים: ${formatCurrency(data.contents.electronicsAmount)}</li>` : ''}
-                        ${data.contents.bicyclesAmount ? `<li style="padding: 5px 0;">🚲 אופניים: ${formatCurrency(data.contents.bicyclesAmount)}</li>` : ''}
-                        ${data.contents.musicalInstrumentsAmount ? `<li style="padding: 5px 0;">🎸 כלי נגינה: ${formatCurrency(data.contents.musicalInstrumentsAmount)}</li>` : ''}
-                    </ul>
-                    ` : ''}
-
-                    <!-- Contents Coverages - Only if they exist -->
-                    ${(typeof data.contents.contentsWaterDamage !== 'undefined') ? `
-                    <h4 style="margin-top: 20px; color: #333;">כיסויים:</h4>
-                    <ul style="background: #f8f9fa; padding: 15px 30px; border-radius: 5px; list-style: none;">
-                        ${typeof data.contents.contentsWaterDamage !== 'undefined' ? `<li style="padding: 5px 0;">${data.contents.contentsWaterDamage ? '💧 נזקי מים' : '❌ ללא נזקי מים'}</li>` : ''}
-                    </ul>
+                    
+                    <div style="margin-top: 20px;">
+                        <p style="margin: 0 0 10px 0; color: #7f8c8d; font-size: 14px; font-weight: 600;">דברי ערך:</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            ${data.contents.jewelryAmount ? `
+                            <div>
+                                <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">תכשיטים</p>
+                                <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatCurrency(data.contents.jewelryAmount)}</p>
+                            </div>
+                            ` : ''}
+                            ${data.contents.watchesAmount ? `
+                            <div>
+                                <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">שעונים</p>
+                                <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatCurrency(data.contents.watchesAmount)}</p>
+                            </div>
+                            ` : ''}
+                            ${data.contents.camerasAmount ? `
+                            <div>
+                                <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">מצלמות</p>
+                                <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatCurrency(data.contents.camerasAmount)}</p>
+                            </div>
+                            ` : ''}
+                            ${data.contents.electronicsAmount ? `
+                            <div>
+                                <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">ציוד אלקטרוני</p>
+                                <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatCurrency(data.contents.electronicsAmount)}</p>
+                            </div>
+                            ` : ''}
+                            ${data.contents.bicyclesAmount ? `
+                            <div>
+                                <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">אופניים</p>
+                                <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatCurrency(data.contents.bicyclesAmount)}</p>
+                            </div>
+                            ` : ''}
+                            ${data.contents.musicalInstrumentsAmount ? `
+                            <div>
+                                <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">כלי נגינה</p>
+                                <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatCurrency(data.contents.musicalInstrumentsAmount)}</p>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    ${data.contents.contentsEarthquakeCoverage ? `
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+                        <p style="margin: 0 0 10px 0; color: #7f8c8d; font-size: 14px; font-weight: 600;">כיסויים לתכולה:</p>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            <span style="background-color: #3498db; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">רעידת אדמה: ${data.contents.contentsEarthquakeCoverage}</span>
+                        </div>
+                    </div>
                     ` : ''}
                 </div>
                 ` : ''}
 
-                ${data.additionalCoverage && (data.additionalCoverage.thirdPartyCoverage || data.additionalCoverage.employersLiability || 
-                   data.additionalCoverage.cyberCoverage || data.additionalCoverage.terrorCoverage ||
-                   data.additionalCoverage.businessEmployers || data.additionalCoverage.businessThirdParty) ? `
-                <!-- Additional Coverages -->
-                <div style="margin-bottom: 30px;">
-                    <h3 style="color: #0052cc; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">🛡️ כיסויים נוספים</h3>
-                    <ul style="background: #e8f5e9; padding: 15px 30px; border-radius: 5px; list-style: none;">
-                        ${data.additionalCoverage.businessEmployers ? '<li style="padding: 5px 0;">👨‍💼 חבות מעבידים עסקית</li>' : ''}
-                        ${data.additionalCoverage.businessThirdParty ? '<li style="padding: 5px 0;">🤝 צד ג\' עסקי</li>' : ''}
-                        ${data.additionalCoverage.thirdPartyCoverage ? '<li style="padding: 5px 0;">🛡️ צד שלישי</li>' : ''}
-                        ${data.additionalCoverage.employersLiability ? '<li style="padding: 5px 0;">👥 חבות מעבידים</li>' : ''}
-                        ${data.additionalCoverage.cyberCoverage ? '<li style="padding: 5px 0;">🔒 סייבר למשפחה</li>' : ''}
-                        ${data.additionalCoverage.terrorCoverage ? '<li style="padding: 5px 0;">💥 טרור</li>' : ''}
-                    </ul>
+                ${data.additionalCoverage && (data.additionalCoverage.thirdPartyCoverage || 
+                   data.additionalCoverage.employersLiability || data.additionalCoverage.cyberCoverage || 
+                   data.additionalCoverage.terrorCoverage || data.additionalCoverage.businessEmployers ||
+                   data.additionalCoverage.businessThirdParty) ? `
+                <!-- Additional Coverage Section -->
+                <div style="background-color: #f8f9fa; border-radius: 10px; padding: 25px; margin-bottom: 25px; border-right: 4px solid #27ae60;">
+                    <h2 style="color: #2c3e50; margin: 0 0 20px 0; font-size: 20px; display: flex; align-items: center;">
+                        <span style="background-color: #27ae60; color: white; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 10px; font-size: 16px;">📋</span>
+                        כיסויים נוספים
+                    </h2>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        ${data.additionalCoverage.businessEmployers ? '<span style="background-color: #27ae60; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">חבות מעבידים עסקית</span>' : ''}
+                        ${data.additionalCoverage.businessThirdParty ? '<span style="background-color: #27ae60; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">צד ג\' עסקי</span>' : ''}
+                        ${data.additionalCoverage.thirdPartyCoverage ? '<span style="background-color: #27ae60; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">צד שלישי</span>' : ''}
+                        ${data.additionalCoverage.employersLiability ? '<span style="background-color: #27ae60; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">חבות מעבידים</span>' : ''}
+                        ${data.additionalCoverage.cyberCoverage ? '<span style="background-color: #27ae60; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">סייבר למשפחה</span>' : ''}
+                        ${data.additionalCoverage.terrorCoverage ? '<span style="background-color: #27ae60; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">טרור</span>' : ''}
+                    </div>
                 </div>
                 ` : ''}
 
-                <!-- Footer -->
-                <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #e0e0e0; text-align: center; color: #666;">
-                    <p style="margin: 5px 0;"><strong>תאריך יצירת הליד:</strong> ${formatDate(new Date())}</p>
-                    <p style="margin: 5px 0;">📞 טלפון: 03-1234567 | 📧 אימייל: info@admon-agency.co.il</p>
-                    <p style="margin: 5px 0; font-size: 14px;">אדמון סוכנות לביטוח - שירות מקצועי ואמין</p>
+                <!-- Additional Notes -->
+                ${data.notes || data.additionalNotes ? `
+                <div style="background-color: #fff3cd; border-radius: 10px; padding: 20px; margin-bottom: 25px; border-right: 4px solid #f39c12;">
+                    <h3 style="color: #856404; margin: 0 0 10px 0; font-size: 16px;">
+                        📝 הערות נוספות
+                    </h3>
+                    <p style="margin: 0; color: #856404; font-size: 14px; line-height: 1.6;">
+                        ${data.notes || data.additionalNotes}
+                    </p>
                 </div>
+                ` : ''}
+
+                <!-- Action Buttons -->
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="tel:${data.phoneNumber || ''}" style="display: inline-block; background-color: #27ae60; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: 600; margin: 0 10px;">
+                        📞 חייג ללקוח
+                    </a>
+                    <a href="mailto:${data.email || ''}" style="display: inline-block; background-color: #3498db; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: 600; margin: 0 10px;">
+                        📧 שלח הצעה
+                    </a>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="background-color: #34495e; padding: 20px 30px; text-align: center;">
+                <p style="color: #ecf0f1; margin: 0; font-size: 14px;">
+                    ליד זה נשלח ממערכת הלידים של סוכנות הביטוח
+                </p>
+                <p style="color: #95a5a6; margin: 5px 0 0 0; font-size: 12px;">
+                    © 2024 אדמון סוכנות לביטוח - כל הזכויות שמורות
+                </p>
             </div>
         </div>
     </body>
