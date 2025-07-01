@@ -1,4 +1,3 @@
-// Server updated: 2025-07-01 - Latest version with all features
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
