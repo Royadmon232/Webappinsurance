@@ -6178,6 +6178,29 @@ function generateEmailHTML(data) {
     `;
 }
 
+/**
+ * Get the correct API base URL based on current deployment
+ */
+function getApiBaseUrl() {
+    const currentHost = window.location.hostname;
+    const currentOrigin = window.location.origin;
+    
+    // Local development
+    if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+        return 'http://localhost:8080';
+    }
+    
+    // Production or preview deployments on Vercel
+    // Use the current origin to handle any subdomain
+    if (currentHost.includes('vercel.app')) {
+        console.log(`🌐 Using current Vercel deployment: ${currentOrigin}`);
+        return currentOrigin;
+    }
+    
+    // Fallback to main domain
+    return 'https://webappinsurance.vercel.app';
+}
+
 // =============================================================================
 // EMAIL DEBUGGING INSTRUCTIONS
 // =============================================================================
@@ -6223,14 +6246,12 @@ async function sendEmailToAgent(emailData) {
         dataSize: JSON.stringify(emailData).length
     });
     
-    // Determine the correct endpoint based on environment
-    const isDevelopment = window.location.hostname === 'localhost' || 
-                         window.location.hostname === '127.0.0.1' || 
-                         window.location.href.includes('localhost');
+    // Get the correct API base URL dynamically
+    const apiBaseUrl = getApiBaseUrl();
+    const endpoint = `${apiBaseUrl}/api/send-email`;
     
-    const endpoint = isDevelopment 
-        ? 'http://localhost:8080/api/send-email'              // Local development ONLY
-        : 'https://webappinsurance.vercel.app/api/send-email'; // Production Vercel ONLY
+    const isDevelopment = window.location.hostname === 'localhost' || 
+                         window.location.hostname === '127.0.0.1';
     
     console.log(`🌐 Environment: ${isDevelopment ? 'Development' : 'Production'}`);
     console.log(`📡 Using endpoint: ${endpoint}`);
@@ -6288,7 +6309,12 @@ async function sendEmailToAgent(emailData) {
             
             // Provide more specific error messages based on status code
             let errorMessage = result.message || result.error || 'Unknown server error';
-            if (response.status === 500) {
+            
+            // Handle Gmail authentication errors
+            if (errorMessage.includes('invalid_grant')) {
+                errorMessage = 'Gmail authentication expired - server needs to refresh tokens';
+                console.error('🔑 Gmail OAuth needs refresh - contact admin');
+            } else if (response.status === 500) {
                 errorMessage = `Server internal error: ${errorMessage}`;
             } else if (response.status === 429) {
                 errorMessage = 'Too many requests, please try again later';
@@ -6527,14 +6553,12 @@ async function sendLeadPDFToServer(pdfBase64, formData) {
     console.log('📧📄 Starting PDF generation and email process on server...');
     
     try {
-        // Determine the correct endpoint based on environment
-        const isDevelopment = window.location.hostname === 'localhost' || 
-                             window.location.hostname === '127.0.0.1' || 
-                             window.location.href.includes('localhost');
+        // Get the correct API base URL dynamically
+        const apiBaseUrl = getApiBaseUrl();
+        const endpoint = `${apiBaseUrl}/api/generate-pdf`;
         
-        const endpoint = isDevelopment 
-            ? 'http://localhost:8080/api/generate-pdf'  // Local ONLY
-            : 'https://webappinsurance.vercel.app/api/generate-pdf';  // Vercel ONLY
+        const isDevelopment = window.location.hostname === 'localhost' || 
+                             window.location.hostname === '127.0.0.1';
         
         console.log(`🌐 Environment: ${isDevelopment ? 'Development' : 'Production'}`);
         console.log(`📡 Using endpoint: ${endpoint}`);
@@ -7002,18 +7026,21 @@ function debugFormCollection() {
 function debugEmailSystem() {
     console.log("🧪 DEBUG: Testing email system...");
     
+    // Get dynamic API base URL
+    const apiBaseUrl = getApiBaseUrl();
+    
     // Check environment
     const isDevelopment = window.location.hostname === 'localhost' || 
-                         window.location.hostname === '127.0.0.1' || 
-                         window.location.href.includes('localhost');
+                         window.location.hostname === '127.0.0.1';
     
     console.log("🌐 Environment details:", {
         hostname: window.location.hostname,
         href: window.location.href,
+        origin: window.location.origin,
         isDevelopment: isDevelopment,
-        expectedEndpoint: isDevelopment 
-            ? 'http://localhost:8080/api/send-email'
-            : 'https://webappinsurance.vercel.app/api/send-email'
+        apiBaseUrl: apiBaseUrl,
+        expectedSendEmailEndpoint: `${apiBaseUrl}/api/send-email`,
+        expectedGeneratePdfEndpoint: `${apiBaseUrl}/api/generate-pdf`
     });
     
     // Test basic connectivity to endpoints
@@ -7046,7 +7073,7 @@ function debugEmailSystem() {
     });
     
     return {
-        environment: { isDevelopment, hostname: window.location.hostname },
+        environment: { isDevelopment, hostname: window.location.hostname, apiBaseUrl },
         formData: formData,
         testEndpoint: testEndpoint
     };
