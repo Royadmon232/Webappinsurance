@@ -2905,6 +2905,7 @@ input:disabled {
     background: var(--primary-white);
     border: none;
     display: flex;
+    flex-direction: row-reverse;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
@@ -2945,6 +2946,8 @@ input:disabled {
     padding: 0 1.5rem 1.5rem;
     color: var(--text-secondary);
     line-height: 1.6;
+    direction: rtl;
+    text-align: right;
 }
 
 /* Contact Section */
