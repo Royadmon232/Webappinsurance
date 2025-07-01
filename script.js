@@ -4508,7 +4508,7 @@ function clearBuildingFormErrors() {
         errorMessages.forEach(message => {
             message.style.display = 'none';
             message.textContent = '';
-        });
+    });
     }
 }
 
@@ -6262,28 +6262,28 @@ async function sendEmailToAgent(emailData) {
             throw new Error('Missing required email fields (to/subject)');
         }
         
-        // Get auth token if available
-        const authToken = localStorage.getItem('authToken');
-        
-        // Additional validation: prevent CORS issues
-        if (endpoint.includes('localhost') && !isDevelopment) {
-            throw new Error('Cannot access localhost from production environment');
-        }
-        
+            // Get auth token if available
+            const authToken = localStorage.getItem('authToken');
+            
+            // Additional validation: prevent CORS issues
+            if (endpoint.includes('localhost') && !isDevelopment) {
+                throw new Error('Cannot access localhost from production environment');
+            }
+            
         console.log('📦 Preparing to send email request...');
         console.log('🔐 Auth token available:', !!authToken);
         
         const requestStart = Date.now();
-        
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': authToken ? `Bearer ${authToken}` : ''
-            },
-            body: JSON.stringify(emailData)
-        });
-        
+            
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': authToken ? `Bearer ${authToken}` : ''
+                },
+                body: JSON.stringify(emailData)
+            });
+            
         const requestDuration = Date.now() - requestStart;
         console.log(`⏱️ Request completed in ${requestDuration}ms`);
         console.log(`📡 Response status: ${response.status} ${response.statusText}`);
