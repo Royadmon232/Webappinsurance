@@ -4263,14 +4263,35 @@ const STREET_NAME_FIELD = 'שם_רחוב';
             // This function now handles cities that don't have registered streets
             // in the government database. When no streets are found, it automatically
             // hides the street and house number fields to improve user experience.
+            // 
+            // ENHANCED: Also handles cities with only one "street" that matches
+            // the city name itself - indicating no real streets exist.
             // ====================================================================
             
             // Find house number field and its form group
             const houseNumberInput = document.getElementById('houseNumber');
             const houseNumberGroup = houseNumberInput ? houseNumberInput.closest('.form-group') : null;
             
-            if (streets.length > 0) {
-                // Has streets - show street and house number fields
+            // Helper function to normalize names for comparison
+            const normalizeName = (name) => {
+                if (!name) return '';
+                return name
+                    .replace(/[־\-\s\(\)]/g, '') // Remove dashes, spaces, parentheses
+                    .replace(/מקומי|מרכזי|ראשי|עיקרי/g, '') // Remove common street suffixes
+                    .toLowerCase()
+                    .trim();
+            };
+            
+            // Check if we have a single street that matches the city name
+            const hasSingleStreetMatchingCity = streets.length === 1 && 
+                normalizeName(streets[0]) === normalizeName(citySelect.value);
+            
+            if (hasSingleStreetMatchingCity) {
+                console.log(`🏘️ Found single street "${streets[0]}" matching city name "${citySelect.value}" - treating as no streets`);
+            }
+            
+            if (streets.length > 0 && !hasSingleStreetMatchingCity) {
+                // Has real streets - show street and house number fields
                 streetInput.disabled = false;
                 streetInput.placeholder = 'הקלד שם רחוב לחיפוש';
                 
@@ -4289,8 +4310,12 @@ const STREET_NAME_FIELD = 'שם_רחוב';
                     streetInput.required = true;
                 }
             } else {
-                // No streets - hide street and house number fields
-                console.log(`🏘️ No streets found for ${citySelect.value} - hiding street and house number fields`);
+                // No streets OR single street matching city name - hide street and house number fields
+                const reasonText = hasSingleStreetMatchingCity 
+                    ? `ביישוב "${citySelect.value}" יש רק רחוב אחד הנושא את שם היישוב. השדות "רחוב" ו"מספר בית" הוסתרו אוטומטית.`
+                    : `ביישוב "${citySelect.value}" אין רחובות רשומים במערכת. השדות "רחוב" ו"מספר בית" הוסתרו אוטומטית.`;
+                
+                console.log(`🏘️ ${reasonText}`);
                 
                 // Hide street field
                 const streetGroup = streetInput.closest('.form-group');
@@ -4313,7 +4338,7 @@ const STREET_NAME_FIELD = 'שם_רחוב';
                 errorMsg.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="font-size: 18px;">ℹ️</span>
-                        <span>ביישוב "${citySelect.value}" אין רחובות רשומים במערכת. השדות "רחוב" ו"מספר בית" הוסתרו אוטומטית.</span>
+                        <span>${reasonText}</span>
                     </div>
                 `;
                 errorMsg.style.display = 'block';
