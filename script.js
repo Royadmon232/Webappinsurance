@@ -3766,7 +3766,7 @@ function smoothScroll(target) {
 (function() {
     const citySelect = document.getElementById('city');
     const cityAutocompleteInput = document.getElementById('city-autocomplete');
-    if (!citySelect || !cityAutocompleteInput) return;
+    if (!citySelect && !cityAutocompleteInput) return;
 
     // Utility: find <option> in select by text
     function findOptionByText(select, text) {
@@ -4136,10 +4136,11 @@ const STREET_NAME_FIELD = 'שם_רחוב';
 
     function setupDynamicStreetDropdown() {
         const citySelect = document.getElementById('city');
+        const cityAutocompleteInput = document.getElementById('city-autocomplete');
         const streetInput = document.getElementById('street');
 
-        // Check for essential elements
-        if (!citySelect || !streetInput) {
+        // Check for essential elements - need at least one city input and street input
+        if ((!citySelect && !cityAutocompleteInput) || !streetInput) {
             console.error('Street Dropdown: City or Street input not found.');
             return;
         }
@@ -4190,18 +4191,43 @@ const STREET_NAME_FIELD = 'שם_רחוב';
         streetInput.disabled = true;
         streetInput.placeholder = 'בחר ישוב תחילה';
 
+        // Helper function to get current city value
+        const getCurrentCityValue = () => {
+            return cityAutocompleteInput?.value?.trim() || citySelect?.value?.trim() || '';
+        };
+
+        // Check if city is already selected on initialization
+        const initialCity = getCurrentCityValue();
+        if (initialCity) {
+            console.log(`🏘️ Initial city detected: "${initialCity}" - checking streets...`);
+            setTimeout(() => handleCityChange(), 100); // Small delay to ensure DOM is ready
+        }
+
+        // Check if city is already selected on initialization
+        const initialCity = getCurrentCityValue();
+        if (initialCity) {
+            console.log(`🏘️ Initial city detected: "${initialCity}" - checking streets...`);
+            setTimeout(() => handleCityChange(), 100); // Small delay to ensure DOM is ready
+        }
+
         // --- Event Listeners ---
-        citySelect.addEventListener('change', handleCityChange);
+        if (citySelect) {
+            citySelect.addEventListener('change', handleCityChange);
+        }
+        if (cityAutocompleteInput) {
+            cityAutocompleteInput.addEventListener('input', debounce(handleCityChange, 300));
+            cityAutocompleteInput.addEventListener('change', handleCityChange);
+        }
         
         streetInput.addEventListener('input', () => {
-            const selectedCity = citySelect.value;
+            const selectedCity = getCurrentCityValue();
             if (streetCache.has(selectedCity)) {
                 renderDropdown(streetCache.get(selectedCity), streetInput.value);
             }
         });
 
         streetInput.addEventListener('focus', () => {
-            const selectedCity = citySelect.value;
+            const selectedCity = getCurrentCityValue();
             if (streetInput.value.length > 0 && streetCache.has(selectedCity)) {
                 renderDropdown(streetCache.get(selectedCity), streetInput.value);
             }
@@ -4214,17 +4240,20 @@ const STREET_NAME_FIELD = 'שם_רחוב';
         });
 
         async function handleCityChange() {
-            const selectedCity = citySelect.value;
+            const selectedCity = getCurrentCityValue();
             resetStreetField();
 
             if (!selectedCity) {
                 return;
             }
 
+            console.log(`🏘️ City changed to: "${selectedCity}" - fetching streets...`);
+
             streetInput.disabled = true;
             streetInput.placeholder = 'טוען רחובות...';
 
             if (streetCache.has(selectedCity)) {
+                console.log(`🏘️ Using cached streets for: ${selectedCity}`);
                 processStreets(streetCache.get(selectedCity));
                 return;
             }
@@ -4268,6 +4297,8 @@ const STREET_NAME_FIELD = 'שם_רחוב';
             // the city name itself - indicating no real streets exist.
             // ====================================================================
             
+            const selectedCity = getCurrentCityValue();
+            
             // Find house number field and its form group
             const houseNumberInput = document.getElementById('houseNumber');
             const houseNumberGroup = houseNumberInput ? houseNumberInput.closest('.form-group') : null;
@@ -4284,10 +4315,10 @@ const STREET_NAME_FIELD = 'שם_רחוב';
             
             // Check if we have a single street that matches the city name
             const hasSingleStreetMatchingCity = streets.length === 1 && 
-                normalizeName(streets[0]) === normalizeName(citySelect.value);
+                normalizeName(streets[0]) === normalizeName(selectedCity);
             
             if (hasSingleStreetMatchingCity) {
-                console.log(`🏘️ Found single street "${streets[0]}" matching city name "${citySelect.value}" - treating as no streets`);
+                console.log(`🏘️ Found single street "${streets[0]}" matching city name "${selectedCity}" - treating as no streets`);
             }
             
             if (streets.length > 0 && !hasSingleStreetMatchingCity) {
@@ -4312,8 +4343,8 @@ const STREET_NAME_FIELD = 'שם_רחוב';
             } else {
                 // No streets OR single street matching city name - hide street and house number fields
                 const reasonText = hasSingleStreetMatchingCity 
-                    ? `ביישוב "${citySelect.value}" יש רק רחוב אחד הנושא את שם היישוב. השדות "רחוב" ו"מספר בית" הוסתרו אוטומטית.`
-                    : `ביישוב "${citySelect.value}" אין רחובות רשומים במערכת. השדות "רחוב" ו"מספר בית" הוסתרו אוטומטית.`;
+                    ? `ביישוב "${selectedCity}" יש רק רחוב אחד הנושא את שם היישוב. השדות "רחוב" ו"מספר בית" הוסתרו אוטומטית.`
+                    : `ביישוב "${selectedCity}" אין רחובות רשומים במערכת. השדות "רחוב" ו"מספר בית" הוסתרו אוטומטית.`;
                 
                 console.log(`🏘️ ${reasonText}`);
                 
