@@ -234,6 +234,11 @@ function showWizardStep(stepIndex) {
                 initializePhoneValidation();
             }, 50);
         }
+        
+        // Handle additional coverage step - show only third party for mortgaged properties
+        if (currentStepId === 'step-cover-additional') {
+            updateAdditionalCoverageVisibility();
+        }
     }
     
     // Update navigation
@@ -6894,6 +6899,65 @@ function collectAdditionalCoverages() {
 }
 
 /**
+ * Update additional coverage visibility based on product type
+ */
+function updateAdditionalCoverageVisibility() {
+    const productType = document.getElementById('productType')?.value;
+    
+    // Get all coverage cards
+    const thirdPartyCard = document.querySelector('#third-party-coverage')?.closest('.coverage-card');
+    const employersCard = document.querySelector('#employers-liability')?.closest('.coverage-card');
+    const cyberCard = document.querySelector('#cyber-coverage')?.closest('.coverage-card');
+    const terrorCard = document.querySelector('#terror-coverage')?.closest('.coverage-card');
+    
+    // Get or create notice element
+    const sectionHeader = document.querySelector('#step-cover-additional .section-header-wrapper');
+    let noticeElement = document.getElementById('mortgage-coverage-notice');
+    
+    if (productType === 'מבנה בלבד משועבד לבנק') {
+        // Show only third party coverage for mortgaged properties
+        if (thirdPartyCard) thirdPartyCard.style.display = 'block';
+        if (employersCard) employersCard.style.display = 'none';
+        if (cyberCard) cyberCard.style.display = 'none';
+        if (terrorCard) terrorCard.style.display = 'none';
+        
+        // Uncheck hidden checkboxes to prevent them from being submitted
+        const employersCheckbox = document.getElementById('employers-liability');
+        const cyberCheckbox = document.getElementById('cyber-coverage');
+        const terrorCheckbox = document.getElementById('terror-coverage');
+        
+        if (employersCheckbox) employersCheckbox.checked = false;
+        if (cyberCheckbox) cyberCheckbox.checked = false;
+        if (terrorCheckbox) terrorCheckbox.checked = false;
+        
+        // Add notice for mortgaged property
+        if (sectionHeader && !noticeElement) {
+            noticeElement = document.createElement('div');
+            noticeElement.id = 'mortgage-coverage-notice';
+            noticeElement.className = 'coverage-info-box';
+            noticeElement.style.marginTop = '20px';
+            noticeElement.innerHTML = `
+                <p style="text-align: center; margin: 0;">
+                    <strong>שים לב:</strong> עבור נכס משועבד לבנק, מוצג רק כיסוי צד שלישי שהוא הכיסוי החיוני ביותר.
+                </p>
+            `;
+            sectionHeader.appendChild(noticeElement);
+        }
+    } else {
+        // Show all coverages for other product types
+        if (thirdPartyCard) thirdPartyCard.style.display = 'block';
+        if (employersCard) employersCard.style.display = 'block';
+        if (cyberCard) cyberCard.style.display = 'block';
+        if (terrorCard) terrorCard.style.display = 'block';
+        
+        // Remove notice if exists
+        if (noticeElement) {
+            noticeElement.remove();
+        }
+    }
+}
+
+/**
  * Show notification to user
  * @param {string} type - 'success' or 'error'
  * @param {string} message - The message to display
@@ -7091,6 +7155,22 @@ function initializeBankDropdowns() {
     
     if (!bankInput || !branchInput) return;
     
+    // Initially hide dropdowns and ensure proper positioning
+    if (bankDropdown) {
+        bankDropdown.style.display = 'none';
+        bankDropdown.style.position = 'absolute';
+        bankDropdown.style.width = '100%';
+        bankDropdown.style.maxHeight = '250px';
+        bankDropdown.style.overflowY = 'auto';
+    }
+    if (branchDropdown) {
+        branchDropdown.style.display = 'none';
+        branchDropdown.style.position = 'absolute';
+        branchDropdown.style.width = '100%';
+        branchDropdown.style.maxHeight = '250px';
+        branchDropdown.style.overflowY = 'auto';
+    }
+    
     let banksData = [];
     let branchesData = [];
     let selectedBank = null;
@@ -7100,6 +7180,7 @@ function initializeBankDropdowns() {
         try {
             bankDropdown.innerHTML = '<div class="dropdown-loading">טוען רשימת בנקים...</div>';
             bankDropdown.style.display = 'block';
+            bankDropdown.style.zIndex = '9999';
             
             // Fetch all data from API - get all records
             let allRecords = [];
@@ -7200,7 +7281,7 @@ function initializeBankDropdowns() {
         branchInput.value = '';
         
         // Clear validation error if exists
-        clearBuildingFormError(bankInput);
+        clearFormError(bankInput);
     }
     
     // Render branch dropdown
@@ -7245,7 +7326,7 @@ function initializeBankDropdowns() {
         branchDropdown.style.display = 'none';
         
         // Clear validation error if exists
-        clearBuildingFormError(branchInput);
+        clearFormError(branchInput);
     }
     
     // Bank input handlers
@@ -7254,12 +7335,14 @@ function initializeBankDropdowns() {
             fetchBanks();
         } else {
             bankDropdown.style.display = 'block';
+            bankDropdown.style.zIndex = '9999';
             renderBankDropdown(this.value);
         }
     });
     
     bankInput.addEventListener('input', function() {
         bankDropdown.style.display = 'block';
+        bankDropdown.style.zIndex = '9999';
         renderBankDropdown(this.value);
     });
     
@@ -7267,6 +7350,7 @@ function initializeBankDropdowns() {
     branchInput.addEventListener('focus', function() {
         if (selectedBank && branchesData.length > 0) {
             branchDropdown.style.display = 'block';
+            branchDropdown.style.zIndex = '9999';
             renderBranchDropdown(this.value);
         }
     });
@@ -7274,6 +7358,7 @@ function initializeBankDropdowns() {
     branchInput.addEventListener('input', function() {
         if (selectedBank) {
             branchDropdown.style.display = 'block';
+            branchDropdown.style.zIndex = '9999';
             renderBranchDropdown(this.value);
         }
     });
