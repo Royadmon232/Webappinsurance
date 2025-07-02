@@ -1335,6 +1335,7 @@
     align-items: flex-start;
     direction: rtl;
     flex-wrap: wrap;
+    justify-content: flex-end; /* Align items to the right in RTL */
 }
 
 #phone-number {
@@ -2490,15 +2491,17 @@ button:focus {
 .modal-body .form-group select {
     cursor: pointer;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-    background-position: left 16px center; /* Move arrow to the left */
+    background-position: right 16px center; /* Move arrow to the right for RTL */
     background-repeat: no-repeat;
     background-size: 20px;
-    padding-left: 48px; /* Add padding for the arrow */
+    padding-right: 48px; /* Add padding for the arrow on the right */
+    padding-left: 16px; /* Reset left padding */
     appearance: none;
 }
 
 .modal-body .form-group select:focus {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%232563eb' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 16px center; /* Ensure arrow stays on the right for RTL */
 }
 
 /* Form Error Styles - Enhanced */
@@ -2522,6 +2525,8 @@ button:focus {
     border-top: 1px solid #e5e7eb;
     background-color: #f8fafc;
     gap: 0.75rem; /* Adds space between stacked buttons */
+    direction: rtl; /* Ensure RTL direction for footer */
+    text-align: right; /* Right align text */
 }
 
 .modal-footer .btn {
@@ -2568,14 +2573,14 @@ button:focus {
 }
 
 /* Correct Arrows for RTL */
-.btn-next::before {
+.btn-next::after {
     content: '←';
-    margin-right: 8px; /* Swapped to margin-right for correct spacing */
+    margin-left: 8px; /* Arrow after text in RTL */
 }
 
-.btn-prev::after {
+.btn-prev::before {
     content: '→';
-    margin-left: 8px; /* This is correct for an element after text */
+    margin-right: 8px; /* Arrow before text in RTL */
 }
 
 .modal-footer .btn-primary:hover::after {
@@ -2656,10 +2661,11 @@ button:focus {
 .section-item input[type="checkbox"] {
     width: 22px;
     height: 22px;
-    margin-right: 14px;
+    margin-left: 14px; /* Changed from margin-right for RTL */
     cursor: pointer;
     accent-color: #2563eb;
     flex-shrink: 0;
+    order: 2; /* Place checkbox after the label in RTL */
 }
 
 .section-item label {
@@ -2669,6 +2675,9 @@ button:focus {
     flex: 1;
     margin: 0;
     font-weight: 500;
+    text-align: right; /* Align text to the right for RTL */
+    direction: rtl; /* Ensure RTL direction */
+    order: 1; /* Place label before checkbox in RTL */
 }
 
 .section-item.disabled {
@@ -2854,6 +2863,7 @@ input:disabled {
     padding: 8px 0;
     cursor: pointer;
     direction: rtl;
+    justify-content: flex-start; /* Align items to the start (right in RTL) */
 }
 
 .checkbox-wrapper input[type="checkbox"] {
@@ -3941,6 +3951,8 @@ input:disabled {
     border-radius: 0 0 8px 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     z-index: 1000;
+    direction: rtl; /* Ensure RTL direction for dropdown */
+    text-align: right; /* Align text to the right */
 }
 
 .dropdown-item {
@@ -3951,6 +3963,9 @@ input:disabled {
     gap: 10px;
     transition: background-color 0.2s;
     border-bottom: 1px solid #f0f0f0;
+    direction: rtl; /* RTL direction for dropdown items */
+    text-align: right; /* Right align text */
+    flex-direction: row-reverse; /* Reverse flex direction for RTL */
 }
 
 .dropdown-item:last-child {
@@ -3970,6 +3985,8 @@ input:disabled {
     flex: 1;
     font-size: 14px;
     color: #333;
+    text-align: right; /* Right align bank name */
+    direction: rtl; /* RTL direction */
 }
 
 .dropdown-item .bank-code {
@@ -3978,24 +3995,31 @@ input:disabled {
     background: #f5f5f5;
     padding: 2px 8px;
     border-radius: 4px;
+    margin-left: 8px; /* Add margin for spacing in RTL */
 }
 
 .dropdown-item .branch-details {
     display: flex;
     flex-direction: column;
     flex: 1;
+    text-align: right; /* Right align branch details */
+    direction: rtl; /* RTL direction */
 }
 
 .dropdown-item .branch-name {
     font-size: 14px;
     color: #333;
     font-weight: 500;
+    text-align: right; /* Right align branch name */
+    direction: rtl; /* RTL direction */
 }
 
 .dropdown-item .branch-address {
     font-size: 12px;
     color: #666;
     margin-top: 2px;
+    text-align: right; /* Right align branch address */
+    direction: rtl; /* RTL direction */
 }
 
 .dropdown-item .branch-code {
@@ -4004,6 +4028,8 @@ input:disabled {
     background: #f5f5f5;
     padding: 2px 8px;
     border-radius: 4px;
+    margin-left: 8px; /* Add margin for spacing in RTL */
+    align-self: flex-start; /* Align to the start (right in RTL) */
 }
 
 .dropdown-loading {
