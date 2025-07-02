@@ -4203,11 +4203,20 @@ const STREET_NAME_FIELD = 'שם_רחוב';
 
         async function handleCityChange() {
             const selectedCity = citySelect.value;
+            console.log(`🏘️ [CITY CHANGE] Selected city: \"${selectedCity}\"`);
+            
             resetStreetField();
 
             if (!selectedCity) {
                 // אם לא נבחרה עיר, הצג את כל השדות בחזרה
+                console.log('🏘️ [CITY CHANGE] No city selected, showing address fields');
                 showAddressFields();
+                return;
+            }
+            
+            // וידוא שהפונקציות קיימות
+            if (typeof hideAddressFieldsForNoStreets !== 'function' || typeof showAddressFields !== 'function') {
+                console.error('❌ [ERROR] Address field functions not found!');
                 return;
             }
 
@@ -4380,6 +4389,77 @@ const STREET_NAME_FIELD = 'שם_רחוב';
             errorMsg.style.display = 'block';
             streetInput.disabled = true;
             streetInput.placeholder = 'לא נמצאו רחובות';
+        }
+
+        function hideAddressFieldsForNoStreets() {
+            const streetFormGroup = streetInput.closest('.form-group');
+            const houseNumberInput = document.getElementById('houseNumber');
+            const houseNumberFormGroup = houseNumberInput ? houseNumberInput.closest('.form-group') : null;
+            
+            console.log('🚫 [HIDE] Hiding address fields for settlement without streets');
+            
+            if (streetFormGroup) {
+                streetFormGroup.style.display = 'none';
+                streetInput.value = '';
+                streetInput.required = false;
+                
+                // הוסף הודעה מידעית
+                let infoMessage = streetFormGroup.parentNode.querySelector('.no-streets-info');
+                if (!infoMessage) {
+                    infoMessage = document.createElement('div');
+                    infoMessage.className = 'no-streets-info';
+                    infoMessage.style.cssText = `
+                        background: #e3f2fd;
+                        color: #1976d2;
+                        padding: 12px;
+                        border-radius: 6px;
+                        border-right: 4px solid #2196f3;
+                        margin-bottom: 15px;
+                        font-size: 14px;
+                        text-align: center;
+                    `;
+                    infoMessage.innerHTML = '💡 הישוב שנבחר אינו מחולק לרחובות ומספרי בתים';
+                    streetFormGroup.parentNode.insertBefore(infoMessage, streetFormGroup);
+                }
+            }
+            
+            if (houseNumberFormGroup) {
+                houseNumberFormGroup.style.display = 'none';
+                if (houseNumberInput) {
+                    houseNumberInput.value = '';
+                    houseNumberInput.required = false;
+                }
+            }
+            
+            console.log('🏘️ Address fields hidden for settlement without streets');
+        }
+
+        function showAddressFields() {
+            const streetFormGroup = streetInput.closest('.form-group');
+            const houseNumberInput = document.getElementById('houseNumber');
+            const houseNumberFormGroup = houseNumberInput ? houseNumberInput.closest('.form-group') : null;
+            
+            console.log('✅ [SHOW] Showing address fields for settlement with streets');
+            
+            if (streetFormGroup) {
+                streetFormGroup.style.display = 'block';
+                streetInput.required = true;
+                
+                // הסר הודעה מידעית אם קיימת
+                const infoMessage = streetFormGroup.parentNode.querySelector('.no-streets-info');
+                if (infoMessage) {
+                    infoMessage.remove();
+                }
+            }
+            
+            if (houseNumberFormGroup) {
+                houseNumberFormGroup.style.display = 'block';
+                if (houseNumberInput) {
+                    houseNumberInput.required = true;
+                }
+            }
+            
+            console.log('🏘️ Address fields shown for settlement with streets');
         }
     }
 })();
