@@ -14,7 +14,7 @@ window.addEventListener('unhandledrejection', function(event) {
         console.warn('🌐 Network fetch error handled globally');
         
         // Show user-friendly notification only for critical operations
-        if (event.reason.message.includes('/api/generate-pdf') || 
+                        if (event.reason.message.includes('/api/send-email') || 
             event.reason.message.includes('/api/send-verification')) {
             if (typeof showNotification === 'function') {
                 showNotification('warning', 
@@ -4509,7 +4509,7 @@ function clearBuildingFormErrors() {
         errorMessages.forEach(message => {
             message.style.display = 'none';
             message.textContent = '';
-    });
+        });
     }
 }
 
@@ -5516,7 +5516,7 @@ function initializeAdditionalCoverageEnhancements() {
  * Submit quote request - sends all collected data to agent
  */
 async function submitQuoteRequest() {
-    console.log('📧📄 Submitting quote request with email and PDF generation...');
+    console.log('📧 Submitting quote request with email...');
     
     // Get the submit button
     const submitBtn = document.querySelector('.btn-submit-quote');
@@ -6678,124 +6678,90 @@ function downloadPDFFromBase64(base64Data, filename) {
 }
 
 /**
- * Send email and generate PDF for quote request
+ * Send email for quote request (without PDF)
  */
 async function sendEmailAndGeneratePDF(formData) {
-    console.log('📧📄 Starting email and PDF process...');
+    console.log('📧 Starting email process...');
     
     try {
         // Generate the beautiful HTML content
         const htmlContent = generateEmailHTML(formData);
         
-        // Strategy: Try the unified endpoint first (generate-pdf which also sends email)
-        // If that fails, try the email-only endpoint as fallback
-        
+        // Direct email sending
         try {
-            console.log('📤 Attempting primary method: generate-pdf endpoint...');
+            console.log('📤 Sending email...');
             
-            // Use the unified endpoint that generates PDF AND sends email
-            const result = await sendLeadPDFToServer(null, formData);
+            // Prepare email data with detailed logging
+            const emailData = {
+                to: 'royadmon23@gmail.com',
+                replyTo: formData.email || 'royadmon23@gmail.com',
+                subject: `🏠 ליד חדש להצעת ביטוח דירה - ${formData.firstName || ''} ${formData.lastName || ''}`,
+                html: htmlContent,
+                formData: formData // Include form data for server processing
+            };
             
-            console.log('✅ Primary method successful:', result);
+            console.log('📤 Sending email data:', {
+                to: emailData.to,
+                subject: emailData.subject,
+                hasHtml: !!emailData.html,
+                hasFormData: !!emailData.formData
+            });
+            
+            const result = await sendEmailToAgent(emailData);
+            
+            console.log('✅ Email sent successfully:', result);
             
             showNotification('success', 
-                `🎉 הליד נשלח בהצלחה!<br>
-                📧 נשלח מייל לסוכן עם קובץ PDF מצורף<br>
-                ✨ כל הפרטים נכללו במייל בעיצוב מלא`
+                `📧 הליד נשלח בהצלחה במייל!<br>
+                💡 נשלח במייל מעוצב עם כל הפרטים<br>
+                🎯 נציג יחזור אליך בהקדם`
             );
             
             return {
                 emailSuccess: true,
-                pdfSuccess: true,
+                pdfSuccess: false,
                 emailResult: result,
-                pdfResult: result,
-                method: 'unified',
+                pdfResult: null,
+                method: 'email-only',
                 errors: { email: null, pdf: null }
             };
             
-        } catch (primaryError) {
-            console.warn('⚠️ Primary method failed, trying fallback...', primaryError.message);
+        } catch (emailError) {
+            console.error('❌ Email sending failed:', emailError.message);
             
-            // Fallback: try email-only endpoint with improved error handling
-            try {
-                console.log('🔄 Attempting fallback: email-only endpoint...');
-                
-                // Prepare email data with detailed logging
-                const emailData = {
-                    to: 'royadmon23@gmail.com',
-                    replyTo: formData.email || 'royadmon23@gmail.com',
-                    subject: `🏠 ליד חדש להצעת ביטוח דירה - ${formData.firstName || ''} ${formData.lastName || ''}`,
-                    html: htmlContent,
-                    formData: formData // Include form data for server processing
-                };
-                
-                console.log('📤 Sending email data:', {
-                    to: emailData.to,
-                    subject: emailData.subject,
-                    hasHtml: !!emailData.html,
-                    hasFormData: !!emailData.formData
-                });
-                
-                const fallbackResult = await sendEmailToAgent(emailData);
-                
-                console.log('✅ Fallback method successful:', fallbackResult);
-                
-                showNotification('success', 
-                    `📧 הליד נשלח בהצלחה במייל!<br>
-                    💡 נשלח במייל מעוצב עם כל הפרטים<br>
-                    🎯 נציג יחזור אליך בהקדם`
-                );
-                
-                return {
-                    emailSuccess: true,
-                    pdfSuccess: false,
-                    emailResult: fallbackResult,
-                    pdfResult: null,
-                    method: 'fallback',
-                    errors: { email: null, pdf: primaryError.message }
-                };
-                
-            } catch (fallbackError) {
-                console.error('❌ Both methods failed:', {
-                    primary: primaryError.message,
-                    fallback: fallbackError.message
-                });
-                
-                // Last resort: save to localStorage and show success message
-                const timestamp = new Date().toISOString();
-                const savedForms = JSON.parse(localStorage.getItem('savedInsuranceForms') || '[]');
-                savedForms.push({
-                    ...formData,
-                    htmlContent: htmlContent,
-                    savedAt: timestamp,
-                    status: 'both_endpoints_failed',
-                    errors: {
-                        primary: primaryError.message,
-                        fallback: fallbackError.message
-                    }
-                });
-                localStorage.setItem('savedInsuranceForms', JSON.stringify(savedForms));
-                
-                console.log('💾 Form saved to localStorage as backup');
-                
-                showNotification('success', 
-                    `📋 הליד נשמר במערכת בהצלחה!<br>
-                    🔧 שירותי המייל זמנית לא זמינים<br>
-                    📞 נציג יחזור אליך תוך 24 שעות`
-                );
-                
-                return {
-                    emailSuccess: true, // Show as success to user
-                    pdfSuccess: false,
-                    emailResult: { messageId: `backup_${timestamp}`, saved: true },
-                    pdfResult: null,
-                    method: 'backup',
-                    errors: { 
-                        email: fallbackError.message, 
-                        pdf: primaryError.message 
-                    }
-                };
-            }
+            // Last resort: save to localStorage and show success message
+            const timestamp = new Date().toISOString();
+            const savedForms = JSON.parse(localStorage.getItem('savedInsuranceForms') || '[]');
+            savedForms.push({
+                ...formData,
+                htmlContent: htmlContent,
+                savedAt: timestamp,
+                status: 'email_failed',
+                errors: {
+                    email: emailError.message
+                }
+            });
+            localStorage.setItem('savedInsuranceForms', JSON.stringify(savedForms));
+            
+            console.log('💾 Form saved to localStorage as backup');
+            
+            showNotification('success', 
+                `📋 הליד נשמר במערכת בהצלחה!<br>
+                🔧 שירותי המייל זמנית לא זמינים<br>
+                📞 נציג יחזור אליך תוך 24 שעות`
+            );
+            
+            return {
+                emailSuccess: true, // Show as success to user
+                pdfSuccess: false,
+                emailResult: { messageId: `backup_${timestamp}`, saved: true },
+                pdfResult: null,
+                method: 'backup',
+                errors: { 
+                    email: emailError.message, 
+                    pdf: 'PDF generation disabled'
+                }
+            };
         }
         
     } catch (error) {
