@@ -4256,14 +4256,135 @@ const STREET_NAME_FIELD = 'שם_רחוב';
         }
 
         function processStreets(streets) {
-            if (streets.length > 0) {
+            console.log(`🏘️ [PROCESS] Processing ${streets.length} streets for selected city`);
+            console.log(`🏘️ [PROCESS] Raw streets:`, streets);
+            
+            if (streets.length === 0) {
+                console.log(`🚫 [PROCESS] No streets found - hiding address fields`);
+                hideAddressFieldsForNoStreets();
+                return;
+            }
+            
+            // Enhanced logic to detect settlements without proper streets
+            const genericStreetPatterns = [
+                'כללי', 'ראשי', 'מרכז', 'אין', 'ללא', 'לא רשום', 'לא קיים',
+                'לא מוגדר', 'בלתי מוגדר', 'אחר', 'שונות', 'כל הישוב',
+                'הישוב', 'המושב', 'הכפר', 'רח', 'דרך', 'שד', 'שדרות ראשיות',
+                'מספר', 'רחוב מספר', 'מס', 'מס\'',
+                '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
+                'א', 'ב', 'ג', 'ד', 'ה', 'ו', 'מ.א', 'מ.ב', 'מ.ג'
+            ];
+            
+            // Check if streets are real/proper streets
+            const realStreets = streets.filter(street => {
+                if (!street || typeof street !== 'string') return false;
+                
+                const streetTrimmed = street.trim();
+                const streetLower = streetTrimmed.toLowerCase();
+                
+                // Filter out very short names (likely not real streets)
+                if (streetTrimmed.length <= 2) {
+                    console.log(`🔍 [FILTER] Filtered out short street: "${streetTrimmed}"`);
+                    return false;
+                }
+                
+                // Filter out generic patterns
+                const isGeneric = genericStreetPatterns.some(pattern => {
+                    const patternLower = pattern.toLowerCase();
+                    return streetLower.includes(patternLower) || streetLower === patternLower;
+                });
+                
+                if (isGeneric) {
+                    console.log(`🔍 [FILTER] Filtered out generic street: "${streetTrimmed}"`);
+                    return false;
+                }
+                
+                // Filter out streets that are just numbers or single letters
+                if (/^[\d\u05D0-\u05EA]{1,2}$/.test(streetTrimmed)) {
+                    console.log(`🔍 [FILTER] Filtered out number/letter street: "${streetTrimmed}"`);
+                    return false;
+                }
+                
+                // Filter out streets that are combinations like "מ.א 1" or "רח' 1" or "מספר 1"
+                if (/^(מ\.א|מ\.ב|רח'?|שד'?|מספר|מס'?)\s*\d*$/i.test(streetTrimmed)) {
+                    console.log(`🔍 [FILTER] Filtered out pattern street: "${streetTrimmed}"`);
+                    return false;
+                }
+                
+                // Filter out pure numeric streets
+                if (/^\d+$/.test(streetTrimmed)) {
+                    console.log(`🔍 [FILTER] Filtered out numeric street: "${streetTrimmed}"`);
+                    return false;
+                }
+                
+                console.log(`✅ [FILTER] Keeping real street: "${streetTrimmed}"`);
+                return true;
+            });
+            
+            console.log(`🏘️ [PROCESS] Real streets after filtering:`, realStreets);
+            console.log(`🏘️ [PROCESS] Filtered out ${streets.length - realStreets.length} generic/invalid streets`);
+            
+            // Enhanced decision logic with stricter criteria
+            const hasNoStreets = streets.length === 0;
+            const hasVeryFewStreets = realStreets.length <= 2; // Changed from 3 to 2
+            const hasOnlyNumericStreets = streets.length > 0 && realStreets.length === 0 && 
+                                        streets.every(street => /^\d+$/.test(street.trim()));
+            const hasOnlyLetterStreets = streets.length > 0 && realStreets.length === 0 && 
+                                       streets.every(street => /^[\u05D0-\u05EA]+$/.test(street.trim()));
+            
+            // Check the ratio of real streets to total streets
+            const realStreetRatio = streets.length > 0 ? realStreets.length / streets.length : 0;
+            const hasLowRealStreetRatio = realStreetRatio < 0.2; // Stricter - less than 20% real streets
+            
+            console.log(`🏘️ [PROCESS] Advanced Analysis:`, {
+                originalStreetCount: streets.length,
+                realStreetCount: realStreets.length,
+                hasNoStreets,
+                hasVeryFewStreets,
+                hasOnlyNumericStreets,
+                hasOnlyLetterStreets,
+                realStreetRatio: Math.round(realStreetRatio * 100) + '%',
+                hasLowRealStreetRatio
+            });
+            
+            // More aggressive decision logic: Hide fields if ANY of these conditions are true
+            const shouldHideFields = 
+                hasNoStreets ||                           // No streets at all
+                hasVeryFewStreets ||                      // 2 or fewer real streets
+                hasOnlyNumericStreets ||                  // Only numeric streets (1, 2, 3...)
+                hasOnlyLetterStreets ||                   // Only letter streets (א, ב, ג...)
+                hasLowRealStreetRatio ||                  // Less than 20% real streets
+                (realStreets.length === 0);              // No real streets found at all
+            
+            console.log(`🏘️ [PROCESS] Final Decision:`, {
+                shouldHideFields,
+                action: shouldHideFields ? 'HIDE_ADDRESS_FIELDS' : 'SHOW_ADDRESS_FIELDS',
+                reason: hasNoStreets ? 'No streets found' :
+                       hasVeryFewStreets ? `Too few real streets (${realStreets.length})` :
+                       hasOnlyNumericStreets ? 'Only numeric streets' :
+                       hasOnlyLetterStreets ? 'Only letter streets' :
+                       hasLowRealStreetRatio ? `Low ratio of real streets (${Math.round(realStreetRatio * 100)}%)` :
+                       realStreets.length === 0 ? 'No real streets after filtering' :
+                       'Settlement has proper streets'
+            });
+            
+            if (shouldHideFields) {
+                console.log(`🚫 [PROCESS] Settlement without proper streets - hiding address fields`);
+                console.log(`🚫 [PROCESS] Reason: ${
+                    hasNoStreets ? 'No streets found' :
+                    hasVeryFewStreets ? `Too few real streets (${realStreets.length})` :
+                    hasOnlyNumericStreets ? 'Only numeric streets' :
+                    hasOnlyLetterStreets ? 'Only letter streets' :
+                    hasLowRealStreetRatio ? `Low ratio of real streets (${Math.round(realStreetRatio * 100)}%)` :
+                    realStreets.length === 0 ? 'No real streets after filtering' :
+                    'Unknown'
+                }`);
+                hideAddressFieldsForNoStreets();
+            } else {
+                console.log(`✅ [PROCESS] Settlement has proper streets (${realStreets.length} real streets) - enabling street input`);
                 streetInput.disabled = false;
                 streetInput.placeholder = 'הקלד שם רחוב לחיפוש';
-                // הצג בחזרה את שדות הרחוב ומספר הבית אם הם היו מוסתרים
                 showAddressFields();
-            } else {
-                // במקום להציג שגיאה, נסתיר את שדות הרחוב ומספר הבית
-                hideAddressFieldsForNoStreets();
             }
         }
 
@@ -4389,77 +4510,6 @@ const STREET_NAME_FIELD = 'שם_רחוב';
             errorMsg.style.display = 'block';
             streetInput.disabled = true;
             streetInput.placeholder = 'לא נמצאו רחובות';
-        }
-
-        function hideAddressFieldsForNoStreets() {
-            const streetFormGroup = streetInput.closest('.form-group');
-            const houseNumberInput = document.getElementById('houseNumber');
-            const houseNumberFormGroup = houseNumberInput ? houseNumberInput.closest('.form-group') : null;
-            
-            console.log('🚫 [HIDE] Hiding address fields for settlement without streets');
-            
-            if (streetFormGroup) {
-                streetFormGroup.style.display = 'none';
-                streetInput.value = '';
-                streetInput.required = false;
-                
-                // הוסף הודעה מידעית
-                let infoMessage = streetFormGroup.parentNode.querySelector('.no-streets-info');
-                if (!infoMessage) {
-                    infoMessage = document.createElement('div');
-                    infoMessage.className = 'no-streets-info';
-                    infoMessage.style.cssText = `
-                        background: #e3f2fd;
-                        color: #1976d2;
-                        padding: 12px;
-                        border-radius: 6px;
-                        border-right: 4px solid #2196f3;
-                        margin-bottom: 15px;
-                        font-size: 14px;
-                        text-align: center;
-                    `;
-                    infoMessage.innerHTML = '💡 הישוב שנבחר אינו מחולק לרחובות ומספרי בתים';
-                    streetFormGroup.parentNode.insertBefore(infoMessage, streetFormGroup);
-                }
-            }
-            
-            if (houseNumberFormGroup) {
-                houseNumberFormGroup.style.display = 'none';
-                if (houseNumberInput) {
-                    houseNumberInput.value = '';
-                    houseNumberInput.required = false;
-                }
-            }
-            
-            console.log('🏘️ Address fields hidden for settlement without streets');
-        }
-
-        function showAddressFields() {
-            const streetFormGroup = streetInput.closest('.form-group');
-            const houseNumberInput = document.getElementById('houseNumber');
-            const houseNumberFormGroup = houseNumberInput ? houseNumberInput.closest('.form-group') : null;
-            
-            console.log('✅ [SHOW] Showing address fields for settlement with streets');
-            
-            if (streetFormGroup) {
-                streetFormGroup.style.display = 'block';
-                streetInput.required = true;
-                
-                // הסר הודעה מידעית אם קיימת
-                const infoMessage = streetFormGroup.parentNode.querySelector('.no-streets-info');
-                if (infoMessage) {
-                    infoMessage.remove();
-                }
-            }
-            
-            if (houseNumberFormGroup) {
-                houseNumberFormGroup.style.display = 'block';
-                if (houseNumberInput) {
-                    houseNumberInput.required = true;
-                }
-            }
-            
-            console.log('🏘️ Address fields shown for settlement with streets');
         }
     }
 })();
@@ -6589,7 +6639,7 @@ function getApiBaseUrl() {
 // =============================================================================
 // EMAIL DEBUGGING INSTRUCTIONS
 // =============================================================================
-// אם יש בעיות עם שליחת מייל, בצע את השלבים הבאים:
+// אם ישובים בעיות עם שליחת מייל, בצע את השלבים הבאים:
 //
 // 1. פתח Developer Tools (F12) והקלד:
 //    debugEmailSystem()
