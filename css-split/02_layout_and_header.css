@@ -608,6 +608,14 @@ nav .container {
     background-clip: text;
 }
 
+/* לוגו ממורכז תמיד */
+.logo h1 {
+    text-align: center !important;
+    margin: 0 auto !important;
+    display: block;
+    width: 100%;
+}
+
 /* Main Content */
 main {
     margin-top: 70px; /* Account for fixed header */
@@ -3158,4 +3166,20 @@ input:disabled {
     gap: 0.2rem;
     padding: 1rem 0 0.2rem 0;
   }
+}
+
+/* תפריט ניווט RTL */
+.nav-menu-centered {
+    direction: rtl;
+}
+
+/* CTA Section RTL Fix */
+.main-cta-content {
+    direction: rtl !important;
+    text-align: center !important;
+}
+
+.main-cta-content h2 {
+    direction: rtl !important;
+    unicode-bidi: embed;
 }
