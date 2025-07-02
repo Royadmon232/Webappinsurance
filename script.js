@@ -1,12 +1,6 @@
 // =============================================================================
 // GLOBAL ERROR HANDLERS - Enhanced Error Management  
 // =============================================================================
-// 📱 MOBILE KEYBOARD ENHANCEMENT:
-// All numeric input fields in this application now automatically display
-// a numeric keyboard on mobile devices and accept only numeric input.
-// This includes: ID number, house number, postal code, insurance amounts,
-// building details, contents values, and all other numeric fields.
-// =============================================================================
 // These handlers catch uncaught promises and JavaScript errors to prevent
 // console errors and provide graceful degradation
 
@@ -69,19 +63,6 @@ window.addEventListener('error', function(event) {
 
 // Home Insurance Landing Page JavaScript
 // Initialized and ready for development
-// 
-// 📱 MOBILE KEYBOARD ENHANCEMENT (Latest Update):
-// ================================================
-// ✅ All numeric input fields now display numeric keyboard on mobile devices
-// ✅ Real-time input filtering (only numbers allowed)
-// ✅ Smart cursor position handling during input filtering
-// ✅ Copy/paste support with automatic number extraction
-// ✅ Validation error clearing when valid input is entered
-// 
-// Numeric fields include: ID number, house number, postal code, 
-// building details, insurance amounts, contents values, and phone number.
-// 
-// Debug: Use debugNumericInputs() in console to test functionality
 
 // Wizard state
 let currentWizardStep = 0;
@@ -847,8 +828,8 @@ function collectAllFormData() {
         
         // Address
         city: document.getElementById('city')?.value || '',
-        street: document.getElementById('street')?.value || '',
-        houseNumber: document.getElementById('houseNumber')?.value || '',
+        street: getStreetValue(),
+        houseNumber: getHouseNumberValue(),
         postalCode: document.getElementById('postalCode')?.value || '',
         hasGarden: document.getElementById('garden-checkbox')?.checked || false,
         
@@ -2947,16 +2928,18 @@ function validateGeneralDetailsForm() {
         isValid = false;
     }
     
-    // Validate Street
+    // Validate Street (only if visible)
     const street = document.getElementById('street');
-    if (street && !street.value.trim()) {
+    const streetFormGroup = street ? street.closest('.form-group') : null;
+    if (street && streetFormGroup && streetFormGroup.style.display !== 'none' && !street.value.trim()) {
         showFormError(street, 'שדה חובה');
         isValid = false;
     }
     
-    // Validate House Number
+    // Validate House Number (only if visible)
     const houseNumber = document.getElementById('houseNumber');
-    if (houseNumber && !houseNumber.value) {
+    const houseNumberFormGroup = houseNumber ? houseNumber.closest('.form-group') : null;
+    if (houseNumber && houseNumberFormGroup && houseNumberFormGroup.style.display !== 'none' && !houseNumber.value) {
         showFormError(houseNumber, 'שדה חובה');
         isValid = false;
     }
@@ -3035,20 +3018,20 @@ function initializeNumericInputs() {
     
     // List of all numeric input fields in the form
     const numericInputIds = [
-        // General form fields
-        'idNumber',           // Already handled above but included for completeness
-        'houseNumber',        // Already handled above but included for completeness  
-        'postalCode',         // Already handled above but included for completeness
-        
         // Building section
+        'insurance-amount',
         'building-age', 
         'building-area',
         'terrace-area',
         'garden-area',
         'earthquake-coverage-amount',
         'swimming-pool-value',
+        'building-contents-insurance',
+        'storage-insurance',
+        'swimming-pool-insurance',
         
         // Contents section
+        'contents-value',
         'contents-building-age',
         'jewelry-amount',
         'watches-amount',
@@ -3057,34 +3040,19 @@ function initializeNumericInputs() {
         'bicycles-amount',
         'musical-instruments-amount',
         
-        // Phone number (already has special handling but including for completeness)
+        // Phone number (already handled but including for completeness)
         'phone-number'
     ];
     
     let initializedCount = 0;
     
     numericInputIds.forEach(inputId => {
-        // Skip fields that already have special handling above
-        if (['idNumber', 'houseNumber', 'postalCode'].includes(inputId)) {
-            const input = document.getElementById(inputId);
-            if (input && !input.hasAttribute('data-numeric-initialized')) {
-                // Apply mobile keyboard attributes to existing fields
-                input.setAttribute('inputmode', 'numeric');
-                input.setAttribute('pattern', '[0-9]*');
-                input.setAttribute('data-numeric-initialized', 'true');
-                initializedCount++;
-                console.log(`✅ Numeric keyboard added to existing field: ${inputId}`);
-            }
-            return;
-        }
-        
         if (initializeSingleNumericInput(inputId)) {
             initializedCount++;
         }
     });
     
     console.log(`🔢 Initialized ${initializedCount} out of ${numericInputIds.length} numeric input fields with mobile keyboard support`);
-    console.log('📱 Mobile keyboard enhancement complete: All numeric fields now display numeric keyboard on mobile devices');
 }
 
 /**
@@ -3331,6 +3299,13 @@ async function handleAddressBlur() {
     // Don't validate if empty
     if (!house) {
         console.log('[ADDRESS] Empty house number, skipping validation');
+        return;
+    }
+
+    // Don't validate if house number field is hidden (settlement without streets)
+    const houseNumberFormGroup = houseNumberInput.closest('.form-group');
+    if (houseNumberFormGroup && houseNumberFormGroup.style.display === 'none') {
+        console.log('[ADDRESS] House number field is hidden (settlement without streets), skipping validation');
         return;
     }
 
@@ -4231,6 +4206,8 @@ const STREET_NAME_FIELD = 'שם_רחוב';
             resetStreetField();
 
             if (!selectedCity) {
+                // אם לא נבחרה עיר, הצג את כל השדות בחזרה
+                showAddressFields();
                 return;
             }
 
@@ -4273,9 +4250,79 @@ const STREET_NAME_FIELD = 'שם_רחוב';
             if (streets.length > 0) {
                 streetInput.disabled = false;
                 streetInput.placeholder = 'הקלד שם רחוב לחיפוש';
+                // הצג בחזרה את שדות הרחוב ומספר הבית אם הם היו מוסתרים
+                showAddressFields();
             } else {
-                showError('לא נמצאו רחובות זמינים בעיר שבחרת, אנא נסה שוב מאוחר יותר.');
+                // במקום להציג שגיאה, נסתיר את שדות הרחוב ומספר הבית
+                hideAddressFieldsForNoStreets();
             }
+        }
+
+        function hideAddressFieldsForNoStreets() {
+            const streetFormGroup = streetInput.closest('.form-group');
+            const houseNumberInput = document.getElementById('houseNumber');
+            const houseNumberFormGroup = houseNumberInput ? houseNumberInput.closest('.form-group') : null;
+            
+            if (streetFormGroup) {
+                streetFormGroup.style.display = 'none';
+                streetInput.value = '';
+                streetInput.required = false;
+                
+                // הוסף הודעה מידעית
+                let infoMessage = streetFormGroup.parentNode.querySelector('.no-streets-info');
+                if (!infoMessage) {
+                    infoMessage = document.createElement('div');
+                    infoMessage.className = 'no-streets-info';
+                    infoMessage.style.cssText = `
+                        background: #e3f2fd;
+                        color: #1976d2;
+                        padding: 12px;
+                        border-radius: 6px;
+                        border-right: 4px solid #2196f3;
+                        margin-bottom: 15px;
+                        font-size: 14px;
+                        text-align: center;
+                    `;
+                    infoMessage.innerHTML = '💡 הישוב שנבחר אינו מחולק לרחובות ומספרי בתים';
+                    streetFormGroup.parentNode.insertBefore(infoMessage, streetFormGroup);
+                }
+            }
+            
+            if (houseNumberFormGroup) {
+                houseNumberFormGroup.style.display = 'none';
+                if (houseNumberInput) {
+                    houseNumberInput.value = '';
+                    houseNumberInput.required = false;
+                }
+            }
+            
+            console.log('🏘️ Address fields hidden for settlement without streets');
+        }
+
+        function showAddressFields() {
+            const streetFormGroup = streetInput.closest('.form-group');
+            const houseNumberInput = document.getElementById('houseNumber');
+            const houseNumberFormGroup = houseNumberInput ? houseNumberInput.closest('.form-group') : null;
+            
+            if (streetFormGroup) {
+                streetFormGroup.style.display = 'block';
+                streetInput.required = true;
+                
+                // הסר הודעה מידעית אם קיימת
+                const infoMessage = streetFormGroup.parentNode.querySelector('.no-streets-info');
+                if (infoMessage) {
+                    infoMessage.remove();
+                }
+            }
+            
+            if (houseNumberFormGroup) {
+                houseNumberFormGroup.style.display = 'block';
+                if (houseNumberInput) {
+                    houseNumberInput.required = true;
+                }
+            }
+            
+            console.log('🏘️ Address fields shown for settlement with streets');
         }
 
         function renderDropdown(streets, query) {
@@ -4317,6 +4364,15 @@ const STREET_NAME_FIELD = 'שם_רחוב';
             streetInput.value = '';
             errorMsg.style.display = 'none';
             dropdown.style.display = 'none';
+            
+            // נקה גם הודעות מידעיות על ישובים ללא רחובות
+            const streetFormGroup = streetInput.closest('.form-group');
+            if (streetFormGroup) {
+                const infoMessage = streetFormGroup.parentNode.querySelector('.no-streets-info');
+                if (infoMessage) {
+                    infoMessage.remove();
+                }
+            }
         }
 
         function showError(message) {
@@ -4344,6 +4400,34 @@ function clearFormError(field) {
             existingError.remove();
         }
      }
+}
+
+/**
+ * Get street value - returns appropriate value based on visibility
+ */
+function getStreetValue() {
+    const streetElement = document.getElementById('street');
+    const streetFormGroup = streetElement ? streetElement.closest('.form-group') : null;
+    
+    if (streetFormGroup && streetFormGroup.style.display === 'none') {
+        return 'ישוב ללא חלוקה לרחובות';
+    }
+    
+    return streetElement?.value || '';
+}
+
+/**
+ * Get house number value - returns appropriate value based on visibility
+ */
+function getHouseNumberValue() {
+    const houseNumberElement = document.getElementById('houseNumber');
+    const houseNumberFormGroup = houseNumberElement ? houseNumberElement.closest('.form-group') : null;
+    
+    if (houseNumberFormGroup && houseNumberFormGroup.style.display === 'none') {
+        return '';
+    }
+    
+    return houseNumberElement?.value || '';
 }
 
 
@@ -5489,7 +5573,6 @@ function clearPhoneMessage() {
 }
 
 // Real-time phone validation and formatting
-// Note: This function is part of the mobile keyboard enhancement system
 function handlePhoneInput(event) {
     const input = event.target;
     let value = input.value;
@@ -5788,8 +5871,26 @@ function collectFullFormData() {
     formData.productType = document.getElementById('productType')?.value || '';
     formData.propertyType = document.getElementById('propertyType')?.value || '';
     formData.city = document.getElementById('city-autocomplete')?.value || document.getElementById('city')?.value || '';
-    formData.street = document.getElementById('street')?.value || '';
-    formData.houseNumber = document.getElementById('houseNumber')?.value || '';
+    
+    // Only include street and house number if they are visible (settlement has streets)
+    const streetElement = document.getElementById('street');
+    const houseNumberElement = document.getElementById('houseNumber');
+    const streetFormGroup = streetElement ? streetElement.closest('.form-group') : null;
+    const houseNumberFormGroup = houseNumberElement ? houseNumberElement.closest('.form-group') : null;
+    
+    if (streetFormGroup && streetFormGroup.style.display !== 'none') {
+        formData.street = streetElement?.value || '';
+    } else {
+        formData.street = 'ישוב ללא חלוקה לרחובות';
+        formData.settlementWithoutStreets = true;
+    }
+    
+    if (houseNumberFormGroup && houseNumberFormGroup.style.display !== 'none') {
+        formData.houseNumber = houseNumberElement?.value || '';
+    } else {
+        formData.houseNumber = '';
+        formData.settlementWithoutStreets = true;
+    }
     formData.postalCode = document.getElementById('postalCode')?.value || '';
     formData.zipCode = formData.postalCode; // Alias for postalCode
     formData.hasGarden = document.getElementById('garden-checkbox')?.checked || false;
@@ -6127,6 +6228,13 @@ function generateEmailHTML(data) {
                                 <td>עיר:</td>
                                 <td>${data.city || 'לא צוין'}</td>
                             </tr>
+                            ${data.settlementWithoutStreets ? `
+                            <tr>
+                                <td colspan="2" style="background: #e3f2fd; color: #1976d2; text-align: center; font-style: italic;">
+                                    💡 ישוב ללא חלוקה לרחובות ומספרי בתים
+                                </td>
+                            </tr>
+                            ` : `
                             <tr>
                                 <td>רחוב:</td>
                                 <td>${data.street || 'לא צוין'}</td>
@@ -6135,6 +6243,7 @@ function generateEmailHTML(data) {
                                 <td>מספר בית:</td>
                                 <td>${data.houseNumber || 'לא צוין'}</td>
                             </tr>
+                            `}
                             <tr>
                                 <td>מיקוד:</td>
                                 <td>${data.postalCode || data.zipCode || 'לא צוין'}</td>
@@ -7329,61 +7438,10 @@ async function debugEmailSending() {
     }
 }
 
-/**
- * Debug function to test numeric input functionality
- */
-function debugNumericInputs() {
-    console.log('🧪 DEBUG: Testing numeric input functionality...');
-    
-    const numericInputIds = [
-        'idNumber', 'houseNumber', 'postalCode',
-        'building-age', 'building-area', 'terrace-area', 'garden-area',
-        'earthquake-coverage-amount', 'swimming-pool-value',
-        'contents-building-age', 'jewelry-amount', 'watches-amount',
-        'cameras-amount', 'electronics-amount', 'bicycles-amount',
-        'musical-instruments-amount', 'phone-number'
-    ];
-    
-    let foundInputs = 0;
-    let configuredInputs = 0;
-    
-    numericInputIds.forEach(inputId => {
-        const input = document.getElementById(inputId);
-        if (input) {
-            foundInputs++;
-            console.log(`✅ Found input: ${inputId}`);
-            
-            // Check if properly configured
-            const hasInputMode = input.hasAttribute('inputmode');
-            const hasPattern = input.hasAttribute('pattern');
-            const hasNumericInit = input.hasAttribute('data-numeric-initialized');
-            
-            if (hasInputMode || hasPattern || hasNumericInit) {
-                configuredInputs++;
-                console.log(`  📱 Mobile keyboard configured: inputmode=${input.getAttribute('inputmode')}, pattern=${input.getAttribute('pattern')}`);
-            } else {
-                console.warn(`  ⚠️ Not configured for mobile keyboard: ${inputId}`);
-            }
-        } else {
-            console.warn(`❌ Input not found: ${inputId}`);
-        }
-    });
-    
-    console.log(`🔢 Summary: Found ${foundInputs} inputs, ${configuredInputs} configured for numeric mobile keyboard`);
-    
-    return {
-        totalInputs: numericInputIds.length,
-        foundInputs: foundInputs,
-        configuredInputs: configuredInputs,
-        success: configuredInputs >= foundInputs * 0.8 // 80% success rate
-    };
-}
-
 // Make debug functions globally available
 window.debugFormCollection = debugFormCollection;
 window.debugEmailSystem = debugEmailSystem;
 window.debugEmailSending = debugEmailSending;
-window.debugNumericInputs = debugNumericInputs;
 
 /**
  * Initialize bank and branch dropdowns
