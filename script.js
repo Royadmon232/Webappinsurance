@@ -3766,7 +3766,7 @@ function smoothScroll(target) {
 (function() {
     const citySelect = document.getElementById('city');
     const cityAutocompleteInput = document.getElementById('city-autocomplete');
-    if (!citySelect && !cityAutocompleteInput) return;
+    if (!citySelect || !cityAutocompleteInput) return;
 
     // Utility: find <option> in select by text
     function findOptionByText(select, text) {
@@ -4136,11 +4136,10 @@ const STREET_NAME_FIELD = 'שם_רחוב';
 
     function setupDynamicStreetDropdown() {
         const citySelect = document.getElementById('city');
-        const cityAutocompleteInput = document.getElementById('city-autocomplete');
         const streetInput = document.getElementById('street');
 
-        // Check for essential elements - need at least one city input and street input
-        if ((!citySelect && !cityAutocompleteInput) || !streetInput) {
+        // Check for essential elements
+        if (!citySelect || !streetInput) {
             console.error('Street Dropdown: City or Street input not found.');
             return;
         }
@@ -4191,43 +4190,18 @@ const STREET_NAME_FIELD = 'שם_רחוב';
         streetInput.disabled = true;
         streetInput.placeholder = 'בחר ישוב תחילה';
 
-        // Helper function to get current city value
-        const getCurrentCityValue = () => {
-            return cityAutocompleteInput?.value?.trim() || citySelect?.value?.trim() || '';
-        };
-
-        // Check if city is already selected on initialization
-        const initialCity = getCurrentCityValue();
-        if (initialCity) {
-            console.log(`🏘️ Initial city detected: "${initialCity}" - checking streets...`);
-            setTimeout(() => handleCityChange(), 100); // Small delay to ensure DOM is ready
-        }
-
-        // Check if city is already selected on initialization
-        const initialCity = getCurrentCityValue();
-        if (initialCity) {
-            console.log(`🏘️ Initial city detected: "${initialCity}" - checking streets...`);
-            setTimeout(() => handleCityChange(), 100); // Small delay to ensure DOM is ready
-        }
-
         // --- Event Listeners ---
-        if (citySelect) {
-            citySelect.addEventListener('change', handleCityChange);
-        }
-        if (cityAutocompleteInput) {
-            cityAutocompleteInput.addEventListener('input', debounce(handleCityChange, 300));
-            cityAutocompleteInput.addEventListener('change', handleCityChange);
-        }
+        citySelect.addEventListener('change', handleCityChange);
         
         streetInput.addEventListener('input', () => {
-            const selectedCity = getCurrentCityValue();
+            const selectedCity = citySelect.value;
             if (streetCache.has(selectedCity)) {
                 renderDropdown(streetCache.get(selectedCity), streetInput.value);
             }
         });
 
         streetInput.addEventListener('focus', () => {
-            const selectedCity = getCurrentCityValue();
+            const selectedCity = citySelect.value;
             if (streetInput.value.length > 0 && streetCache.has(selectedCity)) {
                 renderDropdown(streetCache.get(selectedCity), streetInput.value);
             }
@@ -4240,20 +4214,17 @@ const STREET_NAME_FIELD = 'שם_רחוב';
         });
 
         async function handleCityChange() {
-            const selectedCity = getCurrentCityValue();
+            const selectedCity = citySelect.value;
             resetStreetField();
 
             if (!selectedCity) {
                 return;
             }
 
-            console.log(`🏘️ City changed to: "${selectedCity}" - fetching streets...`);
-
             streetInput.disabled = true;
             streetInput.placeholder = 'טוען רחובות...';
 
             if (streetCache.has(selectedCity)) {
-                console.log(`🏘️ Using cached streets for: ${selectedCity}`);
                 processStreets(streetCache.get(selectedCity));
                 return;
             }
@@ -4293,35 +4264,21 @@ const STREET_NAME_FIELD = 'שם_רחוב';
             // in the government database. When no streets are found, it automatically
             // hides the street and house number fields to improve user experience.
             // 
-            // ENHANCED: Also handles cities with only one "street" that matches
-            // the city name itself - indicating no real streets exist.
+            // SPECIAL CASE: Some settlements return a single street with the same 
+            // name as the city itself (e.g., "מושב אביגדור" has one street called
+            // "אביגדור"). This indicates the settlement has no street division,
+            // so we hide the street fields in this case too.
             // ====================================================================
-            
-            const selectedCity = getCurrentCityValue();
             
             // Find house number field and its form group
             const houseNumberInput = document.getElementById('houseNumber');
             const houseNumberGroup = houseNumberInput ? houseNumberInput.closest('.form-group') : null;
             
-            // Helper function to normalize names for comparison
-            const normalizeName = (name) => {
-                if (!name) return '';
-                return name
-                    .replace(/[־\-\s\(\)]/g, '') // Remove dashes, spaces, parentheses
-                    .replace(/מקומי|מרכזי|ראשי|עיקרי/g, '') // Remove common street suffixes
-                    .toLowerCase()
-                    .trim();
-            };
+            // Check if the only street has the same name as the city
+            const hasOnlyStreetWithCityName = streets.length === 1 && 
+                                               streets[0].trim().toLowerCase() === citySelect.value.trim().toLowerCase();
             
-            // Check if we have a single street that matches the city name
-            const hasSingleStreetMatchingCity = streets.length === 1 && 
-                normalizeName(streets[0]) === normalizeName(selectedCity);
-            
-            if (hasSingleStreetMatchingCity) {
-                console.log(`🏘️ Found single street "${streets[0]}" matching city name "${selectedCity}" - treating as no streets`);
-            }
-            
-            if (streets.length > 0 && !hasSingleStreetMatchingCity) {
+            if (streets.length > 0 && !hasOnlyStreetWithCityName) {
                 // Has real streets - show street and house number fields
                 streetInput.disabled = false;
                 streetInput.placeholder = 'הקלד שם רחוב לחיפוש';
@@ -4341,12 +4298,12 @@ const STREET_NAME_FIELD = 'שם_רחוב';
                     streetInput.required = true;
                 }
             } else {
-                // No streets OR single street matching city name - hide street and house number fields
-                const reasonText = hasSingleStreetMatchingCity 
-                    ? `ביישוב "${selectedCity}" יש רק רחוב אחד הנושא את שם היישוב. השדות "רחוב" ו"מספר בית" הוסתרו אוטומטית.`
-                    : `ביישוב "${selectedCity}" אין רחובות רשומים במערכת. השדות "רחוב" ו"מספר בית" הוסתרו אוטומטית.`;
-                
-                console.log(`🏘️ ${reasonText}`);
+                // No streets or only city-named street - hide street and house number fields
+                if (hasOnlyStreetWithCityName) {
+                    console.log(`🏘️ Only street found is same as city name "${citySelect.value}" - hiding street and house number fields`);
+                } else {
+                    console.log(`🏘️ No streets found for ${citySelect.value} - hiding street and house number fields`);
+                }
                 
                 // Hide street field
                 const streetGroup = streetInput.closest('.form-group');
@@ -4365,11 +4322,15 @@ const STREET_NAME_FIELD = 'שם_רחוב';
                     }
                 }
                 
-                // Show a friendly message instead of an error
+                // Show a friendly message based on the situation
+                const messageText = hasOnlyStreetWithCityName 
+                    ? `ביישוב "${citySelect.value}" אין חלוקה לרחובות. השדות "רחוב" ו"מספר בית" הוסתרו אוטומטית.`
+                    : `ביישוב "${citySelect.value}" אין רחובות רשומים במערכת. השדות "רחוב" ו"מספר בית" הוסתרו אוטומטית.`;
+                
                 errorMsg.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="font-size: 18px;">ℹ️</span>
-                        <span>${reasonText}</span>
+                        <span>${messageText}</span>
                     </div>
                 `;
                 errorMsg.style.display = 'block';
