@@ -1,6 +1,12 @@
 // =============================================================================
 // GLOBAL ERROR HANDLERS - Enhanced Error Management  
 // =============================================================================
+// 📱 MOBILE KEYBOARD ENHANCEMENT:
+// All numeric input fields in this application now automatically display
+// a numeric keyboard on mobile devices and accept only numeric input.
+// This includes: ID number, house number, postal code, insurance amounts,
+// building details, contents values, and all other numeric fields.
+// =============================================================================
 // These handlers catch uncaught promises and JavaScript errors to prevent
 // console errors and provide graceful degradation
 
@@ -63,6 +69,19 @@ window.addEventListener('error', function(event) {
 
 // Home Insurance Landing Page JavaScript
 // Initialized and ready for development
+// 
+// 📱 MOBILE KEYBOARD ENHANCEMENT (Latest Update):
+// ================================================
+// ✅ All numeric input fields now display numeric keyboard on mobile devices
+// ✅ Real-time input filtering (only numbers allowed)
+// ✅ Smart cursor position handling during input filtering
+// ✅ Copy/paste support with automatic number extraction
+// ✅ Validation error clearing when valid input is entered
+// 
+// Numeric fields include: ID number, house number, postal code, 
+// building details, insurance amounts, contents values, and phone number.
+// 
+// Debug: Use debugNumericInputs() in console to test functionality
 
 // Wizard state
 let currentWizardStep = 0;
@@ -96,6 +115,9 @@ document.addEventListener('DOMContentLoaded', function() {
             initializeContentsFields();
             addContentsFormListeners();
             initializeBankDropdowns();
+            
+            // Initialize numeric inputs with mobile keyboard support
+            initializeNumericInputs();
             
             // Initialize building fields based on current product type
             const productType = document.getElementById('productType');
@@ -1772,7 +1794,10 @@ window.HomeInsuranceApp = {
     // Phone verification functions
     initializeCodeInputs,
     verifyCode,
-    startResendTimer
+    startResendTimer,
+    // Numeric inputs initialization
+    initializeNumericInputs,
+    initializeSingleNumericInput
 };
 
 /**
@@ -1825,6 +1850,9 @@ function openGeneralDetailsModal() {
         
         // Add event listeners for closing the modal
         setupModalCloseHandlers();
+        
+        // Initialize numeric inputs with mobile keyboard support
+        initializeNumericInputs();
         
         // Initialize wizard
         initStepWizard();
@@ -2994,6 +3022,149 @@ function clearFormErrors() {
 }
 
 /**
+ * Initialize numeric inputs with mobile keyboard support
+ * This function ensures that all numeric input fields in the insurance form:
+ * 1. Display a numeric keyboard on mobile devices (inputmode="numeric")
+ * 2. Only allow numeric input (filter out non-digits)
+ * 3. Handle copy/paste correctly (extract only numbers)
+ * 4. Preserve cursor position during input filtering
+ * 5. Clear validation errors when user starts typing valid numbers
+ */
+function initializeNumericInputs() {
+    console.log('🔢 Initializing numeric inputs with mobile keyboard support...');
+    
+    // List of all numeric input fields in the form
+    const numericInputIds = [
+        // General form fields
+        'idNumber',           // Already handled above but included for completeness
+        'houseNumber',        // Already handled above but included for completeness  
+        'postalCode',         // Already handled above but included for completeness
+        
+        // Building section
+        'building-age', 
+        'building-area',
+        'terrace-area',
+        'garden-area',
+        'earthquake-coverage-amount',
+        'swimming-pool-value',
+        
+        // Contents section
+        'contents-building-age',
+        'jewelry-amount',
+        'watches-amount',
+        'cameras-amount',
+        'electronics-amount',
+        'bicycles-amount',
+        'musical-instruments-amount',
+        
+        // Phone number (already has special handling but including for completeness)
+        'phone-number'
+    ];
+    
+    let initializedCount = 0;
+    
+    numericInputIds.forEach(inputId => {
+        // Skip fields that already have special handling above
+        if (['idNumber', 'houseNumber', 'postalCode'].includes(inputId)) {
+            const input = document.getElementById(inputId);
+            if (input && !input.hasAttribute('data-numeric-initialized')) {
+                // Apply mobile keyboard attributes to existing fields
+                input.setAttribute('inputmode', 'numeric');
+                input.setAttribute('pattern', '[0-9]*');
+                input.setAttribute('data-numeric-initialized', 'true');
+                initializedCount++;
+                console.log(`✅ Numeric keyboard added to existing field: ${inputId}`);
+            }
+            return;
+        }
+        
+        if (initializeSingleNumericInput(inputId)) {
+            initializedCount++;
+        }
+    });
+    
+    console.log(`🔢 Initialized ${initializedCount} out of ${numericInputIds.length} numeric input fields with mobile keyboard support`);
+    console.log('📱 Mobile keyboard enhancement complete: All numeric fields now display numeric keyboard on mobile devices');
+}
+
+/**
+ * Initialize a single numeric input field with mobile keyboard support
+ * @param {string|HTMLElement} inputElement - Input element ID or element itself
+ */
+function initializeSingleNumericInput(inputElement) {
+    const input = typeof inputElement === 'string' ? document.getElementById(inputElement) : inputElement;
+    
+    if (!input) {
+        console.warn('⚠️ Numeric input element not found:', inputElement);
+        return false;
+    }
+    
+    // Skip if already initialized
+    if (input.hasAttribute('data-numeric-initialized')) {
+        return false;
+    }
+    
+    // Set mobile keyboard to numeric
+    input.setAttribute('inputmode', 'numeric');
+    input.setAttribute('pattern', '[0-9]*');
+    input.setAttribute('data-numeric-initialized', 'true');
+    
+    // Add input event listener to allow only numbers
+    input.addEventListener('input', function(e) {
+        // Store cursor position
+        const cursorPosition = this.selectionStart;
+        const originalLength = this.value.length;
+        
+        // Remove non-digits
+        this.value = this.value.replace(/\D/g, '');
+        
+        // Restore cursor position (adjust for removed characters)
+        const newLength = this.value.length;
+        const lengthDiff = originalLength - newLength;
+        const newCursorPosition = Math.max(0, cursorPosition - lengthDiff);
+        this.setSelectionRange(newCursorPosition, newCursorPosition);
+        
+        // Clear validation errors when user starts typing
+        if (this.value) {
+            this.classList.remove('error');
+            const errorMsg = this.closest('.form-group, .building-form-group')?.querySelector('.form-error-message, .error-message');
+            if (errorMsg) {
+                errorMsg.style.display = 'none';
+                errorMsg.textContent = '';
+            }
+        }
+    });
+    
+    // Prevent non-numeric key presses
+    input.addEventListener('keydown', function(e) {
+        // Allow: backspace, delete, tab, escape, enter, arrows, home, end
+        if ([8, 9, 27, 13, 46, 35, 36, 37, 38, 39, 40].indexOf(e.keyCode) !== -1 ||
+            // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+Z
+            (e.ctrlKey === true && [65, 67, 86, 88, 90].indexOf(e.keyCode) !== -1)) {
+            return;
+        }
+        // Ensure that it is a number and stop the keypress
+        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+        }
+    });
+    
+    // Handle paste events
+    input.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+        const numbersOnly = pastedData.replace(/\D/g, '');
+        this.value = numbersOnly;
+        
+        // Trigger input event to validate
+        this.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    
+    console.log(`✅ Single numeric input initialized:`, input.id || input.name || 'unnamed input');
+    return true;
+}
+
+/**
  * Add input event listeners for real-time validation
  */
 function addFormInputListeners() {
@@ -3070,6 +3241,10 @@ function addFormInputListeners() {
     // ID Number - allow only digits and limit to 9
     const idNumber = document.getElementById('idNumber');
     if (idNumber) {
+        // Set mobile keyboard to numeric
+        idNumber.setAttribute('inputmode', 'numeric');
+        idNumber.setAttribute('pattern', '[0-9]*');
+        
         idNumber.addEventListener('input', function(e) {
             // Remove non-digits
             this.value = this.value.replace(/\D/g, '');
@@ -3091,6 +3266,10 @@ function addFormInputListeners() {
     // House Number - allow only digits
     const houseNumber = document.getElementById('houseNumber');
     if (houseNumber) {
+        // Set mobile keyboard to numeric
+        houseNumber.setAttribute('inputmode', 'numeric');
+        houseNumber.setAttribute('pattern', '[0-9]*');
+        
         houseNumber.addEventListener('input', function(e) {
             // Remove non-digits
             this.value = this.value.replace(/\D/g, '');
@@ -3102,6 +3281,10 @@ function addFormInputListeners() {
     // Postal Code - allow only digits
     const postalCode = document.getElementById('postalCode');
     if (postalCode) {
+        // Set mobile keyboard to numeric
+        postalCode.setAttribute('inputmode', 'numeric');
+        postalCode.setAttribute('pattern', '[0-9]*');
+        
         postalCode.addEventListener('input', function(e) {
             // Remove non-digits
             this.value = this.value.replace(/\D/g, '');
@@ -5306,6 +5489,7 @@ function clearPhoneMessage() {
 }
 
 // Real-time phone validation and formatting
+// Note: This function is part of the mobile keyboard enhancement system
 function handlePhoneInput(event) {
     const input = event.target;
     let value = input.value;
@@ -5401,6 +5585,12 @@ function initializePhoneValidation() {
         // Clear any existing event listeners by cloning the element
         const newPhoneInput = phoneInput.cloneNode(true);
         phoneInput.parentNode.replaceChild(newPhoneInput, phoneInput);
+        
+        // Set mobile keyboard to numeric (if not already set)
+        if (!newPhoneInput.hasAttribute('inputmode')) {
+            newPhoneInput.setAttribute('inputmode', 'numeric');
+            newPhoneInput.setAttribute('pattern', '[0-9]*');
+        }
         
         // Add event listeners for real-time validation
         newPhoneInput.addEventListener('input', handlePhoneInput);
@@ -7139,10 +7329,61 @@ async function debugEmailSending() {
     }
 }
 
+/**
+ * Debug function to test numeric input functionality
+ */
+function debugNumericInputs() {
+    console.log('🧪 DEBUG: Testing numeric input functionality...');
+    
+    const numericInputIds = [
+        'idNumber', 'houseNumber', 'postalCode',
+        'building-age', 'building-area', 'terrace-area', 'garden-area',
+        'earthquake-coverage-amount', 'swimming-pool-value',
+        'contents-building-age', 'jewelry-amount', 'watches-amount',
+        'cameras-amount', 'electronics-amount', 'bicycles-amount',
+        'musical-instruments-amount', 'phone-number'
+    ];
+    
+    let foundInputs = 0;
+    let configuredInputs = 0;
+    
+    numericInputIds.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            foundInputs++;
+            console.log(`✅ Found input: ${inputId}`);
+            
+            // Check if properly configured
+            const hasInputMode = input.hasAttribute('inputmode');
+            const hasPattern = input.hasAttribute('pattern');
+            const hasNumericInit = input.hasAttribute('data-numeric-initialized');
+            
+            if (hasInputMode || hasPattern || hasNumericInit) {
+                configuredInputs++;
+                console.log(`  📱 Mobile keyboard configured: inputmode=${input.getAttribute('inputmode')}, pattern=${input.getAttribute('pattern')}`);
+            } else {
+                console.warn(`  ⚠️ Not configured for mobile keyboard: ${inputId}`);
+            }
+        } else {
+            console.warn(`❌ Input not found: ${inputId}`);
+        }
+    });
+    
+    console.log(`🔢 Summary: Found ${foundInputs} inputs, ${configuredInputs} configured for numeric mobile keyboard`);
+    
+    return {
+        totalInputs: numericInputIds.length,
+        foundInputs: foundInputs,
+        configuredInputs: configuredInputs,
+        success: configuredInputs >= foundInputs * 0.8 // 80% success rate
+    };
+}
+
 // Make debug functions globally available
 window.debugFormCollection = debugFormCollection;
 window.debugEmailSystem = debugEmailSystem;
 window.debugEmailSending = debugEmailSending;
+window.debugNumericInputs = debugNumericInputs;
 
 /**
  * Initialize bank and branch dropdowns
@@ -7394,7 +7635,9 @@ Object.assign(window.HomeInsuranceApp, {
     submitQuoteRequest,
     testConditionalLogic,
     logInitializationSummary,
-    debugFormCollection
+    debugFormCollection,
+    initializeNumericInputs,
+    initializeSingleNumericInput
 });
 
 // Also make openModal globally available for backward compatibility
