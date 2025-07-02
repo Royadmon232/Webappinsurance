@@ -1664,6 +1664,7 @@
 
 /* Polish for number inputs */
 input[type="number"] {
+    appearance: textfield;
     -moz-appearance: textfield;
 }
 
