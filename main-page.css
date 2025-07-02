@@ -281,6 +281,7 @@ header.scrolled {
     animation: fadeInUp 0.8s ease-out 0.2s both;
     color: var(--white);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    direction: rtl;
 }
 
 .gradient-text-main {
