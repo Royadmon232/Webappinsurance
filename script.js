@@ -3051,8 +3051,11 @@ function initializeNumericInputs() {
         'bicycles-amount',
         'musical-instruments-amount',
         
-        // Phone number (already handled but including for completeness)
-        'phone-number'
+        // General form fields
+        'phone-number',
+        'idNumber',
+        'houseNumber',
+        'postalCode'
     ];
     
     let initializedCount = 0;
@@ -3063,7 +3066,36 @@ function initializeNumericInputs() {
         }
     });
     
-    console.log(`🔢 Initialized ${initializedCount} out of ${numericInputIds.length} numeric input fields with mobile keyboard support`);
+    // Also find and initialize any type="number" inputs that might have been missed
+    const numberInputs = document.querySelectorAll('input[type="number"]');
+    numberInputs.forEach(input => {
+        if (!input.hasAttribute('data-numeric-initialized')) {
+            if (initializeSingleNumericInput(input)) {
+                initializedCount++;
+            }
+        }
+    });
+    
+    console.log(`🔢 Initialized ${initializedCount} numeric input fields with mobile keyboard support (${numericInputIds.length} from list + ${numberInputs.length - numericInputIds.length} auto-detected)`);
+}
+
+/**
+ * Safe function to set selection range - works only on text inputs
+ * @param {HTMLInputElement} input - Input element
+ * @param {number} start - Start position
+ * @param {number} end - End position
+ */
+function safeSetSelectionRange(input, start, end) {
+    // Only try to set selection range on text-based inputs
+    if (input.type === 'text' || input.type === 'search' || input.type === 'url' || 
+        input.type === 'tel' || input.type === 'password') {
+        try {
+            input.setSelectionRange(start, end);
+        } catch (e) {
+            console.debug('setSelectionRange failed:', e.message);
+        }
+    }
+    // For number inputs and others, do nothing - they don't support selection range
 }
 
 /**
@@ -3090,18 +3122,26 @@ function initializeSingleNumericInput(inputElement) {
     
     // Add input event listener to allow only numbers
     input.addEventListener('input', function(e) {
-        // Store cursor position
-        const cursorPosition = this.selectionStart;
+        // Store cursor position (safely handle all input types)
+        let cursorPosition = null;
+        try {
+            cursorPosition = this.selectionStart;
+        } catch (e) {
+            // Some input types don't support selectionStart
+            cursorPosition = null;
+        }
         const originalLength = this.value.length;
         
         // Remove non-digits
         this.value = this.value.replace(/\D/g, '');
         
-        // Restore cursor position (adjust for removed characters)
-        const newLength = this.value.length;
-        const lengthDiff = originalLength - newLength;
-        const newCursorPosition = Math.max(0, cursorPosition - lengthDiff);
-        this.setSelectionRange(newCursorPosition, newCursorPosition);
+        // Restore cursor position only for text inputs (setSelectionRange doesn't work on number inputs)
+        if (cursorPosition !== null) {
+            const newLength = this.value.length;
+            const lengthDiff = originalLength - newLength;
+            const newCursorPosition = Math.max(0, cursorPosition - lengthDiff);
+            safeSetSelectionRange(this, newCursorPosition, newCursorPosition);
+        }
         
         // Clear validation errors when user starts typing
         if (this.value) {
