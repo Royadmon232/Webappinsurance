@@ -6683,10 +6683,10 @@ async function sendToGoogleSheets(formData) {
     
     // Get the correct API base URL dynamically
     const apiBaseUrl = getApiBaseUrl();
-    let endpoint = `${apiBaseUrl}/api/add-to-sheets`;
+    let endpoint = `${apiBaseUrl}/api/add-to-sheets-alternative`; // Start with working one
     
-    // If the main endpoint has been failing, try the alternative
-    let useAlternative = false;
+    // Use the alternative method first (it works better)
+    let useAlternative = true;
     
     const isDevelopment = window.location.hostname === 'localhost' || 
                          window.location.hostname === '127.0.0.1';
@@ -6714,11 +6714,11 @@ async function sendToGoogleSheets(formData) {
             body: JSON.stringify({ formData: formData })
         });
         
-        // If main endpoint fails with specific errors, try alternative
+        // If alternative fails, try original method as fallback
         if (!response.ok && response.status === 500) {
-            console.log('🔄 Main Google Sheets API failed, trying alternative method...');
-            endpoint = `${apiBaseUrl}/api/add-to-sheets-alternative`;
-            useAlternative = true;
+            console.log('🔄 Alternative Google Sheets API failed, trying original method...');
+            endpoint = `${apiBaseUrl}/api/add-to-sheets`;
+            useAlternative = false;
             
             response = await fetch(endpoint, {
                 method: 'POST',
