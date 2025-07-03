@@ -1,13 +1,52 @@
 import { google } from 'googleapis';
 
-// Google Sheets setup
-const auth = new google.auth.JWT({
-  email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-  key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  scopes: ['https://www.googleapis.com/auth/spreadsheets']
-});
+// Google Sheets setup with better error handling
+let auth;
+try {
+  // Parse the private key more carefully
+  const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+  if (!privateKey) {
+    throw new Error('GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY is not defined');
+  }
+  
+  // Handle different formats of private key
+  let formattedPrivateKey = privateKey;
+  
+  // If the key is base64 encoded, decode it first
+  if (!privateKey.includes('BEGIN PRIVATE KEY')) {
+    try {
+      formattedPrivateKey = Buffer.from(privateKey, 'base64').toString('utf8');
+    } catch (e) {
+      // If base64 decode fails, use as is
+      formattedPrivateKey = privateKey;
+    }
+  }
+  
+  // Replace literal \n with actual newlines
+  formattedPrivateKey = formattedPrivateKey.replace(/\\n/g, '\n');
+  
+  // Ensure proper key format
+  if (!formattedPrivateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+    throw new Error('Invalid private key format - missing BEGIN PRIVATE KEY header');
+  }
+  
+  if (!formattedPrivateKey.includes('-----END PRIVATE KEY-----')) {
+    throw new Error('Invalid private key format - missing END PRIVATE KEY footer');
+  }
 
-const sheets = google.sheets({ version: 'v4', auth });
+  auth = new google.auth.JWT({
+    email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    key: formattedPrivateKey,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets']
+  });
+  
+  console.log('Google Auth initialized successfully');
+} catch (error) {
+  console.error('Failed to initialize Google Auth:', error.message);
+  auth = null;
+}
+
+const sheets = auth ? google.sheets({ version: 'v4', auth }) : null;
 
 export default async function handler(req, res) {
   // Handle CORS
@@ -28,6 +67,33 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Check if Google Sheets is properly configured
+  if (!auth || !sheets) {
+    console.error('Google Sheets not configured properly');
+    return res.status(500).json({
+      success: false,
+      error: 'Google Sheets configuration error',
+      message: 'Google Service Account credentials are not properly configured'
+    });
+  }
+
+  // Check required environment variables
+  if (!process.env.GOOGLE_SHEETS_ID) {
+    return res.status(500).json({
+      success: false,
+      error: 'Configuration error',
+      message: 'GOOGLE_SHEETS_ID is not defined'
+    });
+  }
+
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL) {
+    return res.status(500).json({
+      success: false,
+      error: 'Configuration error',
+      message: 'GOOGLE_SERVICE_ACCOUNT_EMAIL is not defined'
+    });
+  }
+
   try {
     const { formData } = req.body;
     
@@ -35,6 +101,20 @@ export default async function handler(req, res) {
       return res.status(400).json({ 
         error: 'Missing form data',
         message: 'Please provide form data to add to sheets' 
+      });
+    }
+
+    // Test authentication before proceeding
+    try {
+      await auth.authorize();
+      console.log('Google Auth authorized successfully');
+    } catch (authError) {
+      console.error('Google Auth authorization failed:', authError);
+      return res.status(500).json({
+        success: false,
+        error: 'Authentication failed',
+        message: 'Failed to authenticate with Google Sheets API',
+        details: authError.message
       });
     }
 

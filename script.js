@@ -6694,16 +6694,31 @@ async function sendToGoogleSheets(formData) {
             });
             
             let errorMessage = result.message || result.error || 'Unknown Google Sheets error';
+            let userFriendlyMessage = '';
             
             if (response.status === 500) {
-                errorMessage = `Google Sheets server error: ${errorMessage}`;
+                if (errorMessage.includes('DECODER routines::unsupported')) {
+                    userFriendlyMessage = 'בעיה בהגדרות Google Sheets - צריך לתקן את המפתח הפרטי';
+                    errorMessage = `Google Sheets configuration error: Private key format issue`;
+                } else if (errorMessage.includes('Authentication failed') || errorMessage.includes('unauthorized')) {
+                    userFriendlyMessage = 'בעיה בהרשאות Google Sheets - צריך לבדוק את ההגדרות';
+                    errorMessage = `Google Sheets authentication error: ${errorMessage}`;
+                } else {
+                    userFriendlyMessage = 'שגיאת שרת ב-Google Sheets';
+                    errorMessage = `Google Sheets server error: ${errorMessage}`;
+                }
             } else if (response.status === 429) {
+                userFriendlyMessage = 'יותר מדי בקשות ל-Google Sheets, נסה שוב בעוד כמה דקות';
                 errorMessage = 'Too many requests to Google Sheets, please try again later';
             } else if (response.status >= 400 && response.status < 500) {
+                userFriendlyMessage = 'בעיה בהגדרות Google Sheets';
                 errorMessage = `Google Sheets client error (${response.status}): ${errorMessage}`;
             }
             
-            throw new Error(errorMessage);
+            // Store user-friendly message for UI display
+            const error = new Error(errorMessage);
+            error.userMessage = userFriendlyMessage;
+            throw error;
         }
         
         console.log('✅ Data added to Google Sheets successfully:', {
@@ -7097,6 +7112,7 @@ async function sendEmailAndGeneratePDF(formData) {
             
             // Send to Google Sheets in parallel (don't wait for it to complete)
             let sheetsResult = null;
+            let sheetsErrorMessage = null;
             try {
                 console.log('📊 Sending data to Google Sheets...');
                 sheetsResult = await sendToGoogleSheets(formData);
@@ -7105,15 +7121,21 @@ async function sendEmailAndGeneratePDF(formData) {
                 }
             } catch (sheetsError) {
                 console.error('⚠️ Google Sheets integration failed (non-critical):', sheetsError.message);
+                sheetsErrorMessage = sheetsError.userMessage || sheetsError.message;
                 // Continue anyway - Google Sheets is not critical
             }
             
-            showNotification('success', 
-                `📧 הליד נשלח בהצלחה במייל!<br>
-                💡 נשלח במייל מעוצב עם כל הפרטים<br>
-                ${sheetsResult && sheetsResult.success !== false ? '📊 נשמר ב-Google Sheets<br>' : ''}
-                🎯 נציג יחזור אליך בהקדם`
-            );
+            let notificationMessage = `📧 הליד נשלח בהצלחה במייל!<br>💡 נשלח במייל מעוצב עם כל הפרטים<br>`;
+            
+            if (sheetsResult && sheetsResult.success !== false) {
+                notificationMessage += '📊 נשמר ב-Google Sheets<br>';
+            } else if (sheetsErrorMessage) {
+                notificationMessage += `⚠️ בעיה ב-Google Sheets: ${sheetsErrorMessage}<br>`;
+            }
+            
+            notificationMessage += '🎯 נציג יחזור אליך בהקדם';
+            
+            showNotification('success', notificationMessage);
             
             return {
                 emailSuccess: true,
