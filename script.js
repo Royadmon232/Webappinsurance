@@ -6636,6 +6636,102 @@ async function sendEmailToAgent(emailData) {
 }
 
 /**
+ * Send lead data to Google Sheets
+ */
+async function sendToGoogleSheets(formData) {
+    console.log('📊 Starting Google Sheets integration...');
+    
+    // Get the correct API base URL dynamically
+    const apiBaseUrl = getApiBaseUrl();
+    const endpoint = `${apiBaseUrl}/api/add-to-sheets`;
+    
+    const isDevelopment = window.location.hostname === 'localhost' || 
+                         window.location.hostname === '127.0.0.1';
+    
+    console.log(`🌐 Environment: ${isDevelopment ? 'Development' : 'Production'}`);
+    console.log(`📡 Using Google Sheets endpoint: ${endpoint}`);
+    
+    try {
+        console.log('📦 Preparing to send data to Google Sheets...');
+        console.log('📊 Form data summary:', {
+            customerName: `${formData.firstName || ''} ${formData.lastName || ''}`,
+            productType: formData.productType,
+            hasBuilding: !!formData.building,
+            hasContents: !!formData.contents,
+            dataSize: JSON.stringify(formData).length
+        });
+        
+        const requestStart = Date.now();
+        
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ formData: formData })
+        });
+        
+        const requestDuration = Date.now() - requestStart;
+        console.log(`⏱️ Google Sheets request completed in ${requestDuration}ms`);
+        console.log(`📡 Response status: ${response.status} ${response.statusText}`);
+        
+        let result;
+        try {
+            result = await response.json();
+            console.log('📥 Google Sheets response:', result);
+        } catch (jsonError) {
+            console.error('❌ Failed to parse Google Sheets response JSON:', jsonError);
+            throw new Error(`Google Sheets server returned invalid JSON response (${response.status})`);
+        }
+        
+        if (!response.ok) {
+            console.error('❌ Google Sheets API returned error:', {
+                status: response.status,
+                statusText: response.statusText,
+                errorMessage: result.message || result.error,
+                errorDetails: result.details,
+                endpoint: endpoint
+            });
+            
+            let errorMessage = result.message || result.error || 'Unknown Google Sheets error';
+            
+            if (response.status === 500) {
+                errorMessage = `Google Sheets server error: ${errorMessage}`;
+            } else if (response.status === 429) {
+                errorMessage = 'Too many requests to Google Sheets, please try again later';
+            } else if (response.status >= 400 && response.status < 500) {
+                errorMessage = `Google Sheets client error (${response.status}): ${errorMessage}`;
+            }
+            
+            throw new Error(errorMessage);
+        }
+        
+        console.log('✅ Data added to Google Sheets successfully:', {
+            updatedRange: result.updatedRange,
+            updatedRows: result.updatedRows,
+            endpoint: endpoint,
+            duration: requestDuration
+        });
+        
+        return result;
+        
+    } catch (error) {
+        console.error('❌ Google Sheets integration failed:', {
+            endpoint: endpoint,
+            errorType: error.name,
+            errorMessage: error.message,
+            stack: error.stack?.split('\n').slice(0, 3).join('\n')
+        });
+        
+        // Return error but don't throw - we don't want to fail the entire process
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+/**
  * Generate PDF using jsPDF from form data - client-side generation
  */
 function generateLeadPDF(formData) {
@@ -6999,9 +7095,23 @@ async function sendEmailAndGeneratePDF(formData) {
             
             console.log('✅ Email sent successfully:', result);
             
+            // Send to Google Sheets in parallel (don't wait for it to complete)
+            let sheetsResult = null;
+            try {
+                console.log('📊 Sending data to Google Sheets...');
+                sheetsResult = await sendToGoogleSheets(formData);
+                if (sheetsResult.success !== false) {
+                    console.log('✅ Data added to Google Sheets successfully');
+                }
+            } catch (sheetsError) {
+                console.error('⚠️ Google Sheets integration failed (non-critical):', sheetsError.message);
+                // Continue anyway - Google Sheets is not critical
+            }
+            
             showNotification('success', 
                 `📧 הליד נשלח בהצלחה במייל!<br>
                 💡 נשלח במייל מעוצב עם כל הפרטים<br>
+                ${sheetsResult && sheetsResult.success !== false ? '📊 נשמר ב-Google Sheets<br>' : ''}
                 🎯 נציג יחזור אליך בהקדם`
             );
             
@@ -7010,8 +7120,9 @@ async function sendEmailAndGeneratePDF(formData) {
                 pdfSuccess: false,
                 emailResult: result,
                 pdfResult: null,
+                sheetsResult: sheetsResult,
                 method: 'email-only',
-                errors: { email: null, pdf: null }
+                errors: { email: null, pdf: null, sheets: sheetsResult?.error || null }
             };
             
         } catch (emailError) {
