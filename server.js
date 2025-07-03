@@ -18,7 +18,12 @@ const PORT = process.env.PORT || 8080;
 // Security middleware
 app.use(helmet());
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:8080',
+    origin: [
+        'http://localhost:8080',
+        'https://admon-insurance-agency.co.il',
+        'https://www.admon-insurance-agency.co.il',
+        process.env.FRONTEND_URL
+    ].filter(Boolean), // Remove any undefined values
     credentials: true
 }));
 app.use(bodyParser.json());
