@@ -17,6 +17,9 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(124, 58, 237, 0.15);
+    position: relative;
+    z-index: 2;
 }
 
 .secondary-cta-button:hover {
