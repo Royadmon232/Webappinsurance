@@ -169,7 +169,7 @@ function buildWizardSteps() {
     const coverSteps = [
         { id: 'step-cover-structure', name: 'מבנה' },
         { id: 'step-cover-contents', name: 'תכולה' },
-        { id: 'step-cover-additional', name: 'כיסויים נוספים' }
+        { id: 'step-cover-additional', name: 'כיסוי נוסף לתכולה' }
     ];
     
     // Add steps based on product type rules
@@ -864,12 +864,6 @@ function collectAllFormData() {
         hasWatches: document.getElementById('has-watches')?.value || '',
         watchesAmount: document.getElementById('watches-amount')?.value || '',
         
-        // Valuable items
-        camerasAmount: document.getElementById('cameras-amount')?.value || '',
-        electronicsAmount: document.getElementById('electronics-amount')?.value || '',
-        bicyclesAmount: document.getElementById('bicycles-amount')?.value || '',
-        musicalInstrumentsAmount: document.getElementById('musical-instruments-amount')?.value || '',
-        
         // Contents coverages
         contentsEarthquakeCoverage: document.getElementById('contents-earthquake-coverage')?.value || '',
         
@@ -946,10 +940,6 @@ function formatEmailContent(data) {
 -----------
 תכשיטים: ₪${data.jewelryAmount || '0'}
 שעונים: ₪${data.watchesAmount || '0'}
-מצלמות: ₪${data.camerasAmount || '0'}
-ציוד אלקטרוני: ₪${data.electronicsAmount || '0'}
-אופניים: ₪${data.bicyclesAmount || '0'}
-כלי נגינה: ₪${data.musicalInstrumentsAmount || '0'}
 `;
     }
 
@@ -1747,7 +1737,7 @@ function getStepDisplayName(stepId) {
         'step-general': 'פרטים כלליים',
         'step-cover-structure': 'מבנה',
         'step-cover-contents': 'תכולה',
-        'step-cover-additional': 'כיסויים נוספים',
+        'step-cover-additional': 'כיסוי נוסף לתכולה',
         'step-completion': 'סיום'
     };
     
@@ -2925,6 +2915,15 @@ function validateGeneralDetailsForm() {
         if (!floorCount.value) {
             showFormError(floorCount, 'שדה חובה');
             isValid = false;
+        } else {
+            const floorCountValue = parseInt(floorCount.value, 10);
+            if (floorCountValue > 68) {
+                showFormError(floorCount, 'אין דבר כזה קומה כזאת - המקסימום הוא 68 קומות');
+                isValid = false;
+            } else if (floorCountValue < 1) {
+                showFormError(floorCount, 'מספר קומות חייב להיות לפחות 1');
+                isValid = false;
+            }
         }
     }
     
@@ -3046,16 +3045,14 @@ function initializeNumericInputs() {
         'contents-building-age',
         'jewelry-amount',
         'watches-amount',
-        'cameras-amount',
-        'electronics-amount',
-        'bicycles-amount',
-        'musical-instruments-amount',
+
         
         // General form fields
         'phone-number',
         'idNumber',
         'houseNumber',
-        'postalCode'
+        'postalCode',
+        'floorCount'
     ];
     
     let initializedCount = 0;
@@ -4880,15 +4877,9 @@ function initializeContentsFields() {
     const jewelryAmountGroup = document.getElementById('jewelry-amount-group');
     const hasWatchesSelect = document.getElementById('has-watches');
     const watchesAmountGroup = document.getElementById('watches-amount-group');
-    const valuableItemsSection = document.getElementById('valuable-items-section');
     
     // Update contents fields based on product type
     updateContentsFieldsForProductType();
-    
-    // Always show valuable items section since we removed coverageType
-    if (valuableItemsSection) {
-        valuableItemsSection.style.display = 'block';
-    }
     
     // Jewelry dropdown change handler
     if (hasJewelrySelect) {
@@ -5986,10 +5977,7 @@ function collectFullFormData() {
         jewelryAmount: document.getElementById('jewelry-amount')?.value || '',
         hasWatches: document.getElementById('has-watches')?.value || '',
         watchesAmount: document.getElementById('watches-amount')?.value || '',
-        camerasAmount: document.getElementById('cameras-amount')?.value || '',
-        electronicsAmount: document.getElementById('electronics-amount')?.value || '',
-        bicyclesAmount: document.getElementById('bicycles-amount')?.value || '',
-        musicalInstrumentsAmount: document.getElementById('musical-instruments-amount')?.value || '',
+
         contentsEarthquakeCoverage: document.getElementById('contents-earthquake-coverage')?.value || ''
     };
     
@@ -6407,39 +6395,8 @@ function generateEmailHTML(data) {
                             ` : ''}
                         </table>
                         
-                        ${(data.contents.camerasAmount || data.contents.electronicsAmount || 
-                           data.contents.bicyclesAmount || data.contents.musicalInstrumentsAmount) ? `
-                        <h3 style="background: #f8f9fa; padding: 10px; margin: 20px 0 10px 0;">דברי ערך בכל הסיכונים:</h3>
-                        <table>
-                            ${data.contents.camerasAmount ? `
-                            <tr>
-                                <td>מצלמות:</td>
-                                <td>${formatCurrency(data.contents.camerasAmount)}</td>
-                            </tr>
-                            ` : ''}
-                            ${data.contents.electronicsAmount ? `
-                            <tr>
-                                <td>ציוד אלקטרוני/מחשבים:</td>
-                                <td>${formatCurrency(data.contents.electronicsAmount)}</td>
-                            </tr>
-                            ` : ''}
-                            ${data.contents.bicyclesAmount ? `
-                            <tr>
-                                <td>אופניים (לא חשמליים):</td>
-                                <td>${formatCurrency(data.contents.bicyclesAmount)}</td>
-                            </tr>
-                            ` : ''}
-                            ${data.contents.musicalInstrumentsAmount ? `
-                            <tr>
-                                <td>כלי נגינה ניידים:</td>
-                                <td>${formatCurrency(data.contents.musicalInstrumentsAmount)}</td>
-                            </tr>
-                            ` : ''}
-                        </table>
-                        ` : ''}
-                        
                         ${data.contents.contentsEarthquakeCoverage ? `
-                        <h3 style="background: #f8f9fa; padding: 10px; margin: 20px 0 10px 0;">כיסויים נוספים לתכולה:</h3>
+                        <h3 style="background: #f8f9fa; padding: 10px; margin: 20px 0 10px 0;">כיסוי נוסף לתכולה:</h3>
                         <table>
                             <tr>
                                 <td>כיסוי נזקי מים ברעידת אדמה:</td>
@@ -6952,11 +6909,7 @@ function generateLeadPDF(formData) {
         if (formData.contents && (formData.contents.jewelryAmount || formData.contents.watchesAmount)) {
             const contentsItems = [
                 { label: 'תכשיטים', value: formData.contents.jewelryAmount ? formatCurrency(formData.contents.jewelryAmount) : null },
-                { label: 'שעונים', value: formData.contents.watchesAmount ? formatCurrency(formData.contents.watchesAmount) : null },
-                { label: 'מצלמות', value: formData.contents.camerasAmount ? formatCurrency(formData.contents.camerasAmount) : null },
-                { label: 'ציוד אלקטרוני', value: formData.contents.electronicsAmount ? formatCurrency(formData.contents.electronicsAmount) : null },
-                { label: 'אופניים', value: formData.contents.bicyclesAmount ? formatCurrency(formData.contents.bicyclesAmount) : null },
-                { label: 'כלי נגינה', value: formData.contents.musicalInstrumentsAmount ? formatCurrency(formData.contents.musicalInstrumentsAmount) : null }
+                { label: 'שעונים', value: formData.contents.watchesAmount ? formatCurrency(formData.contents.watchesAmount) : null }
             ].filter(item => item.value);
             
             addSection('ביטוח תכולה', contentsItems);
@@ -6972,7 +6925,7 @@ function generateLeadPDF(formData) {
             ].filter(item => item.value);
             
             if (additionalItems.length > 0) {
-                addSection('כיסויים נוספים', additionalItems);
+                addSection('כיסוי נוסף לתכולה', additionalItems);
             }
         }
         
@@ -7347,12 +7300,6 @@ function collectContentsData() {
         watches: {
             hasWatches: document.getElementById('has-watches')?.value || '',
             amount: parseFloat(document.getElementById('watches-amount')?.value) || 0
-        },
-        valuableItems: {
-            cameras: parseFloat(document.getElementById('cameras-amount')?.value) || 0,
-            electronics: parseFloat(document.getElementById('electronics-amount')?.value) || 0,
-            bicycles: parseFloat(document.getElementById('bicycles-amount')?.value) || 0,
-            musicalInstruments: parseFloat(document.getElementById('musical-instruments-amount')?.value) || 0
         },
         coverages: {
             earthquakeCoverage: document.getElementById("contents-earthquake-coverage")?.value || ""

@@ -242,10 +242,6 @@ export default async function handler(req, res) {
             formData.contents?.jewelryAmount ? formatCurrency(formData.contents.jewelryAmount) : '',
             formData.contents?.hasWatches || '',
             formData.contents?.watchesAmount ? formatCurrency(formData.contents.watchesAmount) : '',
-            formData.contents?.camerasAmount ? formatCurrency(formData.contents.camerasAmount) : '',
-            formData.contents?.electronicsAmount ? formatCurrency(formData.contents.electronicsAmount) : '',
-            formData.contents?.bicyclesAmount ? formatCurrency(formData.contents.bicyclesAmount) : '',
-            formData.contents?.musicalInstrumentsAmount ? formatCurrency(formData.contents.musicalInstrumentsAmount) : '',
             formData.contents?.contentsEarthquakeCoverage || '',
             
             // כיסויים נוספים

@@ -156,12 +156,7 @@ const insuranceFormSchema = new mongoose.Schema({
             amount: Number,
             coverage: String
         },
-        valuableItems: {
-            cameras: Number,
-            electronics: Number,
-            bicycles: Number,
-            musicalInstruments: Number
-        },
+
         coverages: {
             waterDamage: Boolean,
             burglary: Boolean,
@@ -1017,9 +1012,7 @@ function formatEmailContent(data) {
                 </div>
                 ` : ''}
 
-                ${showContents && data.contents && (data.contents.jewelryAmount || data.contents.watchesAmount || 
-                   data.contents.camerasAmount || data.contents.electronicsAmount || 
-                   data.contents.bicyclesAmount || data.contents.musicalInstrumentsAmount) ? `
+                ${showContents && data.contents && (data.contents.jewelryAmount || data.contents.watchesAmount) ? `
                 <!-- Contents Insurance Details Section -->
                 <div style="background-color: #f8f9fa; border-radius: 10px; padding: 25px; margin-bottom: 25px; border-right: 4px solid #9b59b6;">
                     <h2 style="color: #2c3e50; margin: 0 0 20px 0; font-size: 20px; display: flex; align-items: center;">
@@ -1047,30 +1040,6 @@ function formatEmailContent(data) {
                             <div>
                                 <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">שעונים</p>
                                 <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatCurrency(data.contents.watchesAmount)}</p>
-                            </div>
-                            ` : ''}
-                            ${data.contents.camerasAmount ? `
-                            <div>
-                                <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">מצלמות</p>
-                                <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatCurrency(data.contents.camerasAmount)}</p>
-                            </div>
-                            ` : ''}
-                            ${data.contents.electronicsAmount ? `
-                            <div>
-                                <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">ציוד אלקטרוני</p>
-                                <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatCurrency(data.contents.electronicsAmount)}</p>
-                            </div>
-                            ` : ''}
-                            ${data.contents.bicyclesAmount ? `
-                            <div>
-                                <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">אופניים</p>
-                                <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatCurrency(data.contents.bicyclesAmount)}</p>
-                            </div>
-                            ` : ''}
-                            ${data.contents.musicalInstrumentsAmount ? `
-                            <div>
-                                <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">כלי נגינה</p>
-                                <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">${formatCurrency(data.contents.musicalInstrumentsAmount)}</p>
                             </div>
                             ` : ''}
                         </div>
