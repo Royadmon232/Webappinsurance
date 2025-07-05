@@ -84,11 +84,18 @@ header.scrolled {
     padding: var(--spacing-sm) 0;
 }
 
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
 .logo h1 {
     font-size: 1.75rem;
     font-weight: 800;
     color: var(--primary-navy);
     transition: color 0.3s ease;
+    margin: 0;
 }
 
 .logo h1:hover {
@@ -266,6 +273,14 @@ header.scrolled {
     color: var(--accent-purple-light);
     width: 20px;
     height: 20px;
+}
+
+.agency-badge img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .agency-badge span {
@@ -1220,6 +1235,18 @@ header.scrolled {
     
     .mobile-menu-toggle.active .hamburger-line:nth-child(3) {
         transform: rotate(-45deg) translate(7px, -6px);
+    }
+    
+    /* Logo adjustments for mobile */
+    .logo {
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+    }
+    
+    .logo img {
+        width: 48px;
+        height: 32px;
     }
     
     /* About section mobile adjustments */
