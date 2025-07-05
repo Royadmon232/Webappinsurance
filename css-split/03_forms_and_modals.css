@@ -9,9 +9,9 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: transparent;
-    color: var(--text-primary);
-    border: 2px solid var(--text-primary);
+    background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+    color: #fff;
+    border: 2px solid transparent;
     padding: 0.875rem 1.5rem;
     border-radius: var(--radius-lg);
     font-weight: 600;
@@ -20,8 +20,9 @@
 }
 
 .secondary-cta-button:hover {
-    background: var(--text-primary);
-    color: var(--primary-white);
+    background: #fff;
+    color: #3b82f6;
+    border: 2px solid #7c3aed;
 }
 
 .hero-image {
