@@ -696,6 +696,78 @@ header.scrolled {
     text-align: right;
 }
 
+/* Enhanced About Lead Text */
+.about-lead {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--primary-navy);
+    margin-bottom: var(--spacing-lg);
+    direction: rtl;
+    text-align: right;
+}
+
+.about-lead strong {
+    color: var(--accent-teal);
+    font-weight: 700;
+}
+
+/* Services Overview in About Section */
+.services-overview-about {
+    margin: var(--spacing-xl) 0;
+    padding: var(--spacing-lg);
+    background: var(--subtle-gradient);
+    border-radius: 16px;
+    direction: rtl;
+    text-align: right;
+}
+
+.services-overview-about h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+    direction: rtl;
+    text-align: right;
+}
+
+.services-grid-about {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.service-item-about {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm);
+    background: var(--white);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    direction: rtl;
+    text-align: right;
+}
+
+.service-item-about:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--card-shadow);
+}
+
+.service-item-about i {
+    font-size: 18px;
+    color: var(--accent-teal);
+    margin-top: 4px;
+    flex-shrink: 0;
+}
+
+.service-item-about span {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
 /* Enhanced About Image */
 .about-image {
     position: relative;
@@ -997,6 +1069,32 @@ header.scrolled {
     
     .mobile-menu-toggle.active .hamburger-line:nth-child(3) {
         transform: rotate(-45deg) translate(7px, -6px);
+    }
+    
+    /* About section mobile adjustments */
+    .about-lead {
+        font-size: 1.15rem;
+    }
+
+    .services-overview-about {
+        padding: var(--spacing-md);
+    }
+
+    .services-grid-about {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+
+    .service-item-about {
+        padding: var(--spacing-xs);
+    }
+
+    .service-item-about i {
+        font-size: 16px;
+    }
+
+    .service-item-about span {
+        font-size: 0.9rem;
     }
 }
 
