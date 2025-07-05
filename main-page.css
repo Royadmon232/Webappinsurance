@@ -82,6 +82,11 @@ header.scrolled {
 /* Navigation Bar Enhancements */
 .nav-wrapper {
     padding: var(--spacing-sm) 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--spacing-md);
 }
 
 .logo {
@@ -99,6 +104,22 @@ header.scrolled {
 
 .logo h1:hover {
     color: var(--accent-teal);
+}
+
+/* Navigation Menu Centered */
+.nav-menu {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: var(--spacing-xl);
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.nav-menu li {
+    margin: 0;
 }
 
 
@@ -136,6 +157,7 @@ header.scrolled {
 .mobile-menu-toggle {
     padding: var(--spacing-xs);
     outline: none;
+    display: none; /* Hidden by default */
 }
 
 .mobile-menu-toggle:focus-visible {
@@ -1206,15 +1228,18 @@ header.scrolled {
     /* Mobile Menu */
     .nav-menu {
         position: fixed;
-        top: 70px;
+        top: 80px;
         right: -100%;
         width: 100%;
-        height: calc(100vh - 70px);
+        height: calc(100vh - 80px);
         background: var(--primary-navy);
         flex-direction: column;
         padding: var(--spacing-lg);
         transition: right 0.3s ease;
         z-index: 998;
+        gap: var(--spacing-lg);
+        justify-content: flex-start;
+        align-items: center;
     }
     
     .nav-menu.active {
@@ -1243,7 +1268,12 @@ header.scrolled {
         transform: rotate(-45deg) translate(7px, -6px);
     }
     
-    /* Logo adjustments for mobile */
+    /* Navigation adjustments for mobile */
+    .nav-wrapper {
+        padding: var(--spacing-sm) 0;
+        position: relative;
+    }
+    
     .logo {
         justify-content: center;
         text-align: center;
@@ -1252,6 +1282,14 @@ header.scrolled {
     .logo h1 {
         font-size: 1.5rem;
         text-align: center;
+    }
+    
+    .mobile-menu-toggle {
+        display: flex;
+        position: absolute;
+        top: 50%;
+        left: var(--spacing-md);
+        transform: translateY(-50%);
     }
     
     .agency-badge img {
