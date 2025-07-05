@@ -87,7 +87,6 @@ header.scrolled {
 .logo {
     display: flex;
     align-items: center;
-    gap: 16px;
 }
 
 .logo h1 {
@@ -102,18 +101,7 @@ header.scrolled {
     color: var(--accent-teal);
 }
 
-.logo img {
-    background: var(--white);
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    padding: 2px;
-}
 
-.logo img:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-}
 
 .nav-link {
     color: var(--text-primary);
@@ -1257,14 +1245,8 @@ header.scrolled {
     
     /* Logo adjustments for mobile */
     .logo {
-        flex-direction: column;
-        gap: 8px;
-        align-items: center;
-    }
-    
-    .logo img {
-        width: 60px;
-        height: 26px;
+        justify-content: center;
+        text-align: center;
     }
     
     .logo h1 {
@@ -1384,11 +1366,6 @@ header.scrolled {
     }
     
     /* Logo adjustments for very small screens */
-    .logo img {
-        width: 50px;
-        height: 22px;
-    }
-    
     .logo h1 {
         font-size: 1.3rem;
     }
