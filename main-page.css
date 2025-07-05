@@ -731,130 +731,34 @@ header.scrolled {
     text-align: right;
 }
 
-/* Services Overview in About Section */
-.services-overview-about {
-    margin: var(--spacing-xl) 0;
-    padding: var(--spacing-xl);
-    background: var(--subtle-gradient);
-    border-radius: 20px;
-    border: 1px solid rgba(0, 163, 224, 0.1);
-    direction: rtl;
-    text-align: right;
-    position: relative;
-}
-
-.services-overview-about::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--primary-gradient);
-    border-radius: 20px 20px 0 0;
-}
-
-.services-overview-about h3 {
-    font-size: 1.35rem;
-    font-weight: 600;
-    margin-bottom: var(--spacing-lg);
-    color: var(--text-primary);
+/* About Content Text */
+.about-content-text {
+    margin: var(--spacing-lg) 0;
     direction: rtl;
     text-align: right;
 }
 
-.services-list-about {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-}
-
-.service-item-about {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
-    background: var(--white);
-    border-radius: 16px;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    direction: rtl;
-    text-align: right;
-}
-
-.service-item-about:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--card-shadow);
-    border-color: var(--accent-teal);
-}
-
-.service-icon-wrapper {
-    width: 48px;
-    height: 48px;
-    background: var(--primary-gradient);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: all 0.3s ease;
-}
-
-.service-item-about:hover .service-icon-wrapper {
-    transform: scale(1.1);
-    box-shadow: 0 8px 20px rgba(0, 163, 224, 0.3);
-}
-
-.service-icon-wrapper i {
-    font-size: 20px;
-    color: var(--white);
-}
-
-.service-item-about span {
-    font-size: 1.05rem;
+.about-content-text p {
+    font-size: 1.1rem;
     color: var(--text-secondary);
-    line-height: 1.6;
+    line-height: 1.8;
+    margin-bottom: var(--spacing-md);
+}
+
+.about-content-text strong {
+    color: var(--accent-teal);
+    font-weight: 600;
+}
+
+.excellence-text {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: var(--subtle-gradient);
+    border-radius: 12px;
+    border-right: 4px solid var(--accent-teal);
+    font-size: 1.05rem;
     font-weight: 500;
-}
-
-/* Excellence Statement */
-.excellence-statement {
-    margin: var(--spacing-xl) 0;
-    padding: var(--spacing-lg);
-    background: linear-gradient(135deg, var(--primary-navy), var(--primary-navy-dark));
-    border-radius: 20px;
-    direction: rtl;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.excellence-statement::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        radial-gradient(circle at 20% 80%, rgba(0, 163, 224, 0.2) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(0, 163, 224, 0.1) 0%, transparent 50%);
-    pointer-events: none;
-}
-
-.excellence-statement p {
-    font-size: 1.15rem;
-    color: var(--white);
-    margin: 0;
-    position: relative;
-    z-index: 1;
-    line-height: 1.7;
-}
-
-.excellence-statement strong {
-    font-weight: 700;
-    color: var(--accent-teal-light);
+    color: var(--text-primary);
 }
 
 /* Enhanced About Image */
@@ -1169,44 +1073,13 @@ header.scrolled {
         font-size: 1.1rem;
     }
 
-    .services-overview-about {
-        padding: var(--spacing-md);
-        margin: var(--spacing-md) 0;
-    }
-
-    .services-overview-about h3 {
-        font-size: 1.2rem;
-    }
-
-    .services-list-about {
-        gap: var(--spacing-sm);
-    }
-
-    .service-item-about {
-        padding: var(--spacing-sm);
-        gap: var(--spacing-sm);
-    }
-
-    .service-icon-wrapper {
-        width: 40px;
-        height: 40px;
-    }
-
-    .service-icon-wrapper i {
-        font-size: 18px;
-    }
-
-    .service-item-about span {
-        font-size: 0.95rem;
-    }
-
-    .excellence-statement {
-        padding: var(--spacing-md);
-        margin: var(--spacing-md) 0;
-    }
-
-    .excellence-statement p {
+    .about-content-text p {
         font-size: 1.05rem;
+    }
+
+    .excellence-text {
+        font-size: 1rem;
+        padding: var(--spacing-sm);
     }
 }
 
@@ -1251,37 +1124,13 @@ header.scrolled {
         font-size: 1rem;
     }
 
-    .services-overview-about {
-        padding: var(--spacing-sm);
+    .about-content-text p {
+        font-size: 0.95rem;
     }
 
-    .services-overview-about h3 {
-        font-size: 1.1rem;
-    }
-
-    .service-item-about {
-        padding: var(--spacing-xs);
-    }
-
-    .service-icon-wrapper {
-        width: 36px;
-        height: 36px;
-    }
-
-    .service-icon-wrapper i {
-        font-size: 16px;
-    }
-
-    .service-item-about span {
+    .excellence-text {
         font-size: 0.9rem;
-    }
-
-    .excellence-statement {
-        padding: var(--spacing-sm);
-    }
-
-    .excellence-statement p {
-        font-size: 1rem;
+        padding: var(--spacing-xs);
     }
 }
 
