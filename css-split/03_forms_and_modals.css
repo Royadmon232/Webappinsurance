@@ -1897,7 +1897,7 @@ main {
 }
 
 .cta-button {
-    background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+    background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
     color: var(--primary-white);
     border: none;
     padding: 20px 50px;
@@ -1906,7 +1906,7 @@ main {
     border-radius: 50px;
     cursor: pointer;
     transition: all var(--transition-normal);
-    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 10px 30px rgba(124, 58, 237, 0.3);
     position: relative;
     overflow: hidden;
     display: inline-flex;
@@ -1932,7 +1932,7 @@ main {
 
 .cta-button:hover {
     transform: translateY(-3px);
-    box-shadow: 0 15px 40px rgba(212, 175, 55, 0.4);
+    box-shadow: 0 15px 40px rgba(124, 58, 237, 0.4);
 }
 
 .cta-arrow {
