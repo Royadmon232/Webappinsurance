@@ -1772,8 +1772,8 @@ main {
 /* Hero Section - Enhanced Design */
 .hero {
     position: relative;
-    background: #0a0e27;
-    background: linear-gradient(180deg, #020517 0%, #0a0e27 100%);
+    background: #1a1f3a;
+    background: linear-gradient(180deg, #0f1629 0%, #1a1f3a 100%);
     color: var(--primary-white);
     padding: 120px 0 100px;
     overflow: hidden;
