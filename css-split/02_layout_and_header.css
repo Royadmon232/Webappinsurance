@@ -891,6 +891,11 @@ main {
     box-shadow: 0 10px 30px rgba(124, 58, 237, 0.15);
     position: relative;
     z-index: 2;
+    border-radius: 9999px !important;
+    padding: 16px 36px !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .secondary-cta-button:hover {
