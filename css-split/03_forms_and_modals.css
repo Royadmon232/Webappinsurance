@@ -1772,7 +1772,7 @@ main {
 /* Hero Section - Enhanced Design */
 .hero {
     position: relative;
-    background: linear-gradient(135deg, #0052cc 0%, #003d99 100%);
+    background: linear-gradient(135deg, #4E54C8 0%, #8F94FB 100%);
     color: var(--primary-white);
     padding: 120px 0 100px;
     overflow: hidden;
@@ -1896,7 +1896,7 @@ main {
 }
 
 .cta-button {
-    background: linear-gradient(135deg, var(--secondary-orange) 0%, #ff6600 100%);
+    background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
     color: var(--primary-white);
     border: none;
     padding: 20px 50px;
@@ -1905,7 +1905,7 @@ main {
     border-radius: 50px;
     cursor: pointer;
     transition: all var(--transition-normal);
-    box-shadow: 0 10px 30px rgba(255, 136, 0, 0.3);
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
     position: relative;
     overflow: hidden;
     display: inline-flex;
@@ -1931,7 +1931,7 @@ main {
 
 .cta-button:hover {
     transform: translateY(-3px);
-    box-shadow: 0 15px 40px rgba(255, 136, 0, 0.4);
+    box-shadow: 0 15px 40px rgba(212, 175, 55, 0.4);
 }
 
 .cta-arrow {
@@ -4051,4 +4051,23 @@ input:disabled {
     text-align: center;
     color: #666;
     font-size: 14px;
+}
+
+/* Special handling for branch dropdown to escape card boundaries */
+#mortgage-branch-group .search-dropdown-container {
+    position: relative;
+    z-index: 9999;
+}
+
+#branch-dropdown {
+    position: fixed !important;
+    z-index: 10000 !important;
+    max-height: 250px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    direction: rtl;
+    text-align: right;
 }

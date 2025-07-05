@@ -7820,11 +7820,25 @@ function initializeBankDropdowns() {
         renderBankDropdown(this.value);
     });
     
+    // Function to position branch dropdown outside card boundaries
+    function positionBranchDropdown() {
+        const inputRect = branchInput.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+        
+        // Position dropdown below the input field
+        branchDropdown.style.position = 'fixed';
+        branchDropdown.style.top = (inputRect.bottom + 2) + 'px';
+        branchDropdown.style.left = inputRect.left + 'px';
+        branchDropdown.style.width = inputRect.width + 'px';
+        branchDropdown.style.zIndex = '10000';
+    }
+
     // Branch input handlers
     branchInput.addEventListener('focus', function() {
         if (selectedBank && branchesData.length > 0) {
             branchDropdown.style.display = 'block';
-            branchDropdown.style.zIndex = '9999';
+            positionBranchDropdown();
             renderBranchDropdown(this.value);
         }
     });
@@ -7832,7 +7846,7 @@ function initializeBankDropdowns() {
     branchInput.addEventListener('input', function() {
         if (selectedBank) {
             branchDropdown.style.display = 'block';
-            branchDropdown.style.zIndex = '9999';
+            positionBranchDropdown();
             renderBranchDropdown(this.value);
         }
     });
@@ -7842,6 +7856,19 @@ function initializeBankDropdowns() {
         if (!event.target.closest('.search-dropdown-container')) {
             bankDropdown.style.display = 'none';
             branchDropdown.style.display = 'none';
+        }
+    });
+    
+    // Reposition branch dropdown on scroll/resize
+    window.addEventListener('scroll', function() {
+        if (branchDropdown.style.display === 'block') {
+            positionBranchDropdown();
+        }
+    });
+    
+    window.addEventListener('resize', function() {
+        if (branchDropdown.style.display === 'block') {
+            positionBranchDropdown();
         }
     });
 }
