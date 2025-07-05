@@ -2918,7 +2918,7 @@ function validateGeneralDetailsForm() {
         } else {
             const floorCountValue = parseInt(floorCount.value, 10);
             if (floorCountValue > 68) {
-                showFormError(floorCount, 'אין דבר כזה קומה כזאת - המקסימום הוא 68 קומות');
+                showFormError(floorCount, `קומה ${floorCountValue} לא קיימת, נא לוודא שאתה רושם את מספר הקומות הנכון`);
                 isValid = false;
             } else if (floorCountValue < 1) {
                 showFormError(floorCount, 'מספר קומות חייב להיות לפחות 1');
