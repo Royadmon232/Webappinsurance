@@ -833,23 +833,23 @@ header.scrolled {
 /* Services Card Special Styling */
 .services-card {
     background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-    border-color: #d4af37;
+    border-color: var(--accent-teal);
 }
 
 .services-card::before {
-    background: linear-gradient(90deg, #d4af37, #b8860b);
+    background: linear-gradient(90deg, var(--accent-teal), var(--primary-navy));
 }
 
 .services-card .card-icon-wrapper {
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(184, 134, 11, 0.05));
+    background: linear-gradient(135deg, rgba(0, 163, 224, 0.1), rgba(1, 51, 105, 0.05));
 }
 
 .services-card:hover .card-icon-wrapper {
-    background: linear-gradient(135deg, #d4af37, #b8860b);
+    background: linear-gradient(135deg, var(--accent-teal), var(--primary-navy));
 }
 
 .services-card .card-icon-wrapper i {
-    color: #b8860b;
+    color: var(--primary-navy);
 }
 
 .services-card:hover .card-icon-wrapper i {
@@ -871,20 +871,20 @@ header.scrolled {
     align-items: flex-start;
     gap: var(--spacing-sm);
     padding: var(--spacing-sm);
-    background: rgba(212, 175, 55, 0.05);
+    background: rgba(0, 163, 224, 0.05);
     border-radius: 12px;
-    border-right: 3px solid #d4af37;
+    border-right: 3px solid var(--accent-teal);
     transition: all 0.3s ease;
 }
 
 .services-list li:hover {
-    background: rgba(212, 175, 55, 0.1);
+    background: rgba(0, 163, 224, 0.1);
     transform: translateX(-5px);
-    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 163, 224, 0.2);
 }
 
 .service-bullet {
-    color: #b8860b;
+    color: var(--primary-navy);
     font-size: 1.2rem;
     font-weight: bold;
     line-height: 1;
