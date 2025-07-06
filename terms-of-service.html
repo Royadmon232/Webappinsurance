@@ -24,10 +24,17 @@
     
     <!-- Custom styles for legal pages -->
     <style>
+        /* RTL Support for Hebrew text */
+        html {
+            direction: rtl;
+        }
+        
         .legal-page {
             background: var(--light-gray-bg);
             min-height: 100vh;
             padding-top: 120px;
+            direction: rtl;
+            text-align: right;
         }
         
         .legal-container {
@@ -37,12 +44,13 @@
         }
         
         .legal-header {
-            text-align: center;
+            text-align: right;
             margin-bottom: var(--spacing-4xl);
             background: var(--white);
             padding: var(--spacing-3xl) var(--spacing-xl);
             border-radius: 16px;
             box-shadow: var(--card-shadow);
+            direction: rtl;
         }
         
         .legal-header h1 {
@@ -65,6 +73,8 @@
             border-radius: 16px;
             box-shadow: var(--card-shadow);
             margin-bottom: var(--spacing-2xl);
+            direction: rtl;
+            text-align: right;
         }
         
         .legal-content h2 {
@@ -99,6 +109,8 @@
         .legal-content ul {
             margin-bottom: var(--spacing-md);
             padding-right: var(--spacing-md);
+            text-align: right;
+            direction: rtl;
         }
         
         .legal-content li {
@@ -118,8 +130,9 @@
             color: var(--white);
             padding: var(--spacing-2xl);
             border-radius: 16px;
-            text-align: center;
+            text-align: right;
             margin-bottom: var(--spacing-2xl);
+            direction: rtl;
         }
         
         .contact-section h2 {
@@ -183,12 +196,13 @@
         }
         
         .last-updated {
-            text-align: center;
+            text-align: right;
             color: var(--text-secondary);
             font-size: 0.9rem;
             margin-top: var(--spacing-xl);
             padding-top: var(--spacing-lg);
             border-top: 1px solid var(--light-gray-bg);
+            direction: rtl;
         }
         
         @media (max-width: 768px) {
