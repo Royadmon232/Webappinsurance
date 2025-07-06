@@ -5753,39 +5753,39 @@ function initializeAdditionalCoverageEnhancements() {
     const additionalCoverageSection = document.getElementById('step-cover-additional');
     if (!additionalCoverageSection) return;
     
-    // Add hover effects to coverage explanation boxes
+    // Add hover effects to coverage explanation boxes - optimized for performance
     const explanationBoxes = additionalCoverageSection.querySelectorAll('.coverage-explanation');
     explanationBoxes.forEach(box => {
         box.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-2px)';
-            this.style.boxShadow = '0 8px 30px rgba(79, 70, 229, 0.15)';
+            this.style.borderColor = '#4f46e5';
+            this.style.transition = 'border-color 0.2s ease';
         });
         
         box.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '';
+            this.style.borderColor = '';
         });
     });
     
-    // Enhanced checkbox interactions
+    // Enhanced checkbox interactions - performance optimized
     const checkboxWrappers = additionalCoverageSection.querySelectorAll('.building-checkbox-wrapper');
     checkboxWrappers.forEach(wrapper => {
         const checkbox = wrapper.querySelector('input[type="checkbox"]');
         const label = wrapper.querySelector('label');
         
         if (checkbox && label) {
-            // Click animation
+            // Subtle click feedback without GPU-intensive animations
             wrapper.addEventListener('click', function() {
-                this.style.transform = 'scale(0.98)';
+                this.style.backgroundColor = '#f0f9ff';
                 setTimeout(() => {
-                    this.style.transform = 'scale(1)';
-                }, 150);
+                    this.style.backgroundColor = '';
+                }, 200);
             });
             
-            // Hover hint
+            // Optimized hover states
             wrapper.addEventListener('mouseenter', function() {
                 if (!checkbox.checked) {
                     this.style.borderColor = '#6366f1';
+                    this.style.transition = 'border-color 0.2s ease';
                 }
             });
             
@@ -5797,26 +5797,20 @@ function initializeAdditionalCoverageEnhancements() {
         }
     });
     
-    // Smooth number input interactions
+    // Optimized number input interactions
     const numberInputs = additionalCoverageSection.querySelectorAll('input[type="number"]');
     numberInputs.forEach(input => {
         input.addEventListener('focus', function() {
-            const parent = this.closest('.building-form-group');
-            if (parent) {
-                parent.style.transform = 'scale(1.02)';
-                parent.style.transition = 'transform 0.2s ease';
-            }
+            this.style.borderColor = '#4f46e5';
+            this.style.transition = 'border-color 0.2s ease';
         });
         
         input.addEventListener('blur', function() {
-            const parent = this.closest('.building-form-group');
-            if (parent) {
-                parent.style.transform = 'scale(1)';
-            }
+            this.style.borderColor = '';
         });
     });
     
-    // Add visual feedback for section headers
+    // Optimized section navigation - smooth scroll only
     const sectionTitles = additionalCoverageSection.querySelectorAll('.building-section-title');
     sectionTitles.forEach(title => {
         title.style.cursor = 'pointer';

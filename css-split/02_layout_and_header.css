@@ -323,7 +323,7 @@
     border: 2px solid #e5e7eb;
     border-radius: clamp(8px, 2vw, 14px);
     padding: clamp(14px, 3vw, 18px) clamp(16px, 3.5vw, 22px);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
     display: flex;
     align-items: center;
@@ -335,7 +335,6 @@
 #step-cover-additional .building-checkbox-wrapper:hover {
     background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
     border-color: #60a5fa;
-    transform: translateY(-2px) scale(1.005);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.06);
 }
 
