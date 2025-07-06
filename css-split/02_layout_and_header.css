@@ -877,10 +877,24 @@ main {
 }
 
 .secondary-cta-button {
-    background: #fff;
-    color: #3b82f6;
-    border: 2px solid #7c3aed;
+    background: #fff !important;
+    color: #1e40af !important;
+    border: 2px solid #1e40af !important;
     font-weight: 700;
+    opacity: 1 !important;
+    box-shadow: 0 4px 24px rgba(30, 64, 175, 0.10);
+}
+
+.secondary-cta-button i, .secondary-cta-button svg {
+    color: #1e40af !important;
+    fill: #1e40af !important;
+    opacity: 1 !important;
+}
+
+.secondary-cta-button:hover {
+    background: #1e40af !important;
+    color: #fff !important;
+    border: 2px solid #1e40af !important;
 }
 
 @media (max-width: 600px) {
@@ -931,9 +945,9 @@ main {
 }
 
 .secondary-cta-button:hover {
-    background: #fff !important;
-    color: #3b82f6 !important;
-    border: 2px solid #7c3aed !important;
+    background: #1e40af !important;
+    color: #fff !important;
+    border: 2px solid #1e40af !important;
 }
 
 .hero-trust {
