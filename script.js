@@ -430,7 +430,7 @@ window.HomeInsuranceApp.sendVerificationCode = async function() {
         
         const endpoint = isDevelopment 
             ? 'http://localhost:8080/api/send-verification'  // Local ONLY
-            : 'https://webappinsurance.vercel.app/api/send-verification';  // Vercel ONLY
+            : 'https://admon-insurance-agency.co.il/api/send-verification';  // Production
         
         // Call backend API
         const response = await fetch(endpoint, {
@@ -631,7 +631,7 @@ async function verifyCode(enteredCode) {
         
         const endpoint = isDevelopment 
             ? 'http://localhost:8080/api/verify-code'  // Local ONLY
-            : 'https://webappinsurance.vercel.app/api/verify-code';  // Vercel ONLY
+            : 'https://admon-insurance-agency.co.il/api/verify-code';  // Production
         
         // Call backend API
         const response = await fetch(endpoint, {
@@ -718,7 +718,7 @@ window.HomeInsuranceApp.resendCode = async function() {
         
         const endpoint = isDevelopment 
             ? 'http://localhost:8080/api/send-verification'  // Local ONLY
-            : 'https://webappinsurance.vercel.app/api/send-verification';  // Vercel ONLY
+            : 'https://admon-insurance-agency.co.il/api/send-verification';  // Production
         
         // Call backend API
         const response = await fetch(endpoint, {
@@ -774,7 +774,7 @@ async function submitFinalForm() {
         
         const endpoint = isDevelopment 
             ? 'http://localhost:8080/api/submit-form'  // Local ONLY
-            : 'https://webappinsurance.vercel.app/api/submit-form';  // Vercel ONLY
+            : 'https://admon-insurance-agency.co.il/api/submit-form';  // Production
         
         // Send to backend
         const response = await fetch(endpoint, {
@@ -3378,8 +3378,8 @@ async function handleAddressBlur() {
         
         try {
             // Check if we're running on Vercel (production/preview) or have API available
-            const isProduction = window.location.hostname.includes('vercel.app') || 
-                                window.location.hostname.includes('webappinsurance');
+                    const isProduction = window.location.hostname.includes('admon-insurance-agency.co.il') ||
+                        window.location.hostname.includes('vercel.app');
             
             if (isProduction) {
                 // Call the real API
@@ -6483,8 +6483,13 @@ function getApiBaseUrl() {
         return currentOrigin;
     }
     
-    // Fallback to main domain
-    return 'https://webappinsurance.vercel.app';
+    // Production domain
+    if (currentHost.includes('admon-insurance-agency.co.il')) {
+        return 'https://admon-insurance-agency.co.il';
+    }
+    
+    // Fallback to production domain
+    return 'https://admon-insurance-agency.co.il';
 }
 
 // =============================================================================
@@ -6498,7 +6503,7 @@ function getApiBaseUrl() {
 //
 // 2. לבדיקת חיבור לשרת:
 //    const debug = debugEmailSystem()
-//    await debug.testEndpoint('https://webappinsurance.vercel.app/api/send-email')
+//    await debug.testEndpoint('https://admon-insurance-agency.co.il/api/send-email')
 //
 // 3. לבדיקת שליחת מייל טסט:
 //    debugEmailSending()
