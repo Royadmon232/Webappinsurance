@@ -244,9 +244,9 @@ function showWizardStep(stepIndex) {
         }
         
         // Scroll to top of modal when switching steps
-        const modalBody = document.querySelector('.modal-body');
-        if (modalBody) {
-            modalBody.scrollTo({ top: 0, behavior: 'smooth' });
+        const modalContent = document.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.scrollTo({ top: 0, behavior: 'auto' });
         }
     }
     

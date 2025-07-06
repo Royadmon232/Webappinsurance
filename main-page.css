@@ -1725,3 +1725,8 @@ html {
     direction: rtl;
     text-align: center;
 }
+
+.footer, .footer * {
+    direction: rtl !important;
+    text-align: right !important;
+}

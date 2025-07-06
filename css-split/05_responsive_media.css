@@ -1389,66 +1389,32 @@
     margin-right: 0.5rem;
 }
 
-/* Enhance focus states with pulsing effect */
-@keyframes pulseFocus {
-    0% {
-        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
-    }
-    70% {
-        box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
-    }
-}
-
+/* Simplified focus states */
 #step-cover-additional input:focus,
 #step-cover-additional select:focus,
 #phone-number:focus {
-    animation: pulseFocus 1.5s infinite;
+    outline: 2px solid #4f46e5;
+    outline-offset: 2px;
 }
 
-/* Gradient text animation for titles on hover */
-@keyframes gradientShift {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
-}
-
+/* Simplified title hover effect */
 #step-cover-additional .building-main-title:hover,
 .completion-title:hover {
-    background-size: 200% 200%;
-    animation: gradientShift 3s ease infinite;
+    color: #4f46e5;
+    transition: color 0.2s ease;
 }
 
-/* Subtle parallax effect for sections */
-#step-cover-additional .building-section:nth-child(odd) {
-    transform: translateX(0);
-    transition: transform 0.6s ease;
+/* Simplified section styling */
+#step-cover-additional .building-section {
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-#step-cover-additional .building-section:nth-child(even) {
-    transform: translateX(0);
-    transition: transform 0.6s ease;
+#step-cover-additional .building-section:hover {
+    background-color: rgba(79, 70, 229, 0.02);
+    border-color: #4f46e5;
 }
 
-@media (min-width: 768px) {
-    #step-cover-additional:hover .building-section:nth-child(odd) {
-        transform: translateX(-5px);
-    }
-    
-    #step-cover-additional:hover .building-section:nth-child(even) {
-        transform: translateX(5px);
-    }
-}
-
-/* Enhanced scrollbar styling */
+/* Simplified scrollbar styling */
 #step-cover-additional::-webkit-scrollbar,
 #step-completion::-webkit-scrollbar {
     width: 8px;
@@ -1457,45 +1423,37 @@
 #step-cover-additional::-webkit-scrollbar-track,
 #step-completion::-webkit-scrollbar-track {
     background: #f3f4f6;
-    border-radius: 10px;
+    border-radius: 4px;
 }
 
 #step-cover-additional::-webkit-scrollbar-thumb,
 #step-completion::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #4f46e5 0%, #7c3aed 100%);
-    border-radius: 10px;
+    background: #4f46e5;
+    border-radius: 4px;
 }
 
 #step-cover-additional::-webkit-scrollbar-thumb:hover,
 #step-completion::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%);
+    background: #6366f1;
 }
 
-/* Beautiful loading animation for sections */
+/* Simplified loading animation for sections */
 #step-cover-additional .building-section,
 .verification-section {
-    opacity: 0;
-    animation: fadeInSection 0.6s ease forwards;
+    opacity: 1;
+    animation: fadeInSection 0.1s ease forwards;
 }
-
-#step-cover-additional .building-section:nth-child(1) { animation-delay: 0.1s; }
-#step-cover-additional .building-section:nth-child(2) { animation-delay: 0.2s; }
-#step-cover-additional .building-section:nth-child(3) { animation-delay: 0.3s; }
-#step-cover-additional .building-section:nth-child(4) { animation-delay: 0.4s; }
-#step-cover-additional .building-section:nth-child(5) { animation-delay: 0.5s; }
 
 @keyframes fadeInSection {
     to {
         opacity: 1;
-        transform: translateY(0);
     }
     from {
         opacity: 0;
-        transform: translateY(20px);
     }
 }
 
-/* Glassmorphism effect for modern browsers */
+/* Simplified effects for better performance */
 @supports (backdrop-filter: blur(10px)) {
     .coverage-explanation {
         background: rgba(248, 249, 255, 0.8);
