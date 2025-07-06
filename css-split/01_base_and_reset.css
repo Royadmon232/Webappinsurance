@@ -311,6 +311,7 @@ main {
     margin-bottom: 50px;
     flex-wrap: wrap;
     animation: fadeInUp 0.8s ease-out 0.6s both;
+    direction: rtl;
 }
 
 .hero-feature {
@@ -320,6 +321,8 @@ main {
     font-size: 1.05rem;
     color: rgba(255, 255, 255, 0.9);
     font-weight: 500;
+    direction: rtl;
+    text-align: right;
 }
 
 .hero-feature svg {
@@ -2451,10 +2454,13 @@ input:disabled {
     
     .hero-features {
         gap: 20px;
+        direction: rtl;
     }
     
     .hero-feature {
         font-size: 0.9rem;
+        direction: rtl;
+        text-align: right;
     }
     
     .cta-button {
@@ -2514,6 +2520,8 @@ input:disabled {
     .hero-features {
         flex-direction: column;
         gap: 15px;
+        direction: rtl;
+        text-align: right;
     }
     
     .stats-grid {
