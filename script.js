@@ -242,6 +242,12 @@ function showWizardStep(stepIndex) {
         if (currentStepId === 'step-cover-additional') {
             updateAdditionalCoverageVisibility();
         }
+        
+        // Scroll to top of modal when switching steps
+        const modalBody = document.querySelector('.modal-body');
+        if (modalBody) {
+            modalBody.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     }
     
     // Update navigation
