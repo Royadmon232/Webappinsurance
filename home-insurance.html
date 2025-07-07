@@ -43,6 +43,70 @@
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS to force center logo -->
+    <style>
+        /* Override all possible conflicting styles */
+        .nav-vertical .logo-centered,
+        .nav-wrapper .logo-centered,
+        .logo-centered {
+            width: 100% !important;
+            text-align: center !important;
+            display: block !important;
+            margin: 0 auto !important;
+            float: none !important;
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        
+        .nav-vertical .logo-centered h1,
+        .nav-wrapper .logo-centered h1,
+        .logo-centered h1 {
+            width: 100% !important;
+            text-align: center !important;
+            margin: 0 auto !important;
+            display: block !important;
+            float: none !important;
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+        }
+        
+        .nav-vertical .logo-centered h1 a,
+        .nav-wrapper .logo-centered h1 a,
+        .logo-centered h1 a {
+            width: 100% !important;
+            text-align: center !important;
+            display: block !important;
+            margin: 0 auto !important;
+            float: none !important;
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+        }
+        
+        /* Force the nav-wrapper to not interfere */
+        .nav-wrapper.nav-vertical {
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
+        }
+        
+        /* Force the container to center everything */
+        header nav .container {
+            text-align: center !important;
+        }
+        
+        /* Remove any flex properties that might cause issues */
+        .nav-vertical .logo-centered {
+            display: block !important;
+            flex: none !important;
+            align-self: center !important;
+        }
+    </style>
 </head>
 <body>
     <header>
