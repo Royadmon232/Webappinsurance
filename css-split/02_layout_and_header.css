@@ -3317,3 +3317,25 @@ input:disabled {
     direction: rtl !important;
     unicode-bidi: embed;
 }
+
+/* Force center logo */
+.logo-centered {
+    width: 100% !important;
+    text-align: center !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.logo-centered h1 {
+    width: 100% !important;
+    text-align: center !important;
+    margin: 0 auto !important;
+    display: block !important;
+}
+
+.logo-centered h1 a {
+    width: 100% !important;
+    text-align: center !important;
+    display: block !important;
+}
