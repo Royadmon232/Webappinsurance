@@ -106,6 +106,33 @@
             flex: none !important;
             align-self: center !important;
         }
+        
+        /* Mobile specific overrides */
+        @media (max-width: 768px) {
+            .nav-vertical .logo-centered,
+            .nav-wrapper .logo-centered,
+            .logo-centered {
+                text-align: center !important;
+                margin: 0 auto !important;
+                width: 100% !important;
+            }
+            
+            .nav-vertical .logo-centered h1,
+            .nav-wrapper .logo-centered h1,
+            .logo-centered h1 {
+                text-align: center !important;
+                margin: 0 auto !important;
+                width: 100% !important;
+            }
+            
+            .nav-vertical .logo-centered h1 a,
+            .nav-wrapper .logo-centered h1 a,
+            .logo-centered h1 a {
+                text-align: center !important;
+                margin: 0 auto !important;
+                width: 100% !important;
+            }
+        }
     </style>
 </head>
 <body>
