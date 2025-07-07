@@ -7775,10 +7775,23 @@ function initializeBankDropdowns() {
     // Function to position branch dropdown outside card boundaries
     function positionBranchDropdown() {
         const inputRect = branchInput.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+        const isMobile = window.innerWidth <= 768;
         
-        // Position dropdown below the input field
+        if (isMobile) {
+            // On mobile, use absolute positioning relative to the container
+            const container = branchInput.closest('.search-dropdown-container');
+            if (container) {
+                branchDropdown.style.position = 'absolute';
+                branchDropdown.style.top = '100%';
+                branchDropdown.style.left = '0';
+                branchDropdown.style.right = '0';
+                branchDropdown.style.width = 'auto';
+                branchDropdown.style.zIndex = '10000';
+                return;
+            }
+        }
+        
+        // For desktop, use fixed positioning
         branchDropdown.style.position = 'fixed';
         branchDropdown.style.top = (inputRect.bottom + 2) + 'px';
         branchDropdown.style.left = inputRect.left + 'px';
@@ -7811,9 +7824,9 @@ function initializeBankDropdowns() {
         }
     });
     
-    // Reposition branch dropdown on scroll/resize
+    // Reposition branch dropdown on scroll/resize (only for desktop)
     window.addEventListener('scroll', function() {
-        if (branchDropdown.style.display === 'block') {
+        if (branchDropdown.style.display === 'block' && window.innerWidth > 768) {
             positionBranchDropdown();
         }
     });

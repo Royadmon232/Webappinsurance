@@ -4063,8 +4063,15 @@ input:disabled {
     z-index: 9999;
 }
 
+/* Ensure proper positioning context for mobile */
+@media (max-width: 768px) {
+    #mortgage-branch-group .search-dropdown-container {
+        position: relative;
+        overflow: visible;
+    }
+}
+
 #branch-dropdown {
-    position: fixed !important;
     z-index: 10000 !important;
     max-height: 250px;
     overflow-y: auto;
@@ -4074,4 +4081,22 @@ input:disabled {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     direction: rtl;
     text-align: right;
+}
+
+/* Desktop positioning */
+@media (min-width: 769px) {
+    #branch-dropdown {
+        position: fixed !important;
+    }
+}
+
+/* Mobile positioning */
+@media (max-width: 768px) {
+    #branch-dropdown {
+        position: absolute !important;
+        top: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: auto !important;
+    }
 }
