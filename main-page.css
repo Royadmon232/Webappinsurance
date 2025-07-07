@@ -456,6 +456,8 @@ header.scrolled {
     font-weight: 600;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     white-space: nowrap;
+    direction: rtl;
+    text-align: right;
 }
 
 /* Enhanced CTA Buttons */
@@ -1233,6 +1235,8 @@ header.scrolled {
     
     .membership-text {
         font-size: 0.88rem;
+        direction: rtl;
+        text-align: right;
     }
     
     .about-content {
@@ -1295,6 +1299,8 @@ header.scrolled {
     
     .membership-text {
         font-size: 0.85rem;
+        direction: rtl;
+        text-align: right;
     }
     
     /* Grid Adjustments */
@@ -1528,6 +1534,8 @@ header.scrolled {
     
     .membership-text {
         font-size: 0.8rem;
+        direction: rtl;
+        text-align: right;
     }
 }
 
