@@ -7701,6 +7701,12 @@ function initializeBankDropdowns() {
         bankInput.value = name;
         bankDropdown.style.display = 'none';
         
+        // Remove active class when bank is selected
+        const bankGroup = document.getElementById('mortgage-bank-group');
+        if (bankGroup) {
+            bankGroup.classList.remove('dropdown-active');
+        }
+        
         // Enable branch input
         branchInput.disabled = false;
         branchInput.placeholder = 'חפש סניף...';
@@ -7755,21 +7761,42 @@ function initializeBankDropdowns() {
         clearFormError(branchInput);
     }
     
-    // Bank input handlers
+        // Bank input handlers
     bankInput.addEventListener('focus', function() {
         if (banksData.length === 0) {
             fetchBanks();
         } else {
             bankDropdown.style.display = 'block';
             bankDropdown.style.zIndex = '9999';
+            // Add active class for mobile styling
+            const bankGroup = document.getElementById('mortgage-bank-group');
+            if (bankGroup && window.innerWidth <= 768) {
+                bankGroup.classList.add('dropdown-active');
+            }
             renderBankDropdown(this.value);
         }
     });
-    
+
     bankInput.addEventListener('input', function() {
         bankDropdown.style.display = 'block';
         bankDropdown.style.zIndex = '9999';
+        // Add active class for mobile styling
+        const bankGroup = document.getElementById('mortgage-bank-group');
+        if (bankGroup && window.innerWidth <= 768) {
+            bankGroup.classList.add('dropdown-active');
+        }
         renderBankDropdown(this.value);
+    });
+    
+    // Bank input blur handler to remove active class
+    bankInput.addEventListener('blur', function() {
+        // Remove active class after a short delay to allow for dropdown selection
+        setTimeout(() => {
+            const bankGroup = document.getElementById('mortgage-bank-group');
+            if (bankGroup) {
+                bankGroup.classList.remove('dropdown-active');
+            }
+        }, 200);
     });
     
     // Function to position branch dropdown outside card boundaries
@@ -7821,6 +7848,11 @@ function initializeBankDropdowns() {
         if (!event.target.closest('.search-dropdown-container')) {
             bankDropdown.style.display = 'none';
             branchDropdown.style.display = 'none';
+            // Remove active class when closing dropdowns
+            const bankGroup = document.getElementById('mortgage-bank-group');
+            if (bankGroup) {
+                bankGroup.classList.remove('dropdown-active');
+            }
         }
     });
     

@@ -4069,6 +4069,25 @@ input:disabled {
         position: relative;
         overflow: visible;
     }
+    
+    /* Ensure branch dropdown escapes form section boundaries */
+    #mortgage-branch-group {
+        position: relative;
+        z-index: 1000;
+    }
+    
+    /* Make sure form sections allow overflow for dropdowns */
+    .form-section-card {
+        overflow: visible !important;
+    }
+    
+    .form-section-content {
+        overflow: visible !important;
+    }
+    
+    .form-grid-2-columns {
+        overflow: visible !important;
+    }
 }
 
 #branch-dropdown {
@@ -4098,5 +4117,60 @@ input:disabled {
         left: 0 !important;
         right: 0 !important;
         width: auto !important;
+        max-height: 300px !important;
+        z-index: 10001 !important;
+    }
+    
+    /* Bank dropdown mobile positioning */
+    #bank-dropdown {
+        position: absolute !important;
+        top: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: auto !important;
+        max-height: 250px !important;
+        z-index: 10002 !important; /* Higher than branch to appear above it */
+        background: white !important;
+        border: 1px solid #e0e0e0 !important;
+        border-top: none !important;
+        border-radius: 0 0 8px 8px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    /* Hide branch field when bank dropdown is open */
+    #mortgage-bank-group:focus-within + #mortgage-branch-group,
+    #mortgage-bank-group.dropdown-active + #mortgage-branch-group {
+        opacity: 0.3 !important;
+        pointer-events: none !important;
+        transition: opacity 0.3s ease !important;
+    }
+    
+    /* Ensure proper spacing for branch dropdown items */
+    #branch-dropdown .dropdown-item {
+        padding: 16px !important;
+        min-height: 60px !important;
+    }
+    
+    #branch-dropdown .branch-details {
+        flex: 1 !important;
+    }
+    
+    #branch-dropdown .branch-name {
+        font-size: 15px !important;
+        margin-bottom: 4px !important;
+        line-height: 1.4 !important;
+    }
+    
+    #branch-dropdown .branch-address {
+        font-size: 13px !important;
+        line-height: 1.3 !important;
+        opacity: 0.8 !important;
+    }
+    
+    #branch-dropdown .branch-code {
+        font-size: 12px !important;
+        padding: 4px 8px !important;
+        margin-left: 8px !important;
+        flex-shrink: 0 !important;
     }
 }
