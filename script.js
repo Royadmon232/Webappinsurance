@@ -6313,7 +6313,7 @@ function generateEmailHTML(data) {
                             </tr>
                             ${data.building.mortgaged && data.building.loanEndDate ? `
                             <tr>
-                                <td>תאריך תום תקופת ההלוואה:</td>
+                                <td>תאריך תום תקופת ההלוואה האחרונה:</td>
                                 <td>${formatDate(data.building.loanEndDate)}</td>
                             </tr>
                             ` : ''}

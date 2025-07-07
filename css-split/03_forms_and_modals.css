@@ -4140,7 +4140,9 @@ input:disabled {
     /* Hide branch field when bank dropdown is open */
     #mortgage-bank-group:focus-within + #mortgage-branch-group,
     #mortgage-bank-group.dropdown-active + #mortgage-branch-group {
-        display: none !important;
+        opacity: 0.3 !important;
+        pointer-events: none !important;
+        transition: opacity 0.3s ease !important;
     }
     
     /* Ensure proper spacing for branch dropdown items */
