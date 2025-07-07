@@ -100,8 +100,6 @@ header.scrolled {
     color: var(--primary-navy);
     transition: color 0.3s ease;
     margin: 0;
-    text-align: center;
-    width: 100%;
 }
 
 .logo h1:hover {

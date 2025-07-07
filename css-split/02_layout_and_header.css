@@ -3318,30 +3318,24 @@ input:disabled {
     unicode-bidi: embed;
 }
 
-/* Force center logo - very specific selectors */
-.nav-vertical .logo-centered,
-.nav-wrapper .logo-centered {
+/* Force center logo */
+.logo-centered {
     width: 100% !important;
     text-align: center !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-    margin: 0 auto !important;
 }
 
-.nav-vertical .logo-centered h1,
-.nav-wrapper .logo-centered h1 {
+.logo-centered h1 {
     width: 100% !important;
     text-align: center !important;
     margin: 0 auto !important;
     display: block !important;
-    justify-content: center !important;
 }
 
-.nav-vertical .logo-centered h1 a,
-.nav-wrapper .logo-centered h1 a {
+.logo-centered h1 a {
     width: 100% !important;
     text-align: center !important;
     display: block !important;
-    justify-content: center !important;
 }
