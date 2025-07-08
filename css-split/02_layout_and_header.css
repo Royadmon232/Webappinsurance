@@ -600,13 +600,13 @@ nav .container {
 }
 
 .logo {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 1px; /* מרווח מינימלי ביותר בין הלוגו לכותרת */
     will-change: transform;
-    justify-content: center !important;
-    text-align: center !important;
-    width: 100% !important;
+    justify-content: center;
+    text-align: center;
+    margin: 0 auto;
 }
 
 .logo img {
@@ -632,6 +632,7 @@ nav .container {
 
 .logo h1 {
     margin: 0;
+    padding: 0;
     font-size: 1.85rem;
     font-weight: 800;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -640,21 +641,24 @@ nav .container {
     background-clip: text;
     text-shadow: none;
     line-height: 1.1;
+    display: inline-block;
+    width: auto;
 }
 
 /* לוגו ממורכז תמיד */
 .logo h1 {
     text-align: center !important;
-    margin: 0 auto !important;
-    display: block !important;
-    width: 100% !important;
-    justify-content: center !important;
+    margin: 0 !important;
+    display: inline-block !important;
+    width: auto !important;
+    padding: 0 !important;
 }
 
 .logo h1 a {
     text-align: center !important;
-    display: block !important;
-    width: 100% !important;
+    display: inline-block !important;
+    width: auto !important;
+    padding: 0 !important;
 }
 
 /* Main Content */
@@ -3416,26 +3420,3 @@ input:disabled {
     text-align: center !important;
 }
 
-/* Logo styling improvements - optimized for performance */
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* מרווח קטן יותר בין הלוגו לכותרת */
-    will-change: transform;
-    justify-content: center !important;
-    text-align: center !important;
-    width: 100% !important;
-}
-
-.logo img {
-    transition: transform 0.2s ease-out, filter 0.2s ease-out;
-    filter: brightness(1.05) contrast(1.15);
-    box-shadow: 
-        0 2px 8px rgba(1, 51, 105, 0.12),
-        0 1px 3px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    margin-left: 8px; /* מרווח קטן יותר */
-}
