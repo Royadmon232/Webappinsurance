@@ -717,6 +717,9 @@ header.scrolled {
 .mdrt-logo-container {
     flex-shrink: 0;
     position: relative;
+    background: transparent;
+    overflow: hidden;
+    border-radius: 8px;
 }
 
 .mdrt-main-logo {
