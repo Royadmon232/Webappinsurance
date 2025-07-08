@@ -599,6 +599,21 @@ nav .container {
     width: 100%;
 }
 
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo img {
+    transition: all 0.3s ease;
+    filter: brightness(1.1) contrast(1.1);
+}
+
+.logo:hover img {
+    transform: scale(1.05);
+}
+
 .logo h1 {
     font-size: 1.8rem;
     font-weight: 800;
