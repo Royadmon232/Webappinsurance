@@ -3256,9 +3256,9 @@ input:disabled {
 }
 
 .logo {
-    width: 100% !important;
+    width: auto !important;
     text-align: center !important;
-    display: flex !important;
+    display: inline-flex !important;
     justify-content: center !important;
     align-items: center !important;
 }
@@ -3301,15 +3301,15 @@ input:disabled {
   
   .nav-vertical .logo h1 {
     text-align: center !important;
-    width: 100% !important;
-    margin: 0 auto !important;
-    display: block !important;
+    width: auto !important;
+    margin: 0 !important;
+    display: inline-block !important;
   }
   
   .nav-vertical .logo h1 a {
     text-align: center !important;
-    width: 100% !important;
-    display: block !important;
+    width: auto !important;
+    display: inline-block !important;
   }
   
   .nav-menu-centered {
@@ -3331,9 +3331,9 @@ input:disabled {
     text-align: center !important;
     direction: ltr !important;
     unicode-bidi: embed !important;
-    width: 100% !important;
-    margin: 0 auto !important;
-    display: block !important;
+    width: auto !important;
+    margin: 0 !important;
+    display: inline-block !important;
 }
 
 .nav-vertical .logo h1 a,
@@ -3341,8 +3341,8 @@ input:disabled {
     text-align: center !important;
     direction: ltr !important;
     unicode-bidi: embed !important;
-    width: 100% !important;
-    display: block !important;
+    width: auto !important;
+    display: inline-block !important;
 }
 
 /* CTA Section RTL Fix */
@@ -3399,17 +3399,17 @@ input:disabled {
 
 .nav-wrapper.nav-vertical .logo h1 {
     text-align: center !important;
-    width: 100% !important;
-    margin: 0 auto !important;
-    display: block !important;
+    width: auto !important;
+    margin: 0 !important;
+    display: inline-block !important;
     justify-content: center !important;
 }
 
 .nav-wrapper.nav-vertical .logo h1 a {
     text-align: center !important;
-    width: 100% !important;
-    display: block !important;
-    margin: 0 auto !important;
+    width: auto !important;
+    display: inline-block !important;
+    margin: 0 !important;
 }
 
 .nav-menu.nav-menu-centered {
