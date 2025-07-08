@@ -602,7 +602,7 @@ nav .container {
 .logo {
     display: inline-flex;
     align-items: center;
-    gap: 1px; /* מרווח מינימלי ביותר בין הלוגו לכותרת */
+    gap: 6px; /* מרווח קטן ונאה בין הלוגו לכותרת */
     will-change: transform;
     justify-content: center;
     text-align: center;
