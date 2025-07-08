@@ -602,7 +602,7 @@ nav .container {
 .logo {
     display: flex;
     align-items: center;
-    gap: 8px; /* מרווח קטן יותר בין הלוגו לכותרת */
+    gap: 4px; /* מרווח מינימלי בין הלוגו לכותרת */
     will-change: transform;
     justify-content: center !important;
     text-align: center !important;
@@ -619,7 +619,7 @@ nav .container {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    margin-left: 8px; /* מרווח קטן יותר */
+    margin-left: 2px; /* מרווח מינימלי */
 }
 
 .logo:hover img {
