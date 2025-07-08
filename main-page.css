@@ -606,12 +606,12 @@ header.scrolled {
     font-size: 24px;
 }
 
-.highlight-text {
+.value-highlight .highlight-text {
     font-size: 1.375rem;
-    color: var(--white);
+    color: var(--primary-navy);
     margin: 0;
     font-weight: 700;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     direction: rtl;
     text-align: right;
     flex: 1;
@@ -1755,7 +1755,7 @@ header.scrolled {
         font-size: 20px;
     }
     
-    .highlight-text {
+    .value-highlight .highlight-text {
         font-size: 1.125rem;
         text-align: center;
     }
@@ -2065,7 +2065,7 @@ header.scrolled {
         font-size: 18px;
     }
     
-    .highlight-text {
+    .value-highlight .highlight-text {
         font-size: 1rem;
     }
     
