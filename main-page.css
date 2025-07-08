@@ -720,9 +720,9 @@ header.scrolled {
 }
 
 .mdrt-main-logo {
-    width: 120px;
-    height: 60px;
-    filter: drop-shadow(0 4px 12px rgba(201, 169, 110, 0.3));
+    width: 105px;
+    height: 120px;
+    filter: drop-shadow(0 4px 12px rgba(0, 75, 135, 0.3));
     transition: transform 0.3s ease;
 }
 
@@ -1583,8 +1583,8 @@ header.scrolled {
     }
     
     .mdrt-main-logo {
-        width: 100px;
-        height: 50px;
+        width: 90px;
+        height: 105px;
     }
     
     .mdrt-title {
@@ -1690,8 +1690,8 @@ header.scrolled {
     }
     
     .mdrt-main-logo {
-        width: 80px;
-        height: 40px;
+        width: 70px;
+        height: 85px;
     }
     
     .mdrt-content {
@@ -2014,8 +2014,8 @@ header.scrolled {
     }
     
     .mdrt-main-logo {
-        width: 70px;
-        height: 35px;
+        width: 60px;
+        height: 75px;
     }
     
     .mdrt-title {
