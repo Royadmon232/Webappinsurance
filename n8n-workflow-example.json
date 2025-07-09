@@ -1,302 +1,173 @@
 {
-  "name": "אדמון ביטוח - מעקב לידים חכם",
+  "name": "אדמון ביטוח - שליחת קודי אימות",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "admon-insurance-leads",
+        "path": "send-verification-email",
         "options": {}
       },
-      "name": "Webhook - קליטת נתונים",
+      "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [240, 300],
-      "webhookId": "your-webhook-id"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "string": [
-            {
-              "value1": "={{$json[\"action\"]}}",
-              "operation": "equal",
-              "value2": "email_verification_sent"
-            }
-          ]
-        }
-      },
-      "name": "בדיקה - אימות מייל?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [460, 200]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "string": [
-            {
-              "value1": "={{$json[\"action\"]}}",
-              "operation": "equal",
-              "value2": "form_completed"
-            }
-          ]
-        }
-      },
-      "name": "בדיקה - טופס הושלם?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [460, 400]
+      "position": [250, 300],
+      "webhookId": "send-verification-email"
     },
     {
       "parameters": {
         "values": {
           "string": [
             {
-              "name": "event_type",
-              "value": "אימות מייל"
-            },
-            {
-              "name": "customer_email",
+              "name": "toEmail",
               "value": "={{$json[\"email\"]}}"
             },
             {
-              "name": "verification_code",
+              "name": "verificationCode",
               "value": "={{$json[\"code\"]}}"
             },
             {
-              "name": "timestamp",
-              "value": "={{$json[\"timestamp\"]}}"
+              "name": "subject",
+              "value": "={{$json[\"subject\"]}}"
             },
             {
-              "name": "formatted_time",
-              "value": "={{new Date($json[\"timestamp\"]).toLocaleString('he-IL')}}"
+              "name": "htmlContent",
+              "value": "={{$json[\"htmlContent\"]}}"
             }
           ]
         },
         "options": {}
       },
-      "name": "עיבוד נתוני אימות",
+      "name": "Set Email Variables",
       "type": "n8n-nodes-base.set",
       "typeVersion": 1,
-      "position": [680, 150]
+      "position": [450, 300]
     },
     {
       "parameters": {
-        "values": {
+        "fromEmail": "noreply@admon-insurance.co.il",
+        "toEmail": "={{$node[\"Set Email Variables\"].json[\"toEmail\"]}}",
+        "subject": "={{$node[\"Set Email Variables\"].json[\"subject\"]}}",
+        "body": "={{$node[\"Set Email Variables\"].json[\"htmlContent\"]}}"
+      },
+      "name": "Send Email via SES",
+      "type": "n8n-nodes-base.awsSes",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "credentials": {
+        "aws": {
+          "id": "YOUR_AWS_CREDENTIAL_ID",
+          "name": "AWS SES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
           "string": [
             {
-              "name": "event_type",
-              "value": "ליד מושלם"
-            },
-            {
-              "name": "customer_name",
-              "value": "={{$json[\"firstName\"]}} {{$json[\"lastName\"]}}"
-            },
-            {
-              "name": "customer_email",
-              "value": "={{$json[\"email\"]}}"
-            },
-            {
-              "name": "customer_phone",
-              "value": "={{$json[\"phoneNumber\"]}}"
-            },
-            {
-              "name": "product_type",
-              "value": "={{$json[\"productType\"]}}"
-            },
-            {
-              "name": "property_city",
-              "value": "={{$json[\"city\"]}}"
-            },
-            {
-              "name": "timestamp",
-              "value": "={{$json[\"timestamp\"]}}"
-            },
-            {
-              "name": "formatted_time",
-              "value": "={{new Date($json[\"timestamp\"]).toLocaleString('he-IL')}}"
-            },
-            {
-              "name": "lead_value",
-              "value": "גבוה"
+              "value1": "={{$node[\"Send Email via SES\"].json[\"MessageId\"]}}",
+              "operation": "isNotEmpty"
             }
           ]
-        },
-        "options": {}
+        }
       },
-      "name": "עיבוד נתוני ליד",
-      "type": "n8n-nodes-base.set",
+      "name": "Check Success",
+      "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [680, 350]
+      "position": [850, 300]
     },
     {
       "parameters": {
-        "jsCode": "// לוגיקה לשמירת נתוני אימות מייל\nconst data = $input.all();\n\nfor (const item of data) {\n  console.log('🔐 קוד אימות נשלח:', {\n    email: item.json.customer_email,\n    code: item.json.verification_code,\n    time: item.json.formatted_time\n  });\n  \n  // כאן אפשר להוסיף לוגיקה לשמירה במסד נתונים\n  // או שליחה לשירותים חיצוניים\n}\n\nreturn $input.all();"
+        "respondWith": "json",
+        "responseBody": {
+          "success": true,
+          "message": "Email sent successfully",
+          "messageId": "={{$node[\"Send Email via SES\"].json[\"MessageId\"]}}"
+        },
+        "responseHeaders": {}
       },
-      "name": "לוגיקת אימות מייל",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 250]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": {
+          "success": false,
+          "error": "Failed to send email",
+          "details": "{{$node[\"Send Email via SES\"].error.message}}"
+        },
+        "responseCode": 500,
+        "responseHeaders": {}
+      },
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 350]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log email sending for debugging\nconst email = $node[\"Set Email Variables\"].json.toEmail;\nconst code = $node[\"Set Email Variables\"].json.verificationCode;\n\nconsole.log(`📧 Sending verification code ${code} to ${email}`);\nconsole.log(`Timestamp: ${new Date().toISOString()}`);\n\n// You can add additional logging or tracking here\n// For example, save to a database or send to analytics\n\nreturn [{json: {logged: true}}];"
+      },
+      "name": "Log Email Sending",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [900, 150]
-    },
-    {
-      "parameters": {
-        "jsCode": "// לוגיקה לעיבוד ליד מושלם\nconst data = $input.all();\n\nfor (const item of data) {\n  console.log('🎯 ליד חדש התקבל:', {\n    name: item.json.customer_name,\n    email: item.json.customer_email,\n    phone: item.json.customer_phone,\n    product: item.json.product_type,\n    city: item.json.property_city,\n    time: item.json.formatted_time,\n    value: item.json.lead_value\n  });\n  \n  // כאן אפשר להוסיף:\n  // - שליחה ל-CRM\n  // - שמירה במסד נתונים\n  // - התראות לצוות מכירות\n  // - ניקוד ליד (lead scoring)\n}\n\nreturn $input.all();"
-      },
-      "name": "לוגיקת עיבוד ליד",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [900, 350]
-    },
-    {
-      "parameters": {
-        "url": "={{$json[\"webhook_response_url\"] || \"https://httpbin.org/post\"}}",
-        "options": {
-          "response": {
-            "response": {
-              "neverError": true,
-              "responseFormat": "json"
-            }
-          }
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "status",
-              "value": "success"
-            },
-            {
-              "name": "message",
-              "value": "אימות מייל עובד בהצלחה"
-            },
-            {
-              "name": "timestamp",
-              "value": "={{new Date().toISOString()}}"
-            }
-          ]
-        }
-      },
-      "name": "אישור אימות מייל",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [1120, 150]
-    },
-    {
-      "parameters": {
-        "url": "={{$json[\"webhook_response_url\"] || \"https://httpbin.org/post\"}}",
-        "options": {
-          "response": {
-            "response": {
-              "neverError": true,
-              "responseFormat": "json"
-            }
-          }
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "status",
-              "value": "success"
-            },
-            {
-              "name": "message",
-              "value": "ליד התקבל בהצלחה"
-            },
-            {
-              "name": "lead_id",
-              "value": "={{$now}}"
-            },
-            {
-              "name": "priority",
-              "value": "high"
-            }
-          ]
-        }
-      },
-      "name": "אישור קבלת ליד",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [1120, 350]
+      "position": [650, 150]
     }
   ],
   "connections": {
-    "Webhook - קליטת נתונים": {
+    "Webhook": {
       "main": [
         [
           {
-            "node": "בדיקה - אימות מייל?",
+            "node": "Set Email Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Email Variables": {
+      "main": [
+        [
+          {
+            "node": "Send Email via SES",
             "type": "main",
             "index": 0
           },
           {
-            "node": "בדיקה - טופס הושלם?",
+            "node": "Log Email Sending",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "בדיקה - אימות מייל?": {
+    "Send Email via SES": {
       "main": [
         [
           {
-            "node": "עיבוד נתוני אימות",
+            "node": "Check Success",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "בדיקה - טופס הושלם?": {
+    "Check Success": {
       "main": [
         [
           {
-            "node": "עיבוד נתוני ליד",
+            "node": "Success Response",
             "type": "main",
             "index": 0
           }
-        ]
-      ]
-    },
-    "עיבוד נתוני אימות": {
-      "main": [
+        ],
         [
           {
-            "node": "לוגיקת אימות מייל",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "עיבוד נתוני ליד": {
-      "main": [
-        [
-          {
-            "node": "לוגיקת עיבוד ליד",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "לוגיקת אימות מייל": {
-      "main": [
-        [
-          {
-            "node": "אישור אימות מייל",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "לוגיקת עיבוד ליד": {
-      "main": [
-        [
-          {
-            "node": "אישור קבלת ליד",
+            "node": "Error Response",
             "type": "main",
             "index": 0
           }
@@ -304,11 +175,12 @@
       ]
     }
   },
-  "pinData": {},
-  "settings": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
   "staticData": null,
   "tags": [],
   "triggerCount": 0,
-  "updatedAt": "2025-01-08T16:00:00.000Z",
-  "versionId": "1"
+  "updatedAt": "2025-01-08T17:00:00.000Z",
+  "versionId": "2"
 } 
