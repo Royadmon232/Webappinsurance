@@ -1,8 +1,8 @@
-Build triggered for email verification system update - dual service support
-Date: 2025-01-02 
+Build triggered for email verification HOTFIX - CommonJS restore
+Date: 2025-01-02 15:30
 Changes: 
-- Updated send-email-verification.js to support both Amazon SES and Gmail API
-- Modified verification-storage.js and verify-code.js to use ES modules
-- Added agent notification via Gmail API
-- Enhanced error handling for multiple email services
-- Build: 2025-01-02-email-verification-fix
+- Reverted to CommonJS syntax to fix AWS SDK import issues
+- Fixed HTML template bug where verification code wasn't showing
+- Restored proper module.exports for Vercel compatibility
+- AWS SES + Gmail API + N8N webhook support maintained
+- Build: 2025-01-02-email-verification-hotfix

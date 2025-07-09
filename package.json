@@ -1,7 +1,6 @@
 {
   "name": "insurance-webapp",
   "version": "1.0.0",
-  "type": "module",
   "description": "Home Insurance Web Application with Backend",
   "main": "server.js",
   "scripts": {

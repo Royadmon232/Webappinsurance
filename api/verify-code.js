@@ -1,11 +1,11 @@
 // Import shared verification codes storage
-import { 
+const { 
     getVerificationData, 
     deleteVerificationData, 
     cleanExpiredCodes 
-} from './verification-storage.js';
+} = require('./verification-storage');
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -102,4 +102,4 @@ export default async function handler(req, res) {
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
-} 
+}; 

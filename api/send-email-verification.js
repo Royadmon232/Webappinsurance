@@ -1,8 +1,8 @@
-import AWS from 'aws-sdk';
-import { google } from 'googleapis';
+const AWS = require('aws-sdk');
+const { google } = require('googleapis');
 
 // Import shared verification codes storage
-import { setVerificationData } from './verification-storage.js';
+const { setVerificationData } = require('./verification-storage');
 
 // Configure AWS SES
 const ses = new AWS.SES({
@@ -109,7 +109,7 @@ async function sendToAgent(email, code) {
     }
 }
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -345,4 +345,4 @@ export default async function handler(req, res) {
             details: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
         });
     }
-} 
+}; 
