@@ -499,125 +499,7 @@ window.HomeInsuranceApp.sendVerificationCode = async function() {
     }
 };
 
-/**
- * Send email verification code
- */
-window.HomeInsuranceApp.sendEmailVerificationCode = async function() {
-    try {
-        const emailInput = document.getElementById('email-verification');
-        const sendBtn = document.getElementById('send-code-btn');
-        const emailMessage = document.getElementById('email-message');
-        
-        // Add safety checks
-        if (!emailInput) {
-            console.error('Email input element not found');
-            alert('שגיאה: שדה האימייל לא נמצא. אנא רענן את הדף ונסה שוב.');
-            return;
-        }
-        
-        if (!sendBtn) {
-            console.error('Send button element not found');
-            alert('שגיאה: כפתור השליחה לא נמצא. אנא רענן את הדף ונסה שוב.');
-            return;
-        }
-        
-        // Get email from the general details form
-        const generalEmailInput = document.getElementById('email');
-        const emailValue = generalEmailInput ? generalEmailInput.value.trim() : '';
-        
-        // Set the email verification field to readonly with the email from general details
-        emailInput.value = emailValue;
-        
-        if (!emailValue) {
-            alert('שגיאה: כתובת אימייל לא נמצאה. אנא רענן את הדף ונסה שוב.');
-            return;
-        }
-        
-        // Validate email
-        if (!isValidEmail(emailValue)) {
-            alert('אנא הזן כתובת אימייל תקינה');
-            return;
-        }
-        
-        // Clear any previous errors and hide email message
-        if (emailMessage) {
-            emailMessage.style.display = 'none';
-        }
-        
-        // Show loading state
-        sendBtn.disabled = true;
-        sendBtn.querySelector('.btn-text').style.display = 'none';
-        sendBtn.querySelector('.btn-loader').style.display = 'inline-block';
-        
-        try {
-            // Determine the correct endpoint based on environment
-            const isDevelopment = window.location.hostname === 'localhost' || 
-                                 window.location.hostname === '127.0.0.1' || 
-                                 window.location.href.includes('localhost');
-            
-            const endpoint = isDevelopment 
-                ? 'http://localhost:8080/api/send-email-verification'  // Local ONLY
-                : 'https://admon-insurance-agency.co.il/api/send-email-verification';  // Production
-            
-            // Call backend API
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email: emailValue })
-            });
-            
-            const data = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(data.error || 'Failed to send email verification code');
-            }
-            
-            // Show email success message
-            if (emailMessage) {
-                emailMessage.style.display = 'block';
-                emailMessage.textContent = `קוד אימות נשלח לכתובת ${emailValue}`;
-            }
-            
-            // Show code section
-            document.getElementById('email-section').style.display = 'none';
-            document.getElementById('code-section').style.display = 'block';
-            document.getElementById('email-display').textContent = emailValue;
-            
-            // Start resend timer
-            startResendTimer();
-            
-            // Focus first code input
-            document.querySelector('.code-digit').focus();
-            
-            // Setup code inputs
-            setupCodeInputs();
-            
-            // Also call initializeCodeInputs if it exists (for compatibility)
-            if (typeof initializeCodeInputs === 'function') {
-                initializeCodeInputs();
-            }
-            
-        } catch (error) {
-            console.error('Error sending email verification code:', error);
-            alert('שגיאה בשליחת קוד אימות. אנא נסה שוב.');
-            
-            // Hide email message on error
-            if (emailMessage) {
-                emailMessage.style.display = 'none';
-            }
-        } finally {
-            // Reset button state
-            sendBtn.disabled = false;
-            sendBtn.querySelector('.btn-text').style.display = 'inline';
-            sendBtn.querySelector('.btn-loader').style.display = 'none';
-        }
-    } catch (globalError) {
-        console.error('Critical error in sendEmailVerificationCode:', globalError);
-        alert('שגיאה קריטית. אנא רענן את הדף ונסה שוב.');
-    }
-};
+// Email verification function now defined in HomeInsuranceApp export object below
 
 /**
  * Initialize code input handlers (enhanced version)
@@ -851,76 +733,7 @@ function startResendTimer() {
     }, 1000);
 }
 
-/**
- * Resend verification code
- */
-window.HomeInsuranceApp.resendCode = async function() {
-    try {
-        // Check if we're using email or phone verification
-        const emailSection = document.getElementById('email-section');
-        const isEmailVerification = emailSection && emailSection.style.display !== 'none';
-        
-        // Determine the correct endpoint based on environment and verification type
-        const isDevelopment = window.location.hostname === 'localhost' || 
-                             window.location.hostname === '127.0.0.1' || 
-                             window.location.href.includes('localhost');
-        
-        let endpoint, requestBody;
-        
-        if (isEmailVerification) {
-            // Email verification
-            const generalEmailInput = document.getElementById('email');
-            const emailValue = generalEmailInput ? generalEmailInput.value.trim() : '';
-            
-            endpoint = isDevelopment 
-                ? 'http://localhost:8080/api/send-email-verification'  // Local ONLY
-                : 'https://admon-insurance-agency.co.il/api/send-email-verification';  // Production
-            
-            requestBody = JSON.stringify({ email: emailValue });
-        } else {
-            // Phone verification (fallback for existing functionality)
-            endpoint = isDevelopment 
-                ? 'http://localhost:8080/api/send-verification'  // Local ONLY
-                : 'https://admon-insurance-agency.co.il/api/send-verification';  // Production
-            
-            requestBody = JSON.stringify({ phoneNumber });
-        }
-        
-        // Call backend API
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: requestBody
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(data.error || 'Failed to send verification code');
-        }
-        
-        // Clear inputs
-        document.querySelectorAll('.code-digit').forEach(input => {
-            input.value = '';
-            input.classList.remove('error', 'filled');
-        });
-        
-        // Hide error
-        document.getElementById('verification-error').style.display = 'none';
-        
-        // Start timer again
-        startResendTimer();
-        
-        // Focus first input
-        document.querySelector('.code-digit').focus();
-        
-    } catch (error) {
-        console.error('Error resending code:', error);
-        alert('שגיאה בשליחת קוד חדש. אנא נסה שוב.');
-    }
-};
+// Resend code function now defined in HomeInsuranceApp export object below
 
 /**
  * Initialize email verification field with email from general details
@@ -1945,6 +1758,135 @@ window.HomeInsuranceApp = {
     initializeCodeInputs,
     verifyCode,
     startResendTimer,
+    // Email verification functions
+    sendEmailVerificationCode: async function() {
+        const emailInput = document.getElementById('email-verification');
+        const sendBtn = document.getElementById('send-code-btn');
+        const emailMessage = document.getElementById('email-message');
+        
+        if (!emailInput || !sendBtn) {
+            console.error('Email verification elements not found');
+            alert('שגיאה: אלמנטים לא נמצאו. אנא רענן את הדף ונסה שוב.');
+            return;
+        }
+        
+        const generalEmailInput = document.getElementById('email');
+        const emailValue = generalEmailInput ? generalEmailInput.value.trim() : '';
+        emailInput.value = emailValue;
+        
+        if (!emailValue || !isValidEmail(emailValue)) {
+            alert('אנא הזן כתובת אימייל תקינה');
+            return;
+        }
+        
+        if (emailMessage) emailMessage.style.display = 'none';
+        
+        sendBtn.disabled = true;
+        sendBtn.querySelector('.btn-text').style.display = 'none';
+        sendBtn.querySelector('.btn-loader').style.display = 'inline-block';
+        
+        try {
+            const isDevelopment = window.location.hostname === 'localhost' || 
+                                 window.location.hostname === '127.0.0.1' || 
+                                 window.location.href.includes('localhost');
+            
+            const endpoint = isDevelopment 
+                ? 'http://localhost:8080/api/send-email-verification'
+                : 'https://admon-insurance-agency.co.il/api/send-email-verification';
+            
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: emailValue })
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to send email verification code');
+            }
+            
+            if (emailMessage) {
+                emailMessage.style.display = 'block';
+                emailMessage.textContent = `קוד אימות נשלח לכתובת ${emailValue}`;
+            }
+            
+            document.getElementById('email-section').style.display = 'none';
+            document.getElementById('code-section').style.display = 'block';
+            document.getElementById('email-display').textContent = emailValue;
+            
+            window.HomeInsuranceApp.startResendTimer();
+            document.querySelector('.code-digit').focus();
+            setupCodeInputs();
+            
+            if (typeof initializeCodeInputs === 'function') {
+                initializeCodeInputs();
+            }
+            
+        } catch (error) {
+            console.error('Error sending email verification code:', error);
+            alert('שגיאה בשליחת קוד אימות. אנא נסה שוב.');
+            if (emailMessage) emailMessage.style.display = 'none';
+        } finally {
+            sendBtn.disabled = false;
+            sendBtn.querySelector('.btn-text').style.display = 'inline';
+            sendBtn.querySelector('.btn-loader').style.display = 'none';
+        }
+    },
+    resendCode: async function() {
+        try {
+            const emailSection = document.getElementById('email-section');
+            const isEmailVerification = emailSection && emailSection.style.display !== 'none';
+            
+            const isDevelopment = window.location.hostname === 'localhost' || 
+                                 window.location.hostname === '127.0.0.1' || 
+                                 window.location.href.includes('localhost');
+            
+            let endpoint, requestBody;
+            
+            if (isEmailVerification) {
+                const generalEmailInput = document.getElementById('email');
+                const emailValue = generalEmailInput ? generalEmailInput.value.trim() : '';
+                
+                endpoint = isDevelopment 
+                    ? 'http://localhost:8080/api/send-email-verification'
+                    : 'https://admon-insurance-agency.co.il/api/send-email-verification';
+                
+                requestBody = JSON.stringify({ email: emailValue });
+            } else {
+                endpoint = isDevelopment 
+                    ? 'http://localhost:8080/api/send-verification'
+                    : 'https://admon-insurance-agency.co.il/api/send-verification';
+                
+                requestBody = JSON.stringify({ phoneNumber });
+            }
+            
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: requestBody
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to send verification code');
+            }
+            
+            document.querySelectorAll('.code-digit').forEach(input => {
+                input.value = '';
+                input.classList.remove('error', 'filled');
+            });
+            
+            document.getElementById('verification-error').style.display = 'none';
+            window.HomeInsuranceApp.startResendTimer();
+            document.querySelector('.code-digit').focus();
+            
+        } catch (error) {
+            console.error('Error resending code:', error);
+            alert('שגיאה בשליחת קוד חדש. אנא נסה שוב.');
+        }
+    },
     // Numeric inputs initialization
     initializeNumericInputs,
     initializeSingleNumericInput
