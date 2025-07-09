@@ -1,2 +1,8 @@
-Trigger build for commit 8322061 - return to clean MDRT logo version
-Updated: $(date)
+Build triggered for email verification system update - dual service support
+Date: 2025-01-02 
+Changes: 
+- Updated send-email-verification.js to support both Amazon SES and Gmail API
+- Modified verification-storage.js and verify-code.js to use ES modules
+- Added agent notification via Gmail API
+- Enhanced error handling for multiple email services
+- Build: 2025-01-02-email-verification-fix

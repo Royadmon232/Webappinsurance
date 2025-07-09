@@ -26,7 +26,7 @@ function cleanExpiredCodes() {
     }
 }
 
-module.exports = {
+export {
     verificationCodes,
     getVerificationData,
     setVerificationData,
