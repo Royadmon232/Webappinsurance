@@ -2895,11 +2895,18 @@ function submitGeneralDetails() {
             console.log(JSON.stringify(formData, null, 2));
             console.log('✅ Form is valid and ready for submission');
             
-            // For now, just log the data - no submission yet
-            // You can uncomment these lines when ready to actually submit:
-            // submitFormData(formData);
-            // closeGeneralDetailsModal();
-            // alert('הפרטים נשלחו בהצלחה!');
+            // Submit form data and proceed to next step
+            submitFormData(formData);
+            closeGeneralDetailsModal();
+            
+            // Show success notification
+            showNotification('success', 'הפרטים נשלחו בהצלחה! ממשיכים לשלב הבא...');
+            
+            // Open the wizard to next step
+            setTimeout(() => {
+                openModal();
+                showWizardStep(1); // Show first step of the wizard (building details)
+            }, 1000);
         } else {
             // Trigger browser validation for any HTML5 validation issues
             form.reportValidity();
