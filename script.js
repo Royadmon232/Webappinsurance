@@ -7329,6 +7329,41 @@ async function sendEmailAndGeneratePDF(formData) {
                 sheetsErrorMessage = sheetsError.userMessage || sheetsError.message;
                 // Continue anyway - Google Sheets is not critical
             }
+
+            // Send to N8N webhook (if configured)
+            let n8nResult = null;
+            if (process.env.N8N_WEBHOOK_URL || typeof N8N_WEBHOOK_URL !== 'undefined') {
+                try {
+                    console.log('🔄 Sending data to N8N workflow...');
+                    const webhookUrl = process.env.N8N_WEBHOOK_URL || N8N_WEBHOOK_URL;
+                    
+                    const n8nData = {
+                        ...formData,
+                        action: 'form_completed',
+                        timestamp: new Date().toISOString(),
+                        source: 'ביטוח דירה - אדמון סוכנות לביטוח',
+                        stage: 'completed_lead'
+                    };
+
+                    const response = await fetch(webhookUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(n8nData)
+                    });
+
+                    if (response.ok) {
+                        n8nResult = await response.json();
+                        console.log('✅ Data sent to N8N successfully:', n8nResult);
+                    } else {
+                        console.warn('⚠️ N8N webhook returned non-OK status:', response.status);
+                    }
+                } catch (n8nError) {
+                    console.error('⚠️ N8N webhook failed (non-critical):', n8nError.message);
+                    // Continue anyway - N8N is not critical for main flow
+                }
+            }
             
             let notificationMessage = `📧 הליד נשלח בהצלחה במייל!<br>💡 נשלח במייל מעוצב עם כל הפרטים<br>`;
             
@@ -7348,8 +7383,9 @@ async function sendEmailAndGeneratePDF(formData) {
                 emailResult: result,
                 pdfResult: null,
                 sheetsResult: sheetsResult,
+                n8nResult: n8nResult,
                 method: 'email-only',
-                errors: { email: null, pdf: null, sheets: sheetsResult?.error || null }
+                errors: { email: null, pdf: null, sheets: sheetsResult?.error || null, n8n: null }
             };
             
         } catch (emailError) {
@@ -7382,10 +7418,12 @@ async function sendEmailAndGeneratePDF(formData) {
                 pdfSuccess: false,
                 emailResult: { messageId: `backup_${timestamp}`, saved: true },
                 pdfResult: null,
+                n8nResult: null,
                 method: 'backup',
                 errors: { 
                     email: emailError.message, 
-                    pdf: 'PDF generation disabled'
+                    pdf: 'PDF generation disabled',
+                    n8n: 'Not sent due to email failure'
                 }
             };
         }
