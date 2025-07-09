@@ -3043,17 +3043,14 @@ function validateGeneralDetailsForm() {
     const phoneNumber = document.getElementById('phone-number');
     if (phoneNumber) {
         const phoneValue = phoneNumber.value.trim();
-        // לוגים לבדיקה
-        console.log('phoneValue:', JSON.stringify(phoneValue));
         if (!phoneValue) {
             showFormError(phoneNumber, 'שדה חובה - יש להזין מספר טלפון נייד');
             isValid = false;
         } else {
-            // Clean the phone number before validation (remove formatting)
+            // Clean the phone number before validation (remove hyphens, spaces, etc.)
             const cleanedPhoneValue = phoneValue.replace(/\D/g, '');
-            console.log('cleanedPhoneValue:', JSON.stringify(cleanedPhoneValue));
             const validation = validateIsraeliPhone(cleanedPhoneValue);
-            console.log('validation:', validation);
+
             if (!validation.isValid) {
                 // Use the specific error message from validation
                 showFormError(phoneNumber, validation.error);
