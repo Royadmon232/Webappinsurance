@@ -584,6 +584,11 @@
                                         </div>
                                         
                                         <div class="form-group">
+                                            <label for="phone-number" data-required="*">מספר טלפון נייד</label>
+                                            <input type="tel" id="phone-number" name="phone-number" placeholder="050-1234567" inputmode="numeric" maxlength="11" required>
+                                        </div>
+                                        
+                                        <div class="form-group">
                                             <label for="idNumber" data-required="*">תעודת זהות</label>
                                             <input type="text" id="idNumber" name="idNumber" maxlength="9" placeholder="123456789" pattern="[0-9]{9}" required>
                                         </div>
@@ -1208,25 +1213,25 @@
                                         </div>
                                     </div>
                                     <h2 class="completion-title">כל הכבוד! סיימת למלא את כל הפרטים</h2>
-                                    <p class="completion-subtitle">נשאר רק לאמת את מספר הטלפון שלך וניצור איתך קשר בהקדם עם הצעת מחיר מותאמת אישית</p>
+                                    <p class="completion-subtitle">נשאר רק לאמת את כתובת האימייל שלך וניצור איתך קשר בהקדם עם הצעת מחיר מותאמת אישית</p>
                                 </div>
 
                                 <div class="completion-content">
-                                    <!-- Phone Verification Section -->
-                                    <div class="verification-section" id="phone-section">
+                                    <!-- Email Verification Section -->
+                                    <div class="verification-section" id="email-section">
                                         <h3 class="section-title">
                                             <span class="step-number">1</span>
-                                            אימות מספר טלפון
+                                            אימות כתובת אימייל
                                         </h3>
-                                        <div class="phone-input-wrapper">
+                                        <div class="email-input-wrapper">
                                             <div class="building-form-group">
-                                                <label for="phone-number">
-                                                    <span>מספר טלפון נייד</span>
-                                                    <span class="form-icon">📱</span>
+                                                <label for="email-verification">
+                                                    <span>כתובת האימייל שלך</span>
+                                                    <span class="form-icon">📧</span>
                                                 </label>
-                                                <div class="phone-input-container">
-                                                    <input type="tel" id="phone-number" name="phone-number" placeholder="050-1234567" inputmode="numeric" maxlength="11" required>
-                                                    <button type="button" class="btn-send-code" id="send-code-btn" onclick="window.HomeInsuranceApp.sendVerificationCode()">
+                                                <div class="email-input-container">
+                                                    <input type="email" id="email-verification" name="email-verification" placeholder="דוא״ל ממולא מראש" readonly>
+                                                    <button type="button" class="btn-send-code" id="send-code-btn" onclick="window.HomeInsuranceApp.sendEmailVerificationCode()">
                                                         <span class="btn-text">שלח קוד אימות</span>
                                                         <span class="btn-loader" style="display: none;">
                                                             <svg class="spinner" viewBox="0 0 50 50">
@@ -1235,7 +1240,7 @@
                                                         </span>
                                                     </button>
                                                 </div>
-                                                <small class="form-helper-text" id="sms-message" style="display: none;">נשלח אליך קוד אימות ב-SMS</small>
+                                                <small class="form-helper-text" id="email-message" style="display: none;">נשלח אליך קוד אימות באימייל</small>
                                             </div>
                                         </div>
                                     </div>
@@ -1247,7 +1252,7 @@
                                             הזן את קוד האימות
                                         </h3>
                                         <div class="code-input-wrapper">
-                                            <p class="code-sent-message">קוד אימות נשלח למספר <span id="phone-display"></span></p>
+                                            <p class="code-sent-message">קוד אימות נשלח לכתובת <span id="email-display"></span></p>
                                             <div class="code-inputs">
                                                 <input type="text" class="code-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
                                                 <input type="text" class="code-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
