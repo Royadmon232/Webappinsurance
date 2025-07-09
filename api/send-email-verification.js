@@ -157,7 +157,6 @@ module.exports = async (req, res) => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                action: 'send_verification_email',
                 email: email,
                 code: code,
                 subject: 'קוד אימות - אדמון סוכנות לביטוח',

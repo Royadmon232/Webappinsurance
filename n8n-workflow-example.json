@@ -44,7 +44,7 @@
     },
     {
       "parameters": {
-        "fromEmail": "noreply@admon-insurance.co.il",
+        "fromEmail": "royadmon23@gmail.com",
         "toEmail": "={{$node[\"Set Email Variables\"].json[\"toEmail\"]}}",
         "subject": "={{$node[\"Set Email Variables\"].json[\"subject\"]}}",
         "body": "={{$node[\"Set Email Variables\"].json[\"htmlContent\"]}}"
@@ -98,7 +98,7 @@
           "success": false,
           "error": "Failed to send email",
           "details": "{{$node[\"Send Email via SES\"].error.message}}"
-        },
+            },
         "responseCode": 500,
         "responseHeaders": {}
       },
@@ -110,7 +110,7 @@
     {
       "parameters": {
         "jsCode": "// Log email sending for debugging\nconst email = $node[\"Set Email Variables\"].json.toEmail;\nconst code = $node[\"Set Email Variables\"].json.verificationCode;\n\nconsole.log(`📧 Sending verification code ${code} to ${email}`);\nconsole.log(`Timestamp: ${new Date().toISOString()}`);\n\n// You can add additional logging or tracking here\n// For example, save to a database or send to analytics\n\nreturn [{json: {logged: true}}];"
-      },
+            },
       "name": "Log Email Sending",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -136,7 +136,7 @@
             "node": "Send Email via SES",
             "type": "main",
             "index": 0
-          },
+    },
           {
             "node": "Log Email Sending",
             "type": "main",
