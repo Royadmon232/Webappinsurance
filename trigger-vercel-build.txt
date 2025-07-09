@@ -1,8 +1,2 @@
-Build triggered for email verification HOTFIX - CommonJS restore
-Date: 2025-01-02 15:30
-Changes: 
-- Reverted to CommonJS syntax to fix AWS SDK import issues
-- Fixed HTML template bug where verification code wasn't showing
-- Restored proper module.exports for Vercel compatibility
-- AWS SES + Gmail API + N8N webhook support maintained
-- Build: 2025-01-02-email-verification-hotfix
+Trigger build for commit 8322061 - return to clean MDRT logo version
+Updated: $(date)
