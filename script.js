@@ -2895,18 +2895,11 @@ function submitGeneralDetails() {
             console.log(JSON.stringify(formData, null, 2));
             console.log('✅ Form is valid and ready for submission');
             
-            // Submit form data and proceed to next step
-            submitFormData(formData);
-            closeGeneralDetailsModal();
-            
-            // Show success notification
-            showNotification('success', 'הפרטים נשלחו בהצלחה! ממשיכים לשלב הבא...');
-            
-            // Open the wizard to next step
-            setTimeout(() => {
-                openModal();
-                showWizardStep(1); // Show first step of the wizard (building details)
-            }, 1000);
+            // For now, just log the data - no submission yet
+            // You can uncomment these lines when ready to actually submit:
+            // submitFormData(formData);
+            // closeGeneralDetailsModal();
+            // alert('הפרטים נשלחו בהצלחה!');
         } else {
             // Trigger browser validation for any HTML5 validation issues
             form.reportValidity();
@@ -3054,9 +3047,12 @@ function validateGeneralDetailsForm() {
             showFormError(phoneNumber, 'שדה חובה - יש להזין מספר טלפון נייד');
             isValid = false;
         } else {
-            const validation = validateIsraeliPhone(phoneValue);
+            // Clean the phone number before validation (remove formatting)
+            const cleanedPhoneValue = phoneValue.replace(/\D/g, '');
+            const validation = validateIsraeliPhone(cleanedPhoneValue);
             if (!validation.isValid) {
-                showFormError(phoneNumber, 'אנא הזן מספר טלפון נייד ישראלי תקין (050-1234567)');
+                // Use the specific error message from validation
+                showFormError(phoneNumber, validation.error);
                 isValid = false;
             }
         }
