@@ -3043,14 +3043,17 @@ function validateGeneralDetailsForm() {
     const phoneNumber = document.getElementById('phone-number');
     if (phoneNumber) {
         const phoneValue = phoneNumber.value.trim();
+        // לוגים לבדיקה
+        console.log('phoneValue:', JSON.stringify(phoneValue));
         if (!phoneValue) {
             showFormError(phoneNumber, 'שדה חובה - יש להזין מספר טלפון נייד');
             isValid = false;
         } else {
-            // Clean the phone number before validation (remove hyphens, spaces, etc.)
+            // Clean the phone number before validation (remove formatting)
             const cleanedPhoneValue = phoneValue.replace(/\D/g, '');
+            console.log('cleanedPhoneValue:', JSON.stringify(cleanedPhoneValue));
             const validation = validateIsraeliPhone(cleanedPhoneValue);
-
+            console.log('validation:', validation);
             if (!validation.isValid) {
                 // Use the specific error message from validation
                 showFormError(phoneNumber, validation.error);
@@ -5901,10 +5904,12 @@ function initializePhoneValidation() {
         const newPhoneInput = phoneInput.cloneNode(true);
         phoneInput.parentNode.replaceChild(newPhoneInput, phoneInput);
         
+        // Remove HTML pattern attribute to allow hyphens in phone number
+        newPhoneInput.removeAttribute('pattern');
+        
         // Set mobile keyboard to numeric (if not already set)
         if (!newPhoneInput.hasAttribute('inputmode')) {
             newPhoneInput.setAttribute('inputmode', 'numeric');
-            newPhoneInput.setAttribute('pattern', '[0-9]*');
         }
         
         // Add event listeners for real-time validation
