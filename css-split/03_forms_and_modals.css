@@ -20,6 +20,9 @@
     box-shadow: 0 10px 30px rgba(124, 58, 237, 0.15);
     position: relative;
     z-index: 2;
+    text-align: right;
+    direction: rtl;
+    justify-content: center;
 }
 
 .secondary-cta-button:hover {

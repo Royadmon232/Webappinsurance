@@ -358,6 +358,9 @@ main {
     gap: 12px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    text-align: right;
+    direction: rtl;
+    justify-content: center;
 }
 
 .cta-button::before {
@@ -404,6 +407,9 @@ main {
     display: inline-flex;
     align-items: center;
     gap: 10px;
+    text-align: right;
+    direction: rtl;
+    justify-content: center;
 }
 
 .secondary-cta-button:hover {
