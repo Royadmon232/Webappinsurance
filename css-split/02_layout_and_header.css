@@ -923,6 +923,9 @@ main {
     font-weight: 700;
     opacity: 1 !important;
     box-shadow: 0 4px 24px rgba(30, 64, 175, 0.10);
+    direction: ltr;
+    text-align: center;
+    justify-content: center;
 }
 
 .secondary-cta-button i, .secondary-cta-button svg {
