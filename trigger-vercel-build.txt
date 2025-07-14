@@ -5,3 +5,4 @@ Sat Dec 14 22:20:45 IST 2024: Trigger deployment after Brevo integration setup
 Sat Dec 14 22:45:00 IST 2024: Trigger deployment after new Brevo API key creation
 Sat Dec 14 23:05:00 IST 2024: Trigger Vercel deployment - Brevo workflow ready for import
 Sat Dec 14 23:20:00 IST 2024: Trigger Vercel deployment - n8n Brevo workflow configured and tested
+Sat Dec 14 23:35:00 IST 2024: Trigger Vercel deployment - n8n JSON expressions syntax fixed
