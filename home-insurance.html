@@ -1356,6 +1356,15 @@
         // Initialize Feather Icons
         document.addEventListener('DOMContentLoaded', function() {
             feather.replace();
+            
+            // Ensure verification sections are properly hidden on page load
+            const codeSection = document.getElementById('code-section');
+            const successSection = document.getElementById('success-section');
+            const emailSection = document.getElementById('email-section');
+            
+            if (codeSection) codeSection.style.display = 'none';
+            if (successSection) successSection.style.display = 'none';
+            if (emailSection) emailSection.style.display = 'block'; // This should be visible initially
         });
         
         // Register Service Worker for cache management with enhanced error handling

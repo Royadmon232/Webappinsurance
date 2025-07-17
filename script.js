@@ -520,12 +520,12 @@ function initializeCodeInputs() {
             
             if (value) {
                 e.target.classList.add('filled');
-                // Move to next input
-                if (index < codeInputs.length - 1) {
-                    codeInputs[index + 1].focus();
+                // Move to next input (left direction for RTL)
+                if (index > 0) {
+                    codeInputs[index - 1].focus();
                 } else {
-                    // All digits entered - verify code
-                    const code = Array.from(codeInputs).map(inp => inp.value).join('');
+                    // All digits entered - verify code (RTL order)
+                    const code = Array.from(codeInputs).map(inp => inp.value).reverse().join('');
                     if (code.length === 6) {
                         verifyCode(code);
                     }
@@ -535,10 +535,10 @@ function initializeCodeInputs() {
             }
         });
         
-        // Handle backspace
+        // Handle backspace (RTL direction)
         input.addEventListener('keydown', function(e) {
-            if (e.key === 'Backspace' && !e.target.value && index > 0) {
-                codeInputs[index - 1].focus();
+            if (e.key === 'Backspace' && !e.target.value && index < codeInputs.length - 1) {
+                codeInputs[index + 1].focus();
             }
         });
         
@@ -547,13 +547,15 @@ function initializeCodeInputs() {
             e.preventDefault();
             const pastedData = e.clipboardData.getData('text').replace(/\D/g, '');
             
-            for (let i = 0; i < Math.min(pastedData.length, codeInputs.length); i++) {
-                codeInputs[i].value = pastedData[i];
+            // Reverse the pasted data for RTL display
+            const reversedData = pastedData.split('').reverse().join('');
+            for (let i = 0; i < Math.min(reversedData.length, codeInputs.length); i++) {
+                codeInputs[i].value = reversedData[i];
                 codeInputs[i].classList.add('filled');
             }
             
             if (pastedData.length >= codeInputs.length) {
-                const code = Array.from(codeInputs).map(inp => inp.value).join('');
+                const code = Array.from(codeInputs).map(inp => inp.value).reverse().join('');
                 verifyCode(code);
             }
         });
@@ -584,14 +586,15 @@ function setupCodeInputs() {
             // Only allow digits
             this.value = this.value.replace(/[^0-9]/g, '');
             
-            // Move to next input
-            if (this.value && index < codeInputs.length - 1) {
-                codeInputs[index + 1].focus();
+            // Move to next input (RTL direction - right to left)
+            if (this.value && index > 0) {
+                codeInputs[index - 1].focus();
             }
             
             // Check if all inputs are filled
-            if (index === codeInputs.length - 1) {
-                const code = Array.from(codeInputs).map(inp => inp.value).join('');
+            if (index === 0) {
+                // Read code from right to left (RTL order) to match visual layout
+                const code = Array.from(codeInputs).map(inp => inp.value).reverse().join('');
                 if (code.length === 6) {
                     verifyCode(code);
                 }
@@ -599,9 +602,9 @@ function setupCodeInputs() {
         });
         
         input.addEventListener('keydown', function(e) {
-            // Handle backspace
-            if (e.key === 'Backspace' && !this.value && index > 0) {
-                codeInputs[index - 1].focus();
+            // Handle backspace (RTL direction)
+            if (e.key === 'Backspace' && !this.value && index < codeInputs.length - 1) {
+                codeInputs[index + 1].focus();
             }
         });
         
@@ -610,14 +613,17 @@ function setupCodeInputs() {
             const pastedData = e.clipboardData.getData('text');
             const digits = pastedData.replace(/[^0-9]/g, '').slice(0, 6);
             
-            digits.split('').forEach((digit, i) => {
+            // For RTL display, paste digits in reverse order
+            const reversedDigits = digits.split('').reverse();
+            reversedDigits.forEach((digit, i) => {
                 if (codeInputs[i]) {
                     codeInputs[i].value = digit;
                 }
             });
             
             if (digits.length === 6) {
-                verifyCode(digits);
+                // Reverse for RTL display
+                verifyCode(digits.split('').reverse().join(''));
             }
         });
     });
@@ -1816,7 +1822,11 @@ window.HomeInsuranceApp = {
             document.getElementById('email-display').textContent = emailValue;
             
             window.HomeInsuranceApp.startResendTimer();
-            document.querySelector('.code-digit').focus();
+            // Focus the rightmost input for RTL
+            const codeInputs = document.querySelectorAll('.code-digit');
+            if (codeInputs.length > 0) {
+                codeInputs[codeInputs.length - 1].focus();
+            }
             setupCodeInputs();
             
             if (typeof initializeCodeInputs === 'function') {
@@ -1880,7 +1890,11 @@ window.HomeInsuranceApp = {
             
             document.getElementById('verification-error').style.display = 'none';
             window.HomeInsuranceApp.startResendTimer();
-            document.querySelector('.code-digit').focus();
+            // Focus the rightmost input for RTL
+            const codeInputs = document.querySelectorAll('.code-digit');
+            if (codeInputs.length > 0) {
+                codeInputs[codeInputs.length - 1].focus();
+            }
             
         } catch (error) {
             console.error('Error resending code:', error);
