@@ -46,6 +46,13 @@ module.exports = async (req, res) => {
                 error: 'Invalid verification code or expired' 
             });
         }
+        
+        console.log(`Found verification data for ${identifier}:`, {
+            code: verificationData.code,
+            codeType: typeof verificationData.code,
+            expires: new Date(verificationData.expires).toISOString(),
+            attempts: verificationData.attempts
+        });
 
         // Check if code has expired
         if (verificationData.expires < Date.now()) {
@@ -70,8 +77,16 @@ module.exports = async (req, res) => {
         // Increment attempts
         verificationData.attempts++;
 
-        // Verify the code
-        if (verificationData.code !== code) {
+        // Verify the code - ensure both are strings for comparison
+        const storedCode = String(verificationData.code);
+        const receivedCode = String(code);
+        
+        console.log(`Verification attempt for ${identifier}:`);
+        console.log(`  Stored code: "${storedCode}" (type: ${typeof verificationData.code})`);
+        console.log(`  Received code: "${receivedCode}" (type: ${typeof code})`);
+        console.log(`  Codes match: ${storedCode === receivedCode}`);
+        
+        if (storedCode !== receivedCode) {
             console.log(`Verification attempt failed: Wrong code for ${identifier}. Attempt ${verificationData.attempts}/5`);
             return res.status(400).json({ 
                 success: false,

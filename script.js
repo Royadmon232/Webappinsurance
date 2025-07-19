@@ -530,11 +530,17 @@ function initializeCodeInputs() {
                 if (index < codeInputs.length - 1) {
                     codeInputs[index + 1].focus();
                 } else {
-                    // All digits entered - verify code (normal order, no reversal)
-                    const code = Array.from(codeInputs).map(inp => inp.value).join('');
-                    if (code.length === 6) {
-                        verifyCode(code);
-                    }
+                                    // All digits entered - verify code (normal order, no reversal)
+                const code = Array.from(codeInputs).map(inp => inp.value).join('');
+                console.log('Collected code from initializeCodeInputs:', {
+                    code: code,
+                    codeType: typeof code,
+                    codeLength: code.length,
+                    individualInputs: Array.from(codeInputs).map(inp => inp.value)
+                });
+                if (code.length === 6) {
+                    verifyCode(code);
+                }
                 }
             } else {
                 e.target.classList.remove('filled');
@@ -561,6 +567,13 @@ function initializeCodeInputs() {
             
             if (pastedData.length >= codeInputs.length) {
                 const code = Array.from(codeInputs).map(inp => inp.value).join('');
+                console.log('Collected code from initializeCodeInputs paste:', {
+                    code: code,
+                    codeType: typeof code,
+                    codeLength: code.length,
+                    pastedData: pastedData,
+                    individualInputs: Array.from(codeInputs).map(inp => inp.value)
+                });
                 verifyCode(code);
             }
         });
@@ -600,6 +613,12 @@ function setupCodeInputs() {
             if (index === codeInputs.length - 1) {
                 // Read code normally (no reversal)
                 const code = Array.from(codeInputs).map(inp => inp.value).join('');
+                console.log('Collected code from setupCodeInputs (last input):', {
+                    code: code,
+                    codeType: typeof code,
+                    codeLength: code.length,
+                    individualInputs: Array.from(codeInputs).map(inp => inp.value)
+                });
                 if (code.length === 6) {
                     verifyCode(code);
                 }
@@ -627,6 +646,13 @@ function setupCodeInputs() {
             
             if (digits.length === 6) {
                 // Use normal order (no reversal)
+                console.log('Collected code from setupCodeInputs paste:', {
+                    code: digits,
+                    codeType: typeof digits,
+                    codeLength: digits.length,
+                    pastedData: pastedData,
+                    individualInputs: Array.from(codeInputs).map(inp => inp.value)
+                });
                 verifyCode(digits);
             }
         });
@@ -663,17 +689,24 @@ async function verifyCode(enteredCode) {
             const emailValue = generalEmailInput ? generalEmailInput.value.trim() : '';
             requestBody = JSON.stringify({ 
                 email: emailValue,
-                code: enteredCode 
+                code: String(enteredCode) // Ensure code is sent as string
             });
         } else {
             // Phone verification (fallback)
             requestBody = JSON.stringify({ 
                 phoneNumber,
-                code: enteredCode 
+                code: String(enteredCode) // Ensure code is sent as string
             });
         }
         
         // Call backend API
+        console.log('Sending verification request:', {
+            endpoint,
+            requestBody: JSON.parse(requestBody),
+            enteredCode: enteredCode,
+            enteredCodeType: typeof enteredCode
+        });
+        
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
@@ -683,6 +716,12 @@ async function verifyCode(enteredCode) {
         });
         
         const data = await response.json();
+        
+        console.log('Verification response:', {
+            status: response.status,
+            ok: response.ok,
+            data: data
+        });
         
         if (response.ok && data.success) {
             // Store token for form submission

@@ -35,10 +35,18 @@ module.exports = async (req, res) => {
         // Generate 6-digit verification code
         const code = generateVerificationCode();
         
+        console.log(`Generated verification code for ${email}: "${code}" (type: ${typeof code})`);
+        
         // Store the code (expires in 10 minutes)
         setVerificationData(email, {
-            code,
+            code: String(code), // Ensure it's stored as string
             expires: Date.now() + 10 * 60 * 1000,
+            attempts: 0
+        });
+        
+        console.log(`Stored verification data for ${email}:`, {
+            code: String(code),
+            expires: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
             attempts: 0
         });
 
