@@ -649,14 +649,14 @@ async function verifyCode(enteredCode) {
             : 'https://admon-insurance-agency.co.il/api/verify-code';  // Production
         
         // Check if we're using email or phone verification
-        const emailSection = document.getElementById('email-section');
-        const isEmailVerification = emailSection && emailSection.style.display !== 'none';
+        // Check if email display element exists (means we're in email verification flow)
+        const emailDisplay = document.getElementById('email-display');
+        const isEmailVerification = emailDisplay && emailDisplay.textContent.trim().length > 0;
         
         let requestBody;
         if (isEmailVerification) {
             // Email verification
-            const generalEmailInput = document.getElementById('email');
-            const emailValue = generalEmailInput ? generalEmailInput.value.trim() : '';
+            const emailValue = emailDisplay.textContent.trim();
             requestBody = JSON.stringify({ 
                 email: emailValue,
                 code: enteredCode 
@@ -692,8 +692,15 @@ async function verifyCode(enteredCode) {
                 document.getElementById('code-section').style.display = 'none';
                 document.getElementById('success-section').style.display = 'block';
                 
-                // Submit form data
-                submitFinalForm();
+                // For email verification, just show the success section
+                // The user will click the quote button when ready
+                const emailDisplay = document.getElementById('email-display');
+                const isEmailVerification = emailDisplay && emailDisplay.textContent.trim().length > 0;
+                
+                if (!isEmailVerification) {
+                    // Only auto-submit for phone verification
+                    submitFinalForm();
+                }
             }, 500);
         } else {
             // Error
@@ -762,8 +769,17 @@ async function submitFinalForm() {
         // Collect all form data
         const formData = collectAllFormData();
         
-        // Add phone number
-        formData.phoneNumber = phoneNumber;
+        // Add contact info based on verification type
+        const emailDisplay = document.getElementById('email-display');
+        const isEmailVerification = emailDisplay && emailDisplay.textContent.trim().length > 0;
+        
+        if (isEmailVerification) {
+            // Use email from verification
+            formData.email = emailDisplay.textContent.trim();
+        } else {
+            // Use phone number from verification
+            formData.phoneNumber = phoneNumber;
+        }
         
         // Determine the correct endpoint based on environment
         const isDevelopment = window.location.hostname === 'localhost' || 
@@ -795,8 +811,8 @@ async function submitFinalForm() {
             localStorage.setItem('lastFormId', data.formId);
         }
         
-        // Show final success message
-        const submitBtn = document.querySelector('.btn-submit-final');
+        // Show final success message - look for the correct button
+        const submitBtn = document.querySelector('.btn-submit-quote, .btn-submit-final');
         if (submitBtn) {
             submitBtn.textContent = 'הפרטים נשלחו בהצלחה!';
             submitBtn.disabled = true;
