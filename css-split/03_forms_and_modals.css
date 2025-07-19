@@ -2816,6 +2816,18 @@ button:focus {
     background: #9ca3af;
 }
 
+/* Mobile scroll fix */
+@media (max-width: 768px) {
+    .modal-content {
+        overflow: visible !important;
+        -webkit-overflow-scrolling: auto !important;
+    }
+    
+    .modal-body {
+        overflow: visible !important;
+    }
+}
+
 .error-message {
     color: #d9534f;
     font-size: 0.9em;

@@ -1564,7 +1564,9 @@ function nextStep(currentStep) {
         nextStepElement.style.display = 'block';
         
         // Smooth scroll to top of form
-        nextStepElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Use instant scroll on mobile to prevent white screen
+            const isMobile = window.innerWidth <= 768;
+            nextStepElement.scrollIntoView({ behavior: isMobile ? 'auto' : 'smooth', block: 'start' });
     }
 }
 
@@ -1592,7 +1594,9 @@ function prevStep(currentStep) {
     prevStepElement.style.display = 'block';
     
     // Smooth scroll to top of form
-    prevStepElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Use instant scroll on mobile to prevent white screen
+            const isMobile = window.innerWidth <= 768;
+            prevStepElement.scrollIntoView({ behavior: isMobile ? 'auto' : 'smooth', block: 'start' });
 }
 
 /**
@@ -2054,7 +2058,9 @@ function initializeConditionalFields() {
             // Add smooth scroll to top when product type changes
             const modalBody = document.querySelector('.modal-body');
             if (modalBody) {
-                modalBody.scrollTo({ top: 0, behavior: 'smooth' });
+                // Use instant scroll on mobile to prevent white screen
+            const isMobile = window.innerWidth <= 768;
+            modalBody.scrollTo({ top: 0, behavior: isMobile ? 'auto' : 'smooth' });
             }
         });
     }
@@ -3767,9 +3773,11 @@ function smoothScroll(target) {
         const elementPosition = element.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
+        // Use instant scroll on mobile to prevent white screen
+        const isMobile = window.innerWidth <= 768;
         window.scrollTo({
             top: offsetPosition,
-            behavior: 'smooth'
+            behavior: isMobile ? 'auto' : 'smooth'
         });
     }
 }
@@ -5597,7 +5605,9 @@ function showAdditionalCoverageFormError(field, message) {
     field.focus();
     
     // Scroll to field if needed
-    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Use instant scroll on mobile to prevent white screen
+            const isMobile = window.innerWidth <= 768;
+            field.scrollIntoView({ behavior: isMobile ? 'auto' : 'smooth', block: 'center' });
 }
 
 function clearAdditionalCoverageFormError(field) {
@@ -6000,17 +6010,22 @@ function initializeAdditionalCoverageEnhancements() {
         });
     });
     
-    // Optimized section navigation - smooth scroll only
-    const sectionTitles = additionalCoverageSection.querySelectorAll('.building-section-title');
-    sectionTitles.forEach(title => {
-        title.style.cursor = 'pointer';
-        title.addEventListener('click', function() {
-            const section = this.closest('.building-section');
-            if (section) {
-                section.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            // Optimized section navigation - smooth scroll only
+        const sectionTitles = additionalCoverageSection.querySelectorAll('.building-section-title');
+        sectionTitles.forEach(title => {
+            title.style.cursor = 'pointer';
+            title.addEventListener('click', function() {
+                const section = this.closest('.building-section');
+                if (section) {
+                    // Use instant scroll on mobile to prevent white screen
+                    const isMobile = window.innerWidth <= 768;
+                    section.scrollIntoView({ 
+                        behavior: isMobile ? 'auto' : 'smooth', 
+                        block: 'center' 
+                    });
+                }
+            });
         });
-    });
 }
 
 /**
