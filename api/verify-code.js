@@ -22,28 +22,58 @@ module.exports = async (req, res) => {
     try {
         const { phoneNumber, email, code } = req.body;
 
+        console.log('=== VERIFICATION REQUEST RECEIVED ===');
+        console.log('Request body:', req.body);
+        console.log('phoneNumber:', phoneNumber);
+        console.log('email:', email);
+        console.log('code:', code);
+
         // Determine the identifier (email or phone)
         const identifier = email || phoneNumber;
 
+        console.log('Determined identifier:', identifier);
+
         if (!identifier) {
+            console.log('ERROR: No identifier provided');
             return res.status(400).json({ error: 'Either email or phone number is required' });
         }
 
         if (!code) {
+            console.log('ERROR: No code provided');
             return res.status(400).json({ error: 'Verification code is required' });
         }
 
         // Clean expired codes
         cleanExpiredCodes();
 
+        // Debug: Show all stored verification codes
+        const { verificationCodes } = require('./verification-storage');
+        console.log('=== ALL STORED VERIFICATION CODES ===');
+        for (const [storedIdentifier, storedData] of verificationCodes.entries()) {
+            console.log(`Stored: "${storedIdentifier}" -> Code: "${storedData.code}", Expires: ${new Date(storedData.expires).toISOString()}`);
+        }
+        console.log('Looking for identifier:', `"${identifier}"`);
+
         // Get verification data
         const verificationData = getVerificationData(identifier);
 
         if (!verificationData) {
             console.log(`Verification attempt failed: No code found for ${identifier}`);
+            
+            // Debug info for client
+            const debugInfo = {
+                totalStoredCodes: verificationCodes.size,
+                searchedIdentifier: identifier,
+                identifierType: typeof identifier,
+                identifierLength: identifier ? identifier.length : 0,
+                currentTime: new Date().toISOString(),
+                allStoredIdentifiers: Array.from(verificationCodes.keys())
+            };
+            
             return res.status(400).json({ 
                 success: false,
-                error: 'Invalid verification code or expired' 
+                error: 'Invalid verification code or expired',
+                debug: debugInfo // Always include debug info for now
             });
         }
         

@@ -50,6 +50,11 @@ module.exports = async (req, res) => {
             attempts: 0
         });
 
+        // Verify it was actually stored
+        const { getVerificationData } = require('./verification-storage');
+        const storedData = getVerificationData(email);
+        console.log(`Verification: Code stored successfully for ${email}:`, storedData);
+
         // Check if N8N webhook URL is configured
         if (!process.env.N8N_WEBHOOK_URL) {
             console.error('N8N_WEBHOOK_URL is not configured');
@@ -92,9 +97,19 @@ module.exports = async (req, res) => {
         const responseData = await n8nResponse.json();
         console.log(`Verification code sent successfully via N8N for ${email}:`, responseData);
 
+        // Get storage info for debugging
+        const { verificationCodes } = require('./verification-storage');
+        const debugInfo = {
+            totalStoredCodes: verificationCodes.size,
+            codeStoredForEmail: email,
+            allStoredIdentifiers: Array.from(verificationCodes.keys()),
+            currentTime: new Date().toISOString()
+        };
+
         res.status(200).json({
             success: true,
-            message: 'Verification code sent successfully'
+            message: 'Verification code sent successfully',
+            debug: debugInfo // Always include debug info for now
         });
 
     } catch (error) {

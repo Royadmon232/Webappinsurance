@@ -803,6 +803,18 @@ async function verifyCode(enteredCode) {
                 errorElement.style.display = 'flex';
             }
             
+            // Show debug info if available
+            if (data.debug) {
+                console.log('=== SERVER DEBUG INFO ===');
+                console.log('Total stored codes:', data.debug.totalStoredCodes);
+                console.log('Searched identifier:', data.debug.searchedIdentifier);
+                console.log('Identifier type:', data.debug.identifierType);
+                console.log('Identifier length:', data.debug.identifierLength);
+                console.log('Current server time:', data.debug.currentTime);
+                console.log('All stored identifiers:', data.debug.allStoredIdentifiers);
+                console.log('========================');
+            }
+            
             if (response.status === 429) {
                 const errorText = document.querySelector('.error-text');
                 if (errorText) {
@@ -1923,6 +1935,16 @@ window.HomeInsuranceApp = {
             
             if (!response.ok) {
                 throw new Error(data.error || 'Failed to send email verification code');
+            }
+            
+            // Show debug info for email sending
+            if (data.debug) {
+                console.log('=== EMAIL SEND DEBUG INFO ===');
+                console.log('Total stored codes after sending:', data.debug.totalStoredCodes);
+                console.log('Code stored for email:', data.debug.codeStoredForEmail);
+                console.log('All stored identifiers:', data.debug.allStoredIdentifiers);
+                console.log('Server time when sent:', data.debug.currentTime);
+                console.log('=============================');
             }
             
             if (emailMessage) {
