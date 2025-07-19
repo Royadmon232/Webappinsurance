@@ -680,21 +680,58 @@ async function verifyCode(enteredCode) {
         
         // Check if we're using email or phone verification
         const emailSection = document.getElementById('email-section');
-        const isEmailVerification = emailSection && emailSection.style.display !== 'none';
+        const phoneSection = document.getElementById('phone-section');
+        const generalEmailInput = document.getElementById('email');
+        const emailValue = generalEmailInput ? generalEmailInput.value.trim() : '';
+        
+        // Determine verification type based on available data
+        const isEmailVerification = emailValue && emailValue.length > 0;
+        
+        console.log('Verification type determination:', {
+            emailSection: emailSection ? emailSection.style.display : 'not found',
+            phoneSection: phoneSection ? phoneSection.style.display : 'not found',
+            emailValue: emailValue,
+            phoneNumber: phoneNumber,
+            isEmailVerification: isEmailVerification
+        });
         
         let requestBody;
         if (isEmailVerification) {
             // Email verification
-            const generalEmailInput = document.getElementById('email');
-            const emailValue = generalEmailInput ? generalEmailInput.value.trim() : '';
+            if (!emailValue) {
+                console.error('Email verification selected but no email found');
+                codeInputs.forEach(input => input.classList.add('error'));
+                const errorElement = document.getElementById('verification-error');
+                if (errorElement) {
+                    errorElement.style.display = 'flex';
+                    const errorText = document.querySelector('.error-text');
+                    if (errorText) {
+                        errorText.textContent = 'שגיאה: לא נמצאה כתובת אימייל';
+                    }
+                }
+                return;
+            }
             requestBody = JSON.stringify({ 
                 email: emailValue,
                 code: String(enteredCode) // Ensure code is sent as string
             });
         } else {
             // Phone verification (fallback)
+            if (!phoneNumber) {
+                console.error('Phone verification selected but no phone number found');
+                codeInputs.forEach(input => input.classList.add('error'));
+                const errorElement = document.getElementById('verification-error');
+                if (errorElement) {
+                    errorElement.style.display = 'flex';
+                    const errorText = document.querySelector('.error-text');
+                    if (errorText) {
+                        errorText.textContent = 'שגיאה: לא נמצא מספר טלפון';
+                    }
+                }
+                return;
+            }
             requestBody = JSON.stringify({ 
-                phoneNumber,
+                phoneNumber: phoneNumber,
                 code: String(enteredCode) // Ensure code is sent as string
             });
         }
@@ -1921,8 +1958,17 @@ window.HomeInsuranceApp = {
     },
     resendCode: async function() {
         try {
-            const emailSection = document.getElementById('email-section');
-            const isEmailVerification = emailSection && emailSection.style.display !== 'none';
+            const generalEmailInput = document.getElementById('email');
+            const emailValue = generalEmailInput ? generalEmailInput.value.trim() : '';
+            
+            // Determine verification type based on available data (consistent with verifyCode)
+            const isEmailVerification = emailValue && emailValue.length > 0;
+            
+            console.log('Resend code verification type determination:', {
+                emailValue: emailValue,
+                phoneNumber: phoneNumber,
+                isEmailVerification: isEmailVerification
+            });
             
             const isDevelopment = window.location.hostname === 'localhost' || 
                                  window.location.hostname === '127.0.0.1' || 
@@ -1931,8 +1977,11 @@ window.HomeInsuranceApp = {
             let endpoint, requestBody;
             
             if (isEmailVerification) {
-                const generalEmailInput = document.getElementById('email');
-                const emailValue = generalEmailInput ? generalEmailInput.value.trim() : '';
+                if (!emailValue) {
+                    console.error('Email resend selected but no email found');
+                    alert('שגיאה: לא נמצאה כתובת אימייל');
+                    return;
+                }
                 
                 endpoint = isDevelopment 
                     ? 'http://localhost:8080/api/send-email-verification'
@@ -1940,6 +1989,12 @@ window.HomeInsuranceApp = {
                 
                 requestBody = JSON.stringify({ email: emailValue });
             } else {
+                if (!phoneNumber) {
+                    console.error('Phone resend selected but no phone number found');
+                    alert('שגיאה: לא נמצא מספר טלפון');
+                    return;
+                }
+                
                 endpoint = isDevelopment 
                     ? 'http://localhost:8080/api/send-verification'
                     : 'https://admon-insurance-agency.co.il/api/send-verification';
