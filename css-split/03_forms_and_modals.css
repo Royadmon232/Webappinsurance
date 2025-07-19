@@ -1460,7 +1460,7 @@
     justify-content: center;
     margin-bottom: clamp(20px, 4vw, 28px);
     flex-wrap: wrap;
-    direction: rtl;
+    direction: ltr;
 }
 
 .code-digit {
