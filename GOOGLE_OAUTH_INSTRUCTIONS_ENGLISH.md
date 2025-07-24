@@ -40,10 +40,10 @@ Create a video demonstration showing the complete OAuth consent workflow for Goo
 
 ### Step 2: Your Configuration
 ```javascript
-CLIENT_ID: process.env.GMAIL_CLIENT_ID
-CLIENT_SECRET: process.env.GMAIL_CLIENT_SECRET
-REDIRECT_URI: process.env.GMAIL_REDIRECT_URI
-EMAIL: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
+CLIENT_ID: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+CLIENT_SECRET: YOUR_GOOGLE_CLIENT_SECRET
+REDIRECT_URI: https://webappinsurance.vercel.app/auth/google/callback
+EMAIL: royadmon23@gmail.com
 ```
 
 ### Step 3: Google Cloud Console Setup

@@ -56,10 +56,10 @@ python3 run-english-demo.py
 ## 📧 Your Configuration
 
 ```javascript
-CLIENT_ID: process.env.GMAIL_CLIENT_ID
-CLIENT_SECRET: process.env.GMAIL_CLIENT_SECRET
-EMAIL: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
-PROJECT: Your Google Cloud Project ID
+CLIENT_ID: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+CLIENT_SECRET: YOUR_GOOGLE_CLIENT_SECRET
+EMAIL: royadmon23@gmail.com
+PROJECT: graceful-fact-463514-e5
 ```
 
 ---

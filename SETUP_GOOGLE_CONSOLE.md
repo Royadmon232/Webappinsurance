@@ -7,7 +7,7 @@
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Select project: `graceful-fact-463514-e5`
 3. Navigate to: **APIs & Services** → **Credentials**
-4. Find your OAuth 2.0 Client ID: `476619737917-897o8kin4slckl9k3rqc39eu38gqsggo.apps.googleusercontent.com`
+4. Find your OAuth 2.0 Client ID: `YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com`
 5. Click the **edit button** (pencil icon)
 
 ### Step 2: Add Demo Redirect URI
