@@ -1,0 +1,1 @@
+Build trigger for Vercel - user requested manual redeploy - 2025-07-21 18:47

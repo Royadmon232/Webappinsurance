@@ -1,0 +1,186 @@
+{
+  "name": "אדמון ביטוח - שליחת קודי אימות",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "send-verification-email",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "send-verification-email"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "toEmail",
+              "value": "={{$json[\"email\"]}}"
+            },
+            {
+              "name": "verificationCode",
+              "value": "={{$json[\"code\"]}}"
+            },
+            {
+              "name": "subject",
+              "value": "={{$json[\"subject\"]}}"
+            },
+            {
+              "name": "htmlContent",
+              "value": "={{$json[\"htmlContent\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set Email Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "royadmon23@gmail.com",
+        "toEmail": "={{$node[\"Set Email Variables\"].json[\"toEmail\"]}}",
+        "subject": "={{$node[\"Set Email Variables\"].json[\"subject\"]}}",
+        "body": "={{$node[\"Set Email Variables\"].json[\"htmlContent\"]}}"
+      },
+      "name": "Send Email via SES",
+      "type": "n8n-nodes-base.awsSes",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "credentials": {
+        "aws": {
+          "id": "YOUR_AWS_CREDENTIAL_ID",
+          "name": "AWS SES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$node[\"Send Email via SES\"].json[\"MessageId\"]}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "name": "Check Success",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": {
+          "success": true,
+          "message": "Email sent successfully",
+          "messageId": "={{$node[\"Send Email via SES\"].json[\"MessageId\"]}}"
+        },
+        "responseHeaders": {}
+      },
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 250]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": {
+          "success": false,
+          "error": "Failed to send email",
+          "details": "{{$node[\"Send Email via SES\"].error.message}}"
+            },
+        "responseCode": 500,
+        "responseHeaders": {}
+      },
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 350]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log email sending for debugging\nconst email = $node[\"Set Email Variables\"].json.toEmail;\nconst code = $node[\"Set Email Variables\"].json.verificationCode;\n\nconsole.log(`📧 Sending verification code ${code} to ${email}`);\nconsole.log(`Timestamp: ${new Date().toISOString()}`);\n\n// You can add additional logging or tracking here\n// For example, save to a database or send to analytics\n\nreturn [{json: {logged: true}}];"
+            },
+      "name": "Log Email Sending",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 150]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Email Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Email Variables": {
+      "main": [
+        [
+          {
+            "node": "Send Email via SES",
+            "type": "main",
+            "index": 0
+    },
+          {
+            "node": "Log Email Sending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email via SES": {
+      "main": [
+        [
+          {
+            "node": "Check Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Success": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-01-08T17:00:00.000Z",
+  "versionId": "2"
+} 

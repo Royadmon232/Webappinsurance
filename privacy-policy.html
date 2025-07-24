@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="מדיניות פרטיות של אדמון סוכנות לביטוח - הגנה על הפרטיות שלכם היא העדיפות הראשונה שלנו">
+    <meta name="robots" content="index, follow">
+    <title>מדיניות פרטיות | אדמון סוכנות לביטוח</title>
+    
+    <!-- Main Page CSS -->
+    <link rel="stylesheet" href="main-page.css">
+    <link rel="stylesheet" href="css-split/01_base_and_reset.css">
+    <link rel="stylesheet" href="css-split/02_layout_and_header.css">
+    <link rel="stylesheet" href="css-split/03_forms_and_modals.css">
+    <link rel="stylesheet" href="css-split/04_content_sections.css">
+    <link rel="stylesheet" href="css-split/05_responsive_media.css">
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Custom styles for legal pages -->
+    <style>
+        /* RTL Support for Hebrew text */
+        html {
+            direction: rtl;
+        }
+        
+        .legal-page {
+            background: var(--light-gray-bg);
+            min-height: 100vh;
+            padding-top: 120px;
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .legal-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-md);
+        }
+        
+        .legal-header {
+            text-align: right;
+            margin-bottom: var(--spacing-4xl);
+            background: var(--white);
+            padding: var(--spacing-3xl) var(--spacing-xl);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            direction: rtl;
+        }
+        
+        .legal-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-navy);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .legal-header p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .legal-content {
+            background: var(--white);
+            padding: var(--spacing-3xl);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: var(--spacing-2xl);
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .legal-content h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+            margin-bottom: var(--spacing-md);
+            margin-top: var(--spacing-2xl);
+            border-bottom: 2px solid var(--accent-teal);
+            padding-bottom: var(--spacing-xs);
+        }
+        
+        .legal-content h2:first-child {
+            margin-top: 0;
+        }
+        
+        .legal-content h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary-navy);
+            margin-bottom: var(--spacing-sm);
+            margin-top: var(--spacing-lg);
+        }
+        
+        .legal-content p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .legal-content ul {
+            margin-bottom: var(--spacing-md);
+            padding-right: var(--spacing-md);
+            text-align: right;
+            direction: rtl;
+        }
+        
+        .legal-content li {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .legal-content strong {
+            color: var(--primary-navy);
+            font-weight: 600;
+        }
+        
+        .contact-section {
+            background: var(--primary-gradient);
+            color: var(--white);
+            padding: var(--spacing-2xl);
+            border-radius: 16px;
+            text-align: right;
+            margin-bottom: var(--spacing-2xl);
+            direction: rtl;
+        }
+        
+        .contact-section h2 {
+            color: var(--white);
+            border: none;
+            padding: 0;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .contact-section p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-xl);
+            flex-wrap: wrap;
+            margin-top: var(--spacing-lg);
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            color: var(--white);
+            font-weight: 500;
+        }
+        
+        .back-to-home {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-sm) var(--spacing-lg);
+            background: var(--accent-teal);
+            color: var(--white);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .back-to-home:hover {
+            background: var(--accent-teal-light);
+            transform: translateY(-2px);
+        }
+        
+        .last-updated {
+            text-align: right;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: var(--spacing-xl);
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--light-gray-bg);
+            direction: rtl;
+        }
+        
+        @media (max-width: 768px) {
+            .legal-page {
+                padding-top: 100px;
+            }
+            
+            .legal-header {
+                padding: var(--spacing-xl) var(--spacing-md);
+            }
+            
+            .legal-header h1 {
+                font-size: 2rem;
+            }
+            
+            .legal-content {
+                padding: var(--spacing-xl);
+            }
+            
+            .contact-info {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+            
+            .contact-section {
+                padding: var(--spacing-xl);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="container">
+                <div class="nav-wrapper nav-vertical">
+                    <div class="logo">
+                        <h1>אדמון סוכנות לביטוח</h1>
+                    </div>
+                    <ul class="nav-menu nav-menu-centered">
+                        <li><a href="index.html#hero" class="nav-link">דף הבית</a></li>
+                        <li><a href="index.html#about" class="nav-link">אודות</a></li>
+                        <li><a href="index.html#insurance-types" class="nav-link">סוגי ביטוח</a></li>
+                        <li><a href="index.html#services" class="nav-link">שירותים</a></li>
+                        <li><a href="index.html#testimonials" class="nav-link">לקוחות ממליצים</a></li>
+                        <li><a href="index.html#contact" class="nav-link">צור קשר</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="legal-page">
+        <div class="legal-container">
+            <a href="index.html" class="back-to-home">
+                <i data-feather="arrow-right"></i>
+                חזרה לדף הבית
+            </a>
+            
+            <div class="legal-header">
+                <h1>מדיניות פרטיות</h1>
+                <p>הגנה על הפרטיות שלכם היא העדיפות הראשונה שלנו. אנו מתחייבים לשמור על המידע האישי שלכם ולהשתמש בו באופן אחראי ושקוף.</p>
+            </div>
+
+            <div class="legal-content">
+                <h2>מבוא</h2>
+                <p>אדמון סוכנות לביטוח ("אנו", "שלנו", "הסוכנות") מתחייבת להגן על פרטיותכם. מדיניות פרטיות זו מסבירה כיצד אנו אוספים, משתמשים, ומגנים על המידע האישי שלכם כאשר אתם משתמשים בשירותים שלנו או פונים אלינו לקבלת ייעוץ בביטוח.</p>
+
+                <h2>איסוף מידע</h2>
+                <h3>מידע שאנו אוספים:</h3>
+                <ul>
+                    <li><strong>מידע אישי:</strong> שם, כתובת, מספר טלפון, כתובת אימייל, מספר זהות</li>
+                    <li><strong>מידע פיננסי:</strong> פרטי הכנסה, מידע על נכסים, היסטוריית ביטוח</li>
+                    <li><strong>מידע טכני:</strong> כתובת IP, סוג דפדפן, מערכת הפעלה</li>
+                    <li><strong>מידע התנהגותי:</strong> דפים שבוקרו באתר, זמן השהות, מקורות הגעה</li>
+                </ul>
+
+                <h3>כיצד אנו אוספים מידע:</h3>
+                <ul>
+                    <li>דרך טפסים באתר או בהתקשרות טלפונית</li>
+                    <li>במהלך פגישות ייעוץ או בדיקת צרכים</li>
+                    <li>מחברות הביטוח במסגרת עיבוד הצעות</li>
+                </ul>
+
+                <h2>שימוש במידע</h2>
+                <p>אנו משתמשים במידע שלכם למטרות הבאות:</p>
+                <ul>
+                    <li><strong>מתן שירותי ביטוח:</strong> בדיקת צרכים, הכנת הצעות, עיבוד פוליסות</li>
+                    <li><strong>שירות לקוחות:</strong> מענה לפניות, טיפול בתביעות, מתן ייעוץ מתמשך</li>
+                    <li><strong>שיפור שירות:</strong> ניתוח צרכים, פיתוח מוצרים חדשים</li>
+                    <li><strong>עמידה בחוק:</strong> דיווח לרגולטורים, מניעת הלבנת הון</li>
+                    <li><strong>שיווק:</strong> הצעות מותאמות אישית (בכפוף להסכמתכם)</li>
+                </ul>
+
+                <h2>שיתוף מידע</h2>
+                <p>אנו עשויים לשתף את המידע שלכם עם:</p>
+                <ul>
+                    <li><strong>חברות ביטוח:</strong> לצורך עיבוד הצעות וטיפול בתביעות</li>
+                    <li><strong>ספקי שירות:</strong> טכנולוגיה, רו"ח, עורכי דין המשרתים אותנו</li>
+                    <li><strong>רשויות:</strong> כנדרש על פי חוק (רשות שוק ההון, מס הכנסה)</li>
+                    <li><strong>גורמים נוספים:</strong> רק בהסכמתכם המפורשת</li>
+                </ul>
+
+                <h2>אבטחת מידע</h2>
+                <p>אנו מיישמים אמצעי אבטחה מתקדמים:</p>
+                <ul>
+                    <li>הצפנת מידע רגיש בהעברה ובאחסון</li>
+                    <li>בקרת גישה מוגבלת למידע לעובדים מורשים בלבד</li>
+                    <li>גיבוי קבוע של מידע חשוב</li>
+                    <li>עדכון מערכות אבטחה באופן שוטף</li>
+                    <li>הכשרת עובדים בנושאי אבטחת מידע</li>
+                </ul>
+
+                <h2>זכויותיכם</h2>
+                <p>בהתאם לחוק הגנת הפרטיות, זכותכם:</p>
+                <ul>
+                    <li><strong>זכות עיון:</strong> לדעת איזה מידע אנו מחזיקים עליכם</li>
+                    <li><strong>זכות תיקון:</strong> לתקן מידע שגוי או לא מעודכן</li>
+                    <li><strong>זכות מחיקה:</strong> לבקש מחיקת מידע (בכפוף לחוק)</li>
+                    <li><strong>זכות הגבלה:</strong> להגביל את השימוש במידע</li>
+                    <li><strong>זכות התנגדות:</strong> להתנגד לעיבוד מידע לשיווק</li>
+                    <li><strong>זכות ניידות:</strong> לקבל העתק מהמידע בפורמט נפוץ</li>
+                </ul>
+
+                <h2>שמירת מידע</h2>
+                <p>אנו שומרים את המידע שלכם:</p>
+                <ul>
+                    <li>כל עוד אתם לקוחותינו או עד 7 שנים לאחר סיום הקשר</li>
+                    <li>בהתאם לדרישות חוק (שמירת מסמכים, מניעת הלבנת הון)</li>
+                    <li>לצורך הגנה על זכויותינו המשפטיות</li>
+                </ul>
+
+                <h2>קטינים</h2>
+                <p>אנו לא אוספים מידע ממי שמתחת לגיל 18 ללא הסכמת הורים. אם התברר שאספנו מידע כזה, נמחק אותו מיידית.</p>
+
+                <h2>עדכונים למדיניות</h2>
+                <p>מדיניות זו עשויה להתעדכן מעת לעת. נודיע לכם על שינויים מהותיים באמצעות האתר או בהודעה ישירה.</p>
+                
+                <div class="last-updated">
+                    <p>עדכון אחרון: {{ תאריך נוכחי }}</p>
+                </div>
+            </div>
+
+            <div class="contact-section">
+                <h2>צריכים עזרה או יש שאלות?</h2>
+                <p>אנחנו כאן כדי לעזור לכם. אם יש לכם שאלות לגבי מדיניות הפרטיות או רוצים לממש את זכויותיכם, אנא פנו אלינו:</p>
+                
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i data-feather="phone"></i>
+                        <span>050-931-3531</span>
+                    </div>
+                    <div class="contact-item">
+                        <i data-feather="mail"></i>
+                        <span>royadmon23@gmail.com</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Initialize Feather Icons -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
+        });
+    </script>
+</body>
+</html> 

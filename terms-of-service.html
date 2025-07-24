@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="תנאי השימוש של אדמון סוכנות לביטוח - הכירו את התנאים וההגבלות לשימוש בשירותים שלנו">
+    <meta name="robots" content="index, follow">
+    <title>תנאי השימוש | אדמון סוכנות לביטוח</title>
+    
+    <!-- Main Page CSS -->
+    <link rel="stylesheet" href="main-page.css">
+    <link rel="stylesheet" href="css-split/01_base_and_reset.css">
+    <link rel="stylesheet" href="css-split/02_layout_and_header.css">
+    <link rel="stylesheet" href="css-split/03_forms_and_modals.css">
+    <link rel="stylesheet" href="css-split/04_content_sections.css">
+    <link rel="stylesheet" href="css-split/05_responsive_media.css">
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Custom styles for legal pages -->
+    <style>
+        /* RTL Support for Hebrew text */
+        html {
+            direction: rtl;
+        }
+        
+        .legal-page {
+            background: var(--light-gray-bg);
+            min-height: 100vh;
+            padding-top: 120px;
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .legal-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-md);
+        }
+        
+        .legal-header {
+            text-align: right;
+            margin-bottom: var(--spacing-4xl);
+            background: var(--white);
+            padding: var(--spacing-3xl) var(--spacing-xl);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            direction: rtl;
+        }
+        
+        .legal-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-navy);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .legal-header p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .legal-content {
+            background: var(--white);
+            padding: var(--spacing-3xl);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: var(--spacing-2xl);
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .legal-content h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+            margin-bottom: var(--spacing-md);
+            margin-top: var(--spacing-2xl);
+            border-bottom: 2px solid var(--accent-teal);
+            padding-bottom: var(--spacing-xs);
+        }
+        
+        .legal-content h2:first-child {
+            margin-top: 0;
+        }
+        
+        .legal-content h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary-navy);
+            margin-bottom: var(--spacing-sm);
+            margin-top: var(--spacing-lg);
+        }
+        
+        .legal-content p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .legal-content ul {
+            margin-bottom: var(--spacing-md);
+            padding-right: var(--spacing-md);
+            text-align: right;
+            direction: rtl;
+        }
+        
+        .legal-content li {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .legal-content strong {
+            color: var(--primary-navy);
+            font-weight: 600;
+        }
+        
+        .contact-section {
+            background: var(--primary-gradient);
+            color: var(--white);
+            padding: var(--spacing-2xl);
+            border-radius: 16px;
+            text-align: right;
+            margin-bottom: var(--spacing-2xl);
+            direction: rtl;
+        }
+        
+        .contact-section h2 {
+            color: var(--white);
+            border: none;
+            padding: 0;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .contact-section p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-xl);
+            flex-wrap: wrap;
+            margin-top: var(--spacing-lg);
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            color: var(--white);
+            font-weight: 500;
+        }
+        
+        .back-to-home {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-sm) var(--spacing-lg);
+            background: var(--accent-teal);
+            color: var(--white);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .back-to-home:hover {
+            background: var(--accent-teal-light);
+            transform: translateY(-2px);
+        }
+        
+        .highlight-box {
+            background: var(--subtle-gradient);
+            border: 1px solid var(--accent-teal);
+            border-radius: 12px;
+            padding: var(--spacing-lg);
+            margin: var(--spacing-lg) 0;
+        }
+        
+        .highlight-box h3 {
+            color: var(--accent-teal);
+            margin-top: 0;
+        }
+        
+        .last-updated {
+            text-align: right;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: var(--spacing-xl);
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--light-gray-bg);
+            direction: rtl;
+        }
+        
+        @media (max-width: 768px) {
+            .legal-page {
+                padding-top: 100px;
+            }
+            
+            .legal-header {
+                padding: var(--spacing-xl) var(--spacing-md);
+            }
+            
+            .legal-header h1 {
+                font-size: 2rem;
+            }
+            
+            .legal-content {
+                padding: var(--spacing-xl);
+            }
+            
+            .contact-info {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+            
+            .contact-section {
+                padding: var(--spacing-xl);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="container">
+                <div class="nav-wrapper nav-vertical">
+                    <div class="logo">
+                        <h1>אדמון סוכנות לביטוח</h1>
+                    </div>
+                    <ul class="nav-menu nav-menu-centered">
+                        <li><a href="index.html#hero" class="nav-link">דף הבית</a></li>
+                        <li><a href="index.html#about" class="nav-link">אודות</a></li>
+                        <li><a href="index.html#insurance-types" class="nav-link">סוגי ביטוח</a></li>
+                        <li><a href="index.html#services" class="nav-link">שירותים</a></li>
+                        <li><a href="index.html#testimonials" class="nav-link">לקוחות ממליצים</a></li>
+                        <li><a href="index.html#contact" class="nav-link">צור קשר</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="legal-page">
+        <div class="legal-container">
+            <a href="index.html" class="back-to-home">
+                <i data-feather="arrow-right"></i>
+                חזרה לדף הבית
+            </a>
+            
+            <div class="legal-header">
+                <h1>תנאי השימוש</h1>
+                <p>תנאי השימוש מגדירים את הכללים והתנאים לשימוש בשירותים שלנו. אנא קראו אותם בעיון לפני השימוש באתר ובשירותים.</p>
+            </div>
+
+            <div class="legal-content">
+                <h2>הגדרות ומבוא</h2>
+                <p>תנאי השימוש הללו ("התנאים") מסדירים את השימוש שלכם בשירותים של אדמון סוכנות לביטוח ע"ר ("אנו", "שלנו", "הסוכנות"). השימוש באתר ובשירותים מהווה הסכמה לתנאים אלה.</p>
+                
+                <div class="highlight-box">
+                    <h3>חשוב לדעת</h3>
+                    <p>אנו מורשים ופועלים בהתאם לחוק הפיקוח על שירותים פיננסיים (ביטוח), התשמ"א-1981, ובכפוף לפיקוח רשות שוק ההון, הביטוח והחיסכון.</p>
+                </div>
+
+                <h2>השירותים שלנו</h2>
+                <h3>סוגי שירותים:</h3>
+                <ul>
+                    <li><strong>ייעוץ בביטוח:</strong> בדיקת צרכים אישית והמלצות מקצועיות</li>
+                    <li><strong>תיווך בביטוח:</strong> עיבוד הצעות ומכירת פוליסות ביטוח</li>
+                    <li><strong>שירותי פנסיה:</strong> ייעוץ בתכנון פרישה וקופות גמל</li>
+                    <li><strong>ליווי ושירות:</strong> טיפול בתביעות, עדכון פוליסות, ייעוץ שוטף</li>
+                    <li><strong>שירותים פיננסיים:</strong> ייעוץ משכנתאות, החזרי מס, ייפוי כוח</li>
+                </ul>
+
+                <h2>התחייבויות הסוכנות</h2>
+                <p>אנו מתחייבים לספק לכם:</p>
+                <ul>
+                    <li>שירות מקצועי ואמין בהתאם לסטנדרטים הגבוהים ביותר</li>
+                    <li>ייעוץ אישי המותאם לצרכים הספציפיים שלכם</li>
+                    <li>שקיפות מלאה בכל הליך עסקי</li>
+                    <li>זמינות לטיפול בפניות ובעיות</li>
+                    <li>עדכון שוטף בשינויים הרלוונטיים לכם</li>
+                </ul>
+
+                <h2>התחייבויות הלקוח</h2>
+                <p>כלקוח, אתם מתחייבים:</p>
+                <ul>
+                    <li>למסור מידע מלא, מדויק ועדכני</li>
+                    <li>לעדכן אותנו על כל שינוי בנתונים או בנסיבות</li>
+                    <li>לשלם עמלות ודמי שירות בזמן</li>
+                    <li>לפעול בתום לב ובהתאם להוראות הפוליסות</li>
+                    <li>לא להשתמש בשירותים למטרות בלתי חוקיות</li>
+                </ul>
+
+                <h2>עמלות ותשלומים</h2>
+                <h3>מבנה העמלות:</h3>
+                <ul>
+                    <li><strong>עמלות מחברות הביטוח:</strong> אנו מקבלים עמלות מחברות הביטוח על פוליסות שנמכרות</li>
+                    <li><strong>דמי שירות:</strong> חלק מהשירותים כרוכים בתשלום דמי שירות נפרדים</li>
+                    <li><strong>שקיפות:</strong> נמסור לכם פרטים על העמלות והתשלומים לפני ביצוע עסקה</li>
+                    <li><strong>אין עמלות נסתרות:</strong> כל התשלומים יובהרו מראש</li>
+                </ul>
+
+                <h2>אחריות ותביעות</h2>
+                <h3>היקף האחריות:</h3>
+                <ul>
+                    <li>אנו אחראים לטיב הייעוץ והשירות שאנו מספקים</li>
+                    <li>אנו מבוטחים בביטוח אחריות מקצועית</li>
+                    <li>אחריותנו מוגבלת לנזקים שנגרמו כתוצאה מרשלנות מקצועית</li>
+                    <li>אנו לא אחראים לפעולות או החלטות של חברות הביטוח</li>
+                </ul>
+
+                <h3>הגבלות אחריות:</h3>
+                <ul>
+                    <li>אנו לא אחראים לנזקים עקיפים או אובדן רווחים</li>
+                    <li>אחריותנו מוגבלת לסכום הנזק בפועל או לסכום הביטוח שלנו</li>
+                    <li>תביעות יוגשו תוך 3 שנים מהאירוע</li>
+                </ul>
+
+                <h2>קניין רוחני</h2>
+                <p>כל התכנים באתר, לרבות טקסטים, תמונות, עיצוב וקוד, הם קניינה של הסוכנות או משמשים ברישיון. אסור לעשות שימוש בהם ללא רשות מפורשת.</p>
+
+                <h2>הגבלות שימוש</h2>
+                <p>אסור לעשות שימוש באתר או בשירותים:</p>
+                <ul>
+                    <li>למטרות בלתי חוקיות או מזיקות</li>
+                    <li>להפצת תוכן פוגעני או מטעה</li>
+                    <li>לפגיעה במערכות או בשירותים</li>
+                    <li>להתחזות לגורם אחר</li>
+                    <li>לאיסוף מידע על משתמשים אחרים</li>
+                </ul>
+
+                <h2>סיום הקשר</h2>
+                <h3>זכות הביטול:</h3>
+                <ul>
+                    <li>לכם זכות לבטל הסכמים תוך 14 ימים (בהתאם לחוק)</li>
+                    <li>אנו רשאים לסיים את הקשר בהודעה מוקדמת</li>
+                    <li>במקרה של הפרת תנאים, הקשר יסתיים מיידית</li>
+                </ul>
+
+                <h3>השלכות סיום הקשר:</h3>
+                <ul>
+                    <li>פוליסות קיימות יישארו בתוקף (אלא אם תבוטלו על ידכם)</li>
+                    <li>אנו נעביר אתכם את כל המסמכים הרלוונטיים</li>
+                    <li>תשלומים שנצברו עד למועד הסיום יגבו</li>
+                </ul>
+
+                <h2>תלונות ויישוב סכסוכים</h2>
+                <div class="highlight-box">
+                    <h3>איך להגיש תלונה</h3>
+                    <p><strong>שלב ראשון:</strong> פנו אלינו ישירות - נעשה כל שביכולתנו לפתור את הבעיה במהירות.</p>
+                    <p><strong>שלב שני:</strong> אם לא הגענו לפתרון, ניתן לפנות לנציב התלונות על שירותים פיננסיים או לרשות שוק ההון.</p>
+                </div>
+
+                <h2>שינויים בתנאים</h2>
+                <p>אנו רשאים לעדכן את התנאים מעת לעת. שינויים מהותיים יימסרו לכם מראש באמצעות:</p>
+                <ul>
+                    <li>הודעה באתר</li>
+                    <li>הודעה בכתב או באימייל</li>
+                    <li>הודעה בעת מתן שירות</li>
+                </ul>
+
+                <h2>דין חל וסמכות שיפוט</h2>
+                <p>תנאים אלה כפופים לחוקי מדינת ישראל. בתי המשפט בישראל יהיו בעלי הסמכות הבלעדית לדון בכל סכסוך.</p>
+
+                <h2>פרשנות ותקפות</h2>
+                <p>אם סעיף כלשהו בתנאים יימצא בלתי תקף, שאר הסעיפים יישארו בתוקפם. במקרה של סתירה בין גרסאות שפה שונות, הגרסה העברית גוברת.</p>
+                
+                <div class="last-updated">
+                    <p>עדכון אחרון: {{ תאריך נוכחי }}</p>
+                </div>
+            </div>
+
+            <div class="contact-section">
+                <h2>שאלות או הבהרות?</h2>
+                <p>אם יש לכם שאלות לגבי תנאי השימוש או אתם זקוקים להבהרות נוספות, אנא פנו אלינו:</p>
+                
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i data-feather="phone"></i>
+                        <span>050-931-3531</span>
+                    </div>
+                    <div class="contact-item">
+                        <i data-feather="mail"></i>
+                        <span>royadmon23@gmail.com</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Initialize Feather Icons -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
+        });
+    </script>
+</body>
+</html> 
