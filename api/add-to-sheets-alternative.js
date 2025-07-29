@@ -201,7 +201,7 @@ export default async function handler(req, res) {
             formData.city || '',
             formData.street || '',
             formData.houseNumber || '',
-            formData.postalCode || formData.zipCode || '',
+            '',
             formData.floorCount || '',
             formatBoolean(formData.hasGarden),
             

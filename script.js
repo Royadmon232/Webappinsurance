@@ -957,7 +957,6 @@ function collectAllFormData() {
         city: document.getElementById('city')?.value || '',
         street: document.getElementById('street')?.value || '',
         houseNumber: document.getElementById('houseNumber')?.value || '',
-        postalCode: document.getElementById('postalCode')?.value || '',
         hasGarden: document.getElementById('garden-checkbox')?.checked || false,
         
         // Building details (if applicable)
@@ -1033,7 +1032,6 @@ function formatEmailContent(data) {
 עיר: ${data.city}
 רחוב: ${data.street}
 מספר בית: ${data.houseNumber}
-מיקוד: ${data.postalCode}
 גינה: ${data.hasGarden ? 'כן' : 'לא'}
 `;
 
@@ -1255,8 +1253,8 @@ function initializeMultiStepForm() {
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="zipCode">מיקוד*</label>
-                            <input type="text" id="zipCode" name="zipCode" required>
+                            <label for="houseNumber">מספר בית*</label>
+                            <input type="text" id="houseNumber" name="houseNumber" required>
                         </div>
                         <div class="form-group">
                             <label for="propertyType">סוג הנכס*</label>
@@ -1354,18 +1352,6 @@ function validateHouseNumber(houseNumber) {
     // House number: digits optionally followed by Hebrew letter
     const houseRegex = /^\d+[א-ת]?$/;
     return houseRegex.test(houseNumber);
-}
-
-function validatePostalCode(postalCode) {
-    // Postal code: 5-7 digits only
-    const postalRegex = /^\d{5,7}$/;
-    return postalRegex.test(postalCode);
-}
-
-function validateZipCode(zipCode) {
-    // Israeli ZIP code format: 5 or 7 digits (alias for validatePostalCode)
-    const zipRegex = /^\d{5}(\d{2})?$/;
-    return zipRegex.test(zipCode);
 }
 
 function validateYearBuilt(year) {
@@ -3057,8 +3043,6 @@ function collectFormData() {
     const houseNumberGroup = houseNumberElement ? houseNumberElement.closest('.form-group') : null;
     const houseNumber = (houseNumberGroup && houseNumberGroup.style.display !== 'none') ? houseNumberElement.value : '';
     
-    const postalCode = document.getElementById('postalCode')?.value || '';
-    
     // Collect selected product sections
     const selectedProducts = [];
     const sectionCheckboxes = document.querySelectorAll('.section-item input[type="checkbox"]:checked');
@@ -3091,8 +3075,6 @@ function collectFormData() {
         city: city,
         street: street,
         houseNumber: houseNumber,
-        zipCode: postalCode,
-        postalCode: postalCode, // Both names for compatibility
         
         // Selected Insurance Products
         selectedProducts: selectedProducts
@@ -3278,18 +3260,6 @@ function validateGeneralDetailsForm() {
         }
     }
     
-    // Validate Postal Code
-    const postalCode = document.getElementById('postalCode');
-    if (postalCode && !postalCode.value) {
-        showFormError(postalCode, 'שדה חובה');
-            isValid = false;
-    } else if (postalCode && postalCode.value && !validatePostalCode(postalCode.value)) {
-        showFormError(postalCode, 'מיקוד חייב להכיל 5-7 ספרות בלבד');
-            isValid = false;
-    }
-    
-
-    
     return isValid;
 }
 
@@ -3375,7 +3345,6 @@ function initializeNumericInputs() {
         'phone-number',
         'idNumber',
         'houseNumber',
-        'postalCode',
         'floorCount'
     ];
     
@@ -3618,23 +3587,7 @@ function addFormInputListeners() {
         houseNumber.addEventListener('blur', handleAddressBlur);
     }
     
-    // Postal Code - allow only digits
-    const postalCode = document.getElementById('postalCode');
-    if (postalCode) {
-        // Set mobile keyboard to numeric
-        postalCode.setAttribute('inputmode', 'numeric');
-        postalCode.setAttribute('pattern', '[0-9]*');
-        
-        postalCode.addEventListener('input', function(e) {
-            // Remove non-digits
-            this.value = this.value.replace(/\D/g, '');
-            
-            // Limit to 7 digits
-            if (this.value.length > 7) {
-                this.value = this.value.slice(0, 7);
-            }
-        });
-    }
+
     
     // Clear errors on change for select fields
     const selectFields = document.querySelectorAll('#generalDetailsForm select');
@@ -6222,7 +6175,6 @@ function collectFullFormData() {
     console.log('- street element:', document.getElementById('street'));
     console.log('- city-autocomplete element:', document.getElementById('city-autocomplete'));
     console.log('- houseNumber element:', document.getElementById('houseNumber'));
-    console.log('- postalCode element:', document.getElementById('postalCode'));
     console.log('- garden-checkbox element:', document.getElementById('garden-checkbox'));
     
     formData.firstName = document.getElementById('first-name')?.value || '';
@@ -6243,8 +6195,7 @@ function collectFullFormData() {
     const houseNumberGroup = houseNumberElement ? houseNumberElement.closest('.form-group') : null;
     formData.houseNumber = (houseNumberGroup && houseNumberGroup.style.display !== 'none') ? houseNumberElement.value : '';
     
-    formData.postalCode = document.getElementById('postalCode')?.value || '';
-    formData.zipCode = formData.postalCode; // Alias for postalCode
+
     formData.hasGarden = document.getElementById('garden-checkbox')?.checked || false;
     formData.floorCount = document.getElementById('floorCount')?.value || '';
     
@@ -6323,7 +6274,6 @@ function collectFullFormData() {
         street: formData.street || '',
         houseNumber: formData.houseNumber || '',
         city: formData.city || '',
-        postalCode: formData.postalCode || '',
         hasGarden: formData.hasGarden || false
     };
 
@@ -6335,7 +6285,6 @@ function collectFullFormData() {
         street: formData.street || '',
         houseNumber: formData.houseNumber || '',
         city: formData.city || '',
-        postalCode: formData.postalCode || '',
         hasGarden: formData.hasGarden || false,
         building: buildingData,
         contents: contentsData,
@@ -6356,7 +6305,6 @@ function collectFullFormData() {
         street: finalData.street,
         houseNumber: finalData.houseNumber,
         city: finalData.city,
-        postalCode: finalData.postalCode,
         hasGarden: finalData.hasGarden
     });
     
@@ -6585,10 +6533,7 @@ function generateEmailHTML(data) {
                                 <td>מספר בית:</td>
                                 <td>${data.houseNumber || 'לא צוין'}</td>
                             </tr>
-                            <tr>
-                                <td>מיקוד:</td>
-                                <td>${data.postalCode || data.zipCode || 'לא צוין'}</td>
-                            </tr>
+
                         </table>
                     </div>
                     
@@ -7208,8 +7153,7 @@ function generateLeadPDF(formData) {
             { label: 'סוג נכס', value: formData.assetType || formData.propertyType },
             { label: 'עיר', value: formData.city },
             { label: 'רחוב', value: formData.street },
-            { label: 'מספר בית', value: formData.houseNumber },
-            { label: 'מיקוד', value: formData.zipCode || formData.postalCode }
+            { label: 'מספר בית', value: formData.houseNumber }
         ];
         
         // Add bank information only for mortgaged product type
@@ -7596,8 +7540,7 @@ function collectAllFormData() {
         address: {
             city: document.getElementById('city')?.value || '',
             street: document.getElementById('street')?.value || '',
-            houseNumber: document.getElementById('house-number')?.value || '',
-            postalCode: document.getElementById('postal-code')?.value || '',
+            houseNumber: document.getElementById('houseNumber')?.value || '',
             hasGarden: document.getElementById('has-garden')?.checked || false
         },
         
@@ -7829,7 +7772,6 @@ function debugFormCollection() {
         "street": document.getElementById("street"),
         "city-autocomplete": document.getElementById("city-autocomplete"),
         "houseNumber": document.getElementById("houseNumber"),
-        "postalCode": document.getElementById("postalCode"),
         "garden-checkbox": document.getElementById("garden-checkbox")
     };
     

@@ -129,7 +129,7 @@ function formatEmailContent(data) {
                             <p style="margin: 0 0 5px 0; color: #7f8c8d; font-size: 13px;">כתובת</p>
                             <p style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 500;">
                                 ${data.street || ''} ${data.houseNumber || ''}, ${data.city || ''}
-                                ${data.postalCode ? ` ${data.postalCode}` : ''}
+
                             </p>
                         </div>
                         <div>
