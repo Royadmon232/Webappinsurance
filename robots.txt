@@ -1,5 +1,7 @@
+# Allow search engines to discover and index our logo image
 User-agent: *
+Allow: /images/admon.jpeg
 Allow: /
 
 # Sitemap location
-Sitemap: https://admon-insurance-agency.co.il/sitemap.xml 
+Sitemap: https://admon-insurance-agency.co.il/sitemap.xml
