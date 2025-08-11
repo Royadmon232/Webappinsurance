@@ -30,10 +30,9 @@
     <!-- Additional SEO Meta Tags -->
     <link rel="canonical" href="https://admon-insurance-agency.co.il/home-insurance.html">
     
-    <!-- Cache Control -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <!-- Cache Control - Optimized for performance -->
+    <meta http-equiv="Cache-Control" content="public, max-age=3600">
+    <meta http-equiv="Pragma" content="cache">
     
     <title>ביטוח דירה | אדמון סוכנות לביטוח</title>
     
@@ -41,18 +40,17 @@
     <link rel="icon" type="image/jpeg" href="images/admon.jpeg">
     <link rel="apple-touch-icon" href="images/admon.jpeg">
     
-    <!-- Preload critical assets -->
-    <link rel="preload" href="images/admon.jpeg" as="image" type="image/jpeg">
+
     
-    <!-- CSS split into 5 optimized files -->
+    <!-- CSS split into 5 optimized files - Critical CSS loaded first -->
     <link rel="stylesheet" href="css-split/01_base_and_reset.css">
     <link rel="stylesheet" href="css-split/02_layout_and_header.css">
-    <link rel="stylesheet" href="css-split/03_forms_and_modals.css">
-    <link rel="stylesheet" href="css-split/04_content_sections.css">
+    <link rel="stylesheet" href="css-split/03_forms_and_modals.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="css-split/04_content_sections.css" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="css-split/05_responsive_media.css">
     
-    <!-- Feather Icons -->
-    <script src="https://unpkg.com/feather-icons"></script>
+    <!-- Feather Icons - Deferred for better performance -->
+    <script src="https://unpkg.com/feather-icons" defer></script>
     
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,7 +65,7 @@
             <div class="container">
                 <div class="nav-wrapper nav-vertical">
                     <div class="logo">
-                        <img src="images/admon.jpeg" alt="אדמון" width="80" height="32" loading="eager" decoding="async" style="margin-left: 0px; object-fit: contain; vertical-align: middle; border-radius: 8px; display: inline-block;">
+                        <img src="images/admon.jpeg" alt="אדמון" width="80" height="32" loading="lazy" decoding="async" style="margin-left: 0px; object-fit: contain; vertical-align: middle; border-radius: 8px; display: inline-block;">
                         <h1><a href="index.html" style="color: inherit; text-decoration: none;">אדמון סוכנות לביטוח</a></h1>
                     </div>
                     
@@ -1358,10 +1356,10 @@
         </div>
     </main>
 
-    <!-- JavaScript -->
+    <!-- JavaScript - Deferred for better performance -->
     <!-- jsPDF Library for client-side PDF generation - DISABLED (PDF generation removed) -->
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> -->
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
     <script>
         // Initialize Feather Icons
         document.addEventListener('DOMContentLoaded', function() {
@@ -1377,40 +1375,31 @@
             if (emailSection) emailSection.style.display = 'block'; // This should be visible initially
         });
         
-        // Register Service Worker for cache management with enhanced error handling
+        // Register Service Worker for cache management - Non-blocking
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
+            // Use setTimeout to avoid blocking the main thread
+            setTimeout(() => {
                 navigator.serviceWorker.register('/sw.js')
                     .then((registration) => {
                         console.log('[SW] Service Worker registered successfully:', registration.scope);
                         
-                        // Handle updates
+                        // Handle updates with less frequent checks
                         registration.addEventListener('updatefound', () => {
                             console.log('[SW] Service Worker update found');
                         });
                         
-                        // Check for updates periodically
+                        // Check for updates less frequently to avoid performance impact
                         setInterval(() => {
                             registration.update().catch(() => {
                                 // Silently ignore update check failures
                             });
-                        }, 60000); // Check every minute
+                        }, 300000); // Check every 5 minutes instead of 1 minute
                     })
                     .catch((error) => {
                         console.warn('[SW] Service Worker registration failed:', error);
                         // Don't throw error - app should work without SW
                     });
-                    
-                // Handle service worker errors
-                navigator.serviceWorker.addEventListener('error', (error) => {
-                    console.warn('[SW] Service Worker error:', error);
-                });
-                
-                // Handle controller changes
-                navigator.serviceWorker.addEventListener('controllerchange', () => {
-                    console.log('[SW] Service Worker controller changed');
-                });
-            });
+            }, 2000); // Delay SW registration by 2 seconds
         } else {
             console.log('[SW] Service Worker not supported');
         }
