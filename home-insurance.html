@@ -58,6 +58,73 @@
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Mobile Performance Optimization -->
+    <style>
+        /* Disable heavy animations on mobile devices for better performance */
+        @media (max-width: 768px) {
+            .hero-background,
+            .hero-shape-1,
+            .hero-shape-2,
+            .hero-shape-3,
+            .hero-shape-4,
+            .hero-particles,
+            .animate-float,
+            .pulse-animation {
+                animation: none !important;
+                transform: none !important;
+            }
+            
+            /* Reduce motion for users who prefer it */
+            .animate-fade-in,
+            .animate-slide-up,
+            .animate-fade-in-delay,
+            .animate-fade-in-delay-2,
+            .animate-fade-in-delay-3 {
+                animation: none !important;
+                opacity: 1 !important;
+                transform: none !important;
+            }
+            
+            /* Optimize hero particles for mobile */
+            .hero-particles::before,
+            .hero-particles::after {
+                display: none;
+            }
+            
+            /* Simplify background shapes on mobile */
+            .hero-background {
+                background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%) !important;
+            }
+        }
+        
+        /* For devices that explicitly request reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        /* Additional mobile optimization class */
+        .mobile-optimized .hero-background * {
+            will-change: auto !important;
+            transform: none !important;
+            animation: none !important;
+        }
+        
+        .mobile-optimized .pulse-animation {
+            animation: none !important;
+        }
+        
+        /* Reduce GPU usage on mobile */
+        @media (max-width: 768px) {
+            * {
+                will-change: auto !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -1361,9 +1428,28 @@
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> -->
     <script src="script.js" defer></script>
     <script>
-        // Initialize Feather Icons
+        // Initialize Feather Icons and Mobile Optimizations
         document.addEventListener('DOMContentLoaded', function() {
             feather.replace();
+            
+            // Mobile performance optimization
+            const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                // Disable heavy animations on mobile
+                document.body.classList.add('mobile-optimized');
+                
+                // Remove unnecessary DOM elements that cause performance issues
+                const particles = document.querySelector('.hero-particles');
+                if (particles) particles.style.display = 'none';
+                
+                // Simplify hero shapes
+                const heroShapes = document.querySelectorAll('[class*="hero-shape"]');
+                heroShapes.forEach(shape => {
+                    shape.style.animation = 'none';
+                    shape.style.transform = 'none';
+                });
+            }
             
             // Ensure verification sections are properly hidden on page load
             const codeSection = document.getElementById('code-section');

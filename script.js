@@ -5406,12 +5406,15 @@ if (typeof window.addContentsFormListeners === 'undefined') {
 }
 
 /**
- * Initialize statistics counter animation
+ * Initialize statistics counter animation - Mobile optimized
  */
 function initializeStatsCounter() {
-    const statsNumbers = document.querySelectorAll('.stat-number');
+    const statsNumbers = document.querySelectorAll('.stat-number, .stat-number-hero');
     
     if (statsNumbers.length === 0) return;
+    
+    // Detect mobile devices
+    const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
     const observerOptions = {
         threshold: 0.5,
@@ -5419,16 +5422,23 @@ function initializeStatsCounter() {
     };
     
     const countUp = (element, target) => {
-        const duration = 2000; // 2 seconds
+        // Mobile optimization: shorter duration and less frequent updates
+        const duration = isMobile ? 1000 : 2000; // 1 second on mobile, 2 on desktop
+        const fps = isMobile ? 30 : 60; // 30fps on mobile, 60fps on desktop
         const start = 0;
-        const increment = target / (duration / 16); // 60fps
+        const increment = target / (duration / (1000 / fps));
         let current = start;
         
         const updateCounter = () => {
             current += increment;
             if (current < target) {
                 element.textContent = Math.floor(current).toLocaleString('he-IL');
-                requestAnimationFrame(updateCounter);
+                // Use setTimeout instead of requestAnimationFrame on mobile for better performance
+                if (isMobile) {
+                    setTimeout(updateCounter, 1000 / fps);
+                } else {
+                    requestAnimationFrame(updateCounter);
+                }
             } else {
                 element.textContent = target.toLocaleString('he-IL');
             }
@@ -5442,7 +5452,16 @@ function initializeStatsCounter() {
             if (entry.isIntersecting && !entry.target.hasAttribute('data-counted')) {
                 const target = parseInt(entry.target.getAttribute('data-count'));
                 entry.target.setAttribute('data-counted', 'true');
-                countUp(entry.target, target);
+                
+                // On mobile, use a simpler animation or skip if performance is poor
+                if (isMobile && target > 1000) {
+                    // For large numbers on mobile, just show the final result
+                    setTimeout(() => {
+                        entry.target.textContent = target.toLocaleString('he-IL');
+                    }, 500);
+                } else {
+                    countUp(entry.target, target);
+                }
             }
         });
     }, observerOptions);
@@ -5579,49 +5598,7 @@ function initializeFAQ() {
     });
 }
 
-/**
- * Initialize Stats Counter Animation
- */
-function initializeStatsCounter() {
-    const statNumbers = document.querySelectorAll('.stat-number');
-    let hasAnimated = false;
-    
-    const animateNumbers = () => {
-        statNumbers.forEach(stat => {
-            const target = parseInt(stat.getAttribute('data-count'));
-            const duration = 2000; // 2 seconds
-            const increment = target / (duration / 16); // 60fps
-            let current = 0;
-            
-            const updateNumber = () => {
-                current += increment;
-                if (current < target) {
-                    stat.textContent = Math.floor(current);
-                    requestAnimationFrame(updateNumber);
-                } else {
-                    stat.textContent = target;
-                }
-            };
-            
-            updateNumber();
-        });
-    };
-    
-    // Intersection Observer for triggering animation
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !hasAnimated) {
-                hasAnimated = true;
-                animateNumbers();
-            }
-        });
-    }, { threshold: 0.5 });
-    
-    const statsSection = document.querySelector('.stats-section');
-    if (statsSection) {
-        observer.observe(statsSection);
-    }
-}
+
 
 /**
  * Initialize Scroll Animations
