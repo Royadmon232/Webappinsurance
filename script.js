@@ -5453,15 +5453,8 @@ function initializeStatsCounter() {
                 const target = parseInt(entry.target.getAttribute('data-count'));
                 entry.target.setAttribute('data-counted', 'true');
                 
-                // On mobile, use a simpler animation or skip if performance is poor
-                if (isMobile && target > 1000) {
-                    // For large numbers on mobile, just show the final result
-                    setTimeout(() => {
-                        entry.target.textContent = target.toLocaleString('he-IL');
-                    }, 500);
-                } else {
-                    countUp(entry.target, target);
-                }
+                // Always run the animation, but optimized for mobile
+                countUp(entry.target, target);
             }
         });
     }, observerOptions);

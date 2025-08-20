@@ -1553,17 +1553,14 @@
     }
 }
 
-/* Mobile performance optimization */
+/* Mobile performance optimization - Only target specific heavy elements */
 @media (max-width: 768px) {
-    *,
-    *::before,
-    *::after {
-        transform: none !important;
-        transition: none !important;
-        animation: none !important;
+    /* Only disable the heaviest animations that cause performance issues */
+    .hero-particles {
+        display: none;
     }
     
-    /* Allow only essential transforms */
+    /* Keep essential transforms for modals */
     .modal-content,
     .modal-body {
         transform: none !important;
