@@ -1,10 +1,5 @@
 {
   "outputDirectory": ".",
-  "functions": {
-    "api/*.js": {
-      "maxDuration": 15
-    }
-  },
   "headers": [
     {
       "source": "/(.*)\\.html",
