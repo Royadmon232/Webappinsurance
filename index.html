@@ -34,7 +34,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="site.css?v=8">
+    <link rel="stylesheet" href="site.css?v=9">
 
     <!-- Structured data: InsuranceAgency -->
     <script type="application/ld+json">
@@ -128,11 +128,11 @@
                     <span class="nav-toggle-bar"></span>
                 </button>
                 <ul id="nav-menu" class="nav-menu">
-                    <li><a href="#services">תחומי שירות</a></li>
-                    <li><a href="#business">עסקים ועצמאים</a></li>
-                    <li><a href="#employers">מעסיקים וארגונים</a></li>
-                    <li><a href="#partners">השותפים שלנו</a></li>
-                    <li><a href="#about">אודות</a></li>
+                    <li><a href="index.html">בית</a></li>
+                    <li><a href="index.html#areas">תחומי שירות</a></li>
+                    <li><a href="business-insurance.html">עסקים ועצמאים</a></li>
+                    <li><a href="employers.html">מעסיקים וארגונים</a></li>
+                    <li><a href="index.html#about">אודות</a></li>
                     <li><a href="#lead">צור קשר</a></li>
                 </ul>
             </nav>
@@ -304,198 +304,50 @@
             </div>
         </section>
 
-        <!-- Services -->
-        <section id="services" class="section section-alt" aria-labelledby="services-title">
+        <!-- Service areas router -->
+        <section id="areas" class="section section-alt" aria-labelledby="areas-title">
             <div class="container">
                 <div class="section-head centered">
                     <span class="section-tag">תחומי שירות</span>
-                    <h2 id="services-title">כל פתרונות הביטוח והפיננסים — תחת קורת גג אחת</h2>
-                    <p>בחרו תחום, השאירו פרטים — ומומחה מהסוכנות יחזור אליכם עם פתרון מותאם אישית.</p>
+                    <h2 id="areas-title">כל פתרונות הביטוח והפיננסים — בחרו את התחום שלכם</h2>
+                    <p>בחרו את התחום הרלוונטי עבורכם וקבלו ליווי אישי ומותאם ממומחי הסוכנות — בכל תחום, פתרון מלא במקום אחד.</p>
                 </div>
-
-                <h3 class="group-title">ביטוח</h3>
-                <div class="cards-grid">
-                    <article class="service-card">
+                <div class="cards-grid areas-grid">
+                    <article class="service-card area-card">
                         <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-home"></use></svg></span>
-                        <h3>ביטוח דירה</h3>
-                        <p>הגנה מקיפה למבנה ולתכולה — אש, מים, רעידת אדמה, פריצה וצד שלישי.</p>
-                        <button class="card-link" type="button" data-interest="ביטוח דירה">לפרטים והצעה ←</button>
+                        <h3>ביטוח אלמנטרי</h3>
+                        <p>הגנה מקיפה לבית ולרכב, בהשוואת מחירים בין החברות המובילות.</p>
+                        <ul class="area-list"><li>ביטוח דירה</li><li>ביטוח רכב</li></ul>
+                        <a class="btn btn-navy btn-block" href="elementary-insurance.html">ביטוח אלמנטרי ←</a>
                     </article>
-                    <article class="service-card">
-                        <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-car"></use></svg></span>
-                        <h3>ביטוח רכב</h3>
-                        <p>מקיף, צד ג' וחובה — השוואת מחירים בין החברות והתאמה אישית של הכיסוי.</p>
-                        <button class="card-link" type="button" data-interest="ביטוח רכב">לפרטים והצעה ←</button>
-                    </article>
-                    <article class="service-card">
-                        <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-activity"></use></svg></span>
-                        <h3>ביטוח בריאות</h3>
-                        <p>ניתוחים, תרופות, השתלות וייעוץ רפואי — כיסוי פרטי משלים לסל הבריאות.</p>
-                        <button class="card-link" type="button" data-interest="ביטוח בריאות">לפרטים והצעה ←</button>
-                    </article>
-                    <article class="service-card">
+                    <article class="service-card area-card">
                         <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-heart"></use></svg></span>
-                        <h3>ביטוח חיים</h3>
-                        <p>הגנה כלכלית אמיתית למשפחה — סכומים, מוטבים ועלויות בהתאמה מדויקת.</p>
-                        <button class="card-link" type="button" data-interest="ביטוח חיים">לפרטים והצעה ←</button>
+                        <h3>ביטוחי פרט</h3>
+                        <p>בריאות, חיים ומשכנתא — ביטחון כלכלי ורפואי למשפחה.</p>
+                        <ul class="area-list"><li>ביטוח בריאות</li><li>ביטוח חיים</li><li>חיים למשכנתא</li></ul>
+                        <a class="btn btn-navy btn-block" href="personal-insurance.html">ביטוחי פרט ←</a>
                     </article>
-                    <article class="service-card">
-                        <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-key"></use></svg></span>
-                        <h3>ביטוח חיים למשכנתא</h3>
-                        <p>כיסוי העונה לדרישות הבנק — לרוב במחיר נמוך משמעותית מהצעת הבנק.</p>
-                        <button class="card-link" type="button" data-interest="ביטוח חיים למשכנתא">לפרטים והצעה ←</button>
-                    </article>
-                </div>
-
-                <h3 class="group-title">פנסיה, חיסכון והשקעות</h3>
-                <div class="cards-grid">
-                    <article class="service-card">
-                        <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-umbrella"></use></svg></span>
-                        <h3>פנסיה</h3>
-                        <p>בחירת קרן ומסלול, בדיקת דמי ניהול וליווי שוטף — עד לפרישה וגם אחריה.</p>
-                        <button class="card-link" type="button" data-interest="פנסיה">לפרטים והצעה ←</button>
-                    </article>
-                    <article class="service-card">
+                    <article class="service-card area-card">
                         <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-chart"></use></svg></span>
-                        <h3>קרן השתלמות</h3>
-                        <p>אפיק החיסכון המשתלם בישראל — הטבות מס, נזילות אחרי 6 שנים ובחירת מסלול נכונה.</p>
-                        <button class="card-link" type="button" data-interest="קרן השתלמות">לפרטים והצעה ←</button>
+                        <h3>פיננסים ופנסיה</h3>
+                        <p>ניהול חכם של החיסכון והפנסיה — מבדיקת דמי ניהול ועד תכנון פרישה.</p>
+                        <ul class="area-list"><li>פנסיה</li><li>גמל והשתלמות</li><li>תיקון 190</li></ul>
+                        <a class="btn btn-navy btn-block" href="financial-pension.html">פיננסים ופנסיה ←</a>
                     </article>
-                    <article class="service-card">
-                        <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-layers"></use></svg></span>
-                        <h3>קופת גמל</h3>
-                        <p>חיסכון לטווח ארוך עם יתרונות מס — בדיקת מסלולים, דמי ניהול וביצועים.</p>
-                        <button class="card-link" type="button" data-interest="קופת גמל / גמל להשקעה">לפרטים והצעה ←</button>
-                    </article>
-                    <article class="service-card">
-                        <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-bars"></use></svg></span>
-                        <h3>גמל להשקעה</h3>
-                        <p>חיסכון גמיש ונזיל עם אפשרות לקצבה פטורה ממס בגיל פרישה.</p>
-                        <button class="card-link" type="button" data-interest="קופת גמל / גמל להשקעה">לפרטים והצעה ←</button>
-                    </article>
-                    <article class="service-card">
-                        <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-briefcase"></use></svg></span>
-                        <h3>ביטוח מנהלים</h3>
-                        <p>פתרון פנסיוני לשכירים ובעלי שליטה — כולל אובדן כושר עבודה וכיסויי ריסק.</p>
-                        <button class="card-link" type="button" data-interest="ביטוח מנהלים">לפרטים והצעה ←</button>
-                    </article>
-                    <article class="service-card">
-                        <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-percent"></use></svg></span>
-                        <h3>תיקון 190</h3>
-                        <p>תכנון מס חכם לבני 60+ — הפקדה לקופת גמל עם הטבות מס משמעותיות במשיכה.</p>
-                        <button class="card-link" type="button" data-interest="תיקון 190">לפרטים והצעה ←</button>
-                    </article>
-                    <article class="service-card">
-                        <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-compass"></use></svg></span>
-                        <h3>תכנון פיננסי</h3>
-                        <p>ראייה כוללת של התיק המשפחתי — ביטוחים, חסכונות, פרישה והחזרי מס.</p>
-                        <button class="card-link" type="button" data-interest="תכנון פיננסי">לפרטים והצעה ←</button>
-                    </article>
-                </div>
-                <div class="section-cta">
-                    <p>לא בטוחים מה מתאים לכם? נשמח ללוות אתכם בבחירה — ללא עלות וללא התחייבות.</p>
-                    <div class="section-cta-actions">
-                        <a class="btn btn-navy" href="#lead">השאירו פרטים — נחזור אליכם</a>
-                        <a class="btn btn-whatsapp" href="https://wa.me/972509313531" target="_blank" rel="noopener" data-whatsapp="">
-                            <svg class="icon" aria-hidden="true"><use href="#i-chat"></use></svg>
-                            דברו איתנו ב-WhatsApp
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Business & self-employed -->
-        <section id="business" class="section" aria-labelledby="business-title">
-            <div class="container">
-                <div class="section-head centered">
-                    <span class="section-tag">לעסקים ולעצמאים</span>
-                    <h2 id="business-title">ביטוחים לעסקים ולעצמאים</h2>
-                    <p>
-                        לא רק לקוחות פרטיים — אנו מלווים גם בתי עסק, חברות ועצמאים בבניית מעטפת ביטוחית מלאה
-                        לרכוש, לחבויות ולפעילות העסקית, עם התאמה מדויקת לאופי ולסיכונים של כל עסק.
-                    </p>
-                </div>
-                <div class="cards-grid">
-                    <article class="service-card">
+                    <article class="service-card area-card">
                         <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-building"></use></svg></span>
-                        <h3>ביטוח עסק ובית עסק</h3>
-                        <p>פוליסה מקיפה לבית העסק — מבנה, תכולה, מלאי ואובדן הכנסות כתוצאה מנזק.</p>
-                        <button class="card-link" type="button" data-interest="ביטוח עסק">לפרטים והצעה ←</button>
+                        <h3>ביטוח עסקים ועצמאים</h3>
+                        <p>מעטפת מלאה לעסק — רכוש, חבויות, אחריות מקצועית וסייבר.</p>
+                        <ul class="area-list"><li>רכוש וחבויות</li><li>חבות מעבידים</li><li>סייבר</li></ul>
+                        <a class="btn btn-navy btn-block" href="business-insurance.html">ביטוח עסקים ועצמאים ←</a>
                     </article>
-                    <article class="service-card">
-                        <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-shield"></use></svg></span>
-                        <h3>ביטוח רכוש</h3>
-                        <p>הגנה על נכסי העסק — אש, מים, פריצה, רעידת אדמה ונזקי טבע — וכן ציוד ומלאי.</p>
-                        <button class="card-link" type="button" data-interest="ביטוח רכוש">לפרטים והצעה ←</button>
-                    </article>
-                    <article class="service-card">
+                    <article class="service-card area-card">
                         <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-users"></use></svg></span>
-                        <h3>חבות מעבידים</h3>
-                        <p>כיסוי לתביעות עובדים בגין פגיעה או מחלה במהלך העבודה — חובה לכל מעסיק.</p>
-                        <button class="card-link" type="button" data-interest="חבות מעבידים">לפרטים והצעה ←</button>
+                        <h3>מעסיקים וארגונים</h3>
+                        <p>הסדרים פנסיוניים, ביטוחי מנהלים ובריאות קבוצתית לעובדים.</p>
+                        <ul class="area-list"><li>הסדרים פנסיוניים</li><li>בריאות קבוצתית</li><li>ליווי HR</li></ul>
+                        <a class="btn btn-navy btn-block" href="employers.html">מעסיקים וארגונים ←</a>
                     </article>
-                    <article class="service-card">
-                        <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-umbrella"></use></svg></span>
-                        <h3>אחריות כלפי צד שלישי</h3>
-                        <p>הגנה מפני תביעות של גורם חיצוני בגין נזקי גוף או רכוש שנגרמו בפעילות העסק.</p>
-                        <button class="card-link" type="button" data-interest="אחריות צד שלישי">לפרטים והצעה ←</button>
-                    </article>
-                    <article class="service-card">
-                        <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-award"></use></svg></span>
-                        <h3>אחריות מקצועית</h3>
-                        <p>כיסוי לבעלי מקצוע וחברות מפני תביעות בגין טעות, רשלנות או מחדל מקצועי.</p>
-                        <button class="card-link" type="button" data-interest="אחריות מקצועית">לפרטים והצעה ←</button>
-                    </article>
-                    <article class="service-card">
-                        <span class="card-icon"><svg class="icon" aria-hidden="true"><use href="#i-key"></use></svg></span>
-                        <h3>ביטוח סייבר</h3>
-                        <p>הגנה מפני מתקפות סייבר, דליפת מידע ונזקים תפעוליים — קריטי לעסקים דיגיטליים.</p>
-                        <button class="card-link" type="button" data-interest="ביטוח סייבר">לפרטים והצעה ←</button>
-                    </article>
-                </div>
-                <div class="section-cta">
-                    <p>לא בטוחים איזה כיסוי מתאים לעסק שלכם? השאירו פרטים — ונבנה יחד מעטפת ביטוחית מותאמת.</p>
-                    <div class="section-cta-actions">
-                        <a class="btn btn-navy" href="#lead">השאירו פרטים לעסק</a>
-                        <a class="btn btn-whatsapp" href="https://wa.me/972509313531" target="_blank" rel="noopener" data-whatsapp="ביטוח עסק">
-                            <svg class="icon" aria-hidden="true"><use href="#i-chat"></use></svg>
-                            דברו איתנו ב-WhatsApp
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Employers -->
-        <section id="employers" class="section section-alt" aria-labelledby="employers-title">
-            <div class="container">
-                <div class="employers-band">
-                    <div>
-                        <span class="section-tag">למעסיקים ולארגונים</span>
-                        <h2 id="employers-title">פתרונות ביטוח ופיננסים למעסיקים וארגונים</h2>
-                        <p>
-                            אנו מלווים חברות וארגונים בניהול מערך הביטוח והחיסכון של העובדים —
-                            משלב התכנון, דרך ההטמעה ועד שירות שוטף לכל עובד ועובדת.
-                        </p>
-                        <ul class="check-list">
-                            <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg> ניהול הסדרים פנסיוניים לעובדים — פנסיה, גמל והשתלמות</li>
-                            <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg> ביטוחי מנהלים ואובדן כושר עבודה</li>
-                            <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg> ביטוחי בריאות קבוצתיים לעובדים ולמשפחותיהם</li>
-                            <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg> ליווי שוטף למחלקות HR ושכר — קליטה, עזיבה ובקרה</li>
-                            <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg> שירות אישי לכל עובד, כולל מפגשי הסבר וייעוץ פרטני</li>
-                        </ul>
-                    </div>
-                    <div class="employers-cta-card">
-                        <svg class="icon" style="width:2.2em;height:2.2em;color:var(--gold-500);" aria-hidden="true"><use href="#i-building"></use></svg>
-                        <h3>מעסיקים? דברו איתנו</h3>
-                        <p>נשמח להציג כיצד אנו מנהלים הסדרים פנסיוניים והטבות לעובדים בארגונים.</p>
-                        <button class="btn btn-gold btn-block" type="button" data-interest="פתרונות למעסיקים וארגונים">תיאום שיחת היכרות</button>
-                        <a class="btn btn-outline-light btn-block" href="https://wa.me/972509313531" target="_blank" rel="noopener" data-whatsapp="פתרונות למעסיקים וארגונים" style="margin-top:10px;">
-                            <svg class="icon" aria-hidden="true"><use href="#i-chat"></use></svg>
-                            WhatsApp ישיר
-                        </a>
-                    </div>
                 </div>
             </div>
         </section>
@@ -702,11 +554,11 @@
                 <div>
                     <h4>תחומי שירות</h4>
                     <ul class="footer-links">
-                        <li><a href="index.html#services">ביטוח דירה, רכב, בריאות וחיים</a></li>
-                        <li><a href="index.html#services">פנסיה, גמל, השתלמות ותיקון 190</a></li>
-                        <li><a href="index.html#business">ביטוחים לעסקים ולעצמאים</a></li>
-                        <li><a href="index.html#employers">פתרונות למעסיקים וארגונים</a></li>
-                        <li><a href="index.html#partners">חברות הביטוח ובתי ההשקעות</a></li>
+                        <li><a href="elementary-insurance.html">ביטוח אלמנטרי — דירה ורכב</a></li>
+                        <li><a href="personal-insurance.html">ביטוחי פרט — בריאות, חיים ומשכנתא</a></li>
+                        <li><a href="financial-pension.html">פיננסים, פנסיה וחיסכון</a></li>
+                        <li><a href="business-insurance.html">ביטוח עסקים ועצמאים</a></li>
+                        <li><a href="employers.html">מעסיקים וארגונים</a></li>
                     </ul>
                 </div>
                 <div>
@@ -780,6 +632,6 @@
         <symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><line x1="8" y1="6" x2="10" y2="6"/><line x1="14" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/></symbol>
     </svg>
 
-    <script src="site.js?v=8" defer></script>
+    <script src="site.js?v=9" defer></script>
 </body>
 </html>
