@@ -1399,21 +1399,25 @@ ul {
    Partner logo wall (insurance companies & investment houses)
    -------------------------------------------------------------------------- */
 .logo-wall {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 14px;
     margin-top: 30px;
 }
 
+/* Fixed, identical tiles so every logo sits in the same box (6 per row) */
 .logo-tile {
+    flex: 0 0 calc((100% - 5 * 14px) / 6);
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 96px;
     background: var(--white);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
-    padding: 18px 16px;
-    min-height: 88px;
+    padding: 16px;
     box-shadow: var(--shadow-sm);
     transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
@@ -1424,9 +1428,10 @@ ul {
     border-color: var(--gold-500);
 }
 
+/* Normalize every logo into the same bounding box (uniform height + capped width) */
 .logo-tile img {
-    max-width: 100%;
-    max-height: 52px;
+    max-height: 38px;
+    max-width: 86%;
     width: auto;
     height: auto;
     object-fit: contain;
@@ -1436,7 +1441,7 @@ ul {
 
 .logo-tile:hover img {
     opacity: 1;
-    transform: scale(1.03);
+    transform: scale(1.04);
 }
 
 .logo-note {
@@ -1485,14 +1490,15 @@ ul {
 
 /* New responsive rules (logo wall + AUM band) */
 @media (max-width: 1024px) {
-    .logo-wall {
-        grid-template-columns: repeat(4, 1fr);
+    .logo-tile {
+        flex-basis: calc((100% - 3 * 14px) / 4);
     }
 }
 
 @media (max-width: 640px) {
-    .logo-wall {
-        grid-template-columns: repeat(2, 1fr);
+    .logo-tile {
+        flex-basis: calc((100% - 14px) / 2);
+        height: 84px;
     }
 
     .aum-band {
