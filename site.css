@@ -1446,6 +1446,43 @@ ul {
     font-size: 0.95rem;
 }
 
+/* Hero reassurance line */
+.hero-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 16px 0 0;
+    color: #cfdbeb;
+    font-size: 0.97rem;
+    font-weight: 600;
+}
+
+.hero-note .icon {
+    color: var(--gold-500);
+    width: 1.15em;
+    height: 1.15em;
+    flex-shrink: 0;
+}
+
+/* Section-level call to action */
+.section-cta {
+    margin-top: 40px;
+    text-align: center;
+}
+
+.section-cta > p {
+    color: var(--ink-600);
+    font-size: 1.08rem;
+    margin: 0 0 18px;
+}
+
+.section-cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+}
+
 /* New responsive rules (logo wall + AUM band) */
 @media (max-width: 1024px) {
     .logo-wall {
