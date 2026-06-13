@@ -314,37 +314,56 @@ ul {
 
 .nav-toggle {
     display: none;
+    align-items: center;
+    gap: 9px;
+    height: 46px;
+    padding: 0 16px;
+    background: var(--navy-900);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: background 0.2s ease;
+}
+
+.nav-toggle:hover {
+    background: var(--navy-700);
+}
+
+.nav-toggle-txt {
+    color: #fff;
+}
+
+.nav-toggle-icon {
+    display: inline-flex;
     flex-direction: column;
     justify-content: center;
-    gap: 5px;
-    width: 48px;
-    height: 48px;
-    padding: 12px;
-    background: none;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    cursor: pointer;
+    gap: 4px;
 }
 
 .nav-toggle-bar {
     display: block;
     width: 22px;
     height: 2px;
-    background: var(--navy-900);
+    background: #fff;
     border-radius: 2px;
     transition: transform 0.25s ease, opacity 0.25s ease;
 }
 
-.nav-toggle[aria-expanded="true"] .nav-toggle-bar:nth-child(2) {
-    transform: translateY(7px) rotate(45deg);
+.nav-toggle[aria-expanded="true"] .nav-toggle-bar:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
 }
 
-.nav-toggle[aria-expanded="true"] .nav-toggle-bar:nth-child(3) {
+.nav-toggle[aria-expanded="true"] .nav-toggle-bar:nth-child(2) {
     opacity: 0;
 }
 
-.nav-toggle[aria-expanded="true"] .nav-toggle-bar:nth-child(4) {
-    transform: translateY(-7px) rotate(-45deg);
+.nav-toggle[aria-expanded="true"] .nav-toggle-bar:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
 }
 
 /* --------------------------------------------------------------------------
@@ -1530,5 +1549,122 @@ ul {
 
     .aum-band {
         padding: 46px 0;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Navigation dropdown (תחומי שירות submenu)
+   -------------------------------------------------------------------------- */
+.has-submenu {
+    position: relative;
+}
+
+.submenu-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    color: var(--ink-900);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.submenu-toggle:hover {
+    background: var(--bg);
+    color: var(--navy-700);
+}
+
+.submenu-toggle .caret {
+    width: 1em;
+    height: 1em;
+    transition: transform 0.2s ease;
+}
+
+.has-submenu:hover .submenu-toggle .caret,
+.has-submenu:focus-within .submenu-toggle .caret,
+.has-submenu.submenu-open .submenu-toggle .caret {
+    transform: rotate(180deg);
+}
+
+.submenu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.submenu a {
+    display: block;
+    padding: 11px 12px;
+    border-radius: 8px;
+    color: var(--ink-900);
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.18s ease, color 0.18s ease;
+}
+
+.submenu a:hover {
+    background: var(--bg);
+    color: var(--navy-700);
+}
+
+@media (min-width: 861px) {
+    .submenu {
+        position: absolute;
+        top: calc(100% + 4px);
+        right: 0;
+        min-width: 256px;
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: var(--shadow-md);
+        padding: 8px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-8px);
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+        z-index: 60;
+    }
+
+    .has-submenu:hover > .submenu,
+    .has-submenu:focus-within > .submenu,
+    .has-submenu.submenu-open > .submenu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .submenu a {
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 860px) {
+    .submenu-toggle {
+        width: 100%;
+        justify-content: space-between;
+        padding: 14px 10px;
+        font-size: 1.08rem;
+        border-bottom: 1px solid var(--bg);
+    }
+
+    .submenu {
+        display: none;
+        padding: 2px 14px 6px;
+    }
+
+    .has-submenu.submenu-open .submenu {
+        display: block;
+    }
+
+    .submenu a {
+        font-size: 1.02rem;
+        color: var(--ink-600);
+        border-bottom: 1px solid var(--bg);
     }
 }

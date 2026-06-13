@@ -87,20 +87,44 @@
         /* Mobile navigation */
         var navToggle = document.querySelector('.nav-toggle');
         var navMenu = document.getElementById('nav-menu');
+        var submenuToggle = document.querySelector('.submenu-toggle');
+        var submenuLi = submenuToggle ? submenuToggle.closest('.has-submenu') : null;
+
+        var closeSubmenu = function () {
+            if (submenuLi) {
+                submenuLi.classList.remove('submenu-open');
+                submenuToggle.setAttribute('aria-expanded', 'false');
+            }
+        };
+
         if (navToggle && navMenu) {
             var closeMenu = function () {
                 navMenu.classList.remove('open');
                 navToggle.setAttribute('aria-expanded', 'false');
+                closeSubmenu();
             };
             navToggle.addEventListener('click', function () {
                 var isOpen = navMenu.classList.toggle('open');
                 navToggle.setAttribute('aria-expanded', String(isOpen));
+                if (!isOpen) closeSubmenu();
             });
             navMenu.addEventListener('click', function (e) {
                 if (e.target.closest('a')) closeMenu();
             });
             document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape') closeMenu();
+            });
+        }
+
+        /* Dropdown submenu (תחומי שירות) */
+        if (submenuToggle && submenuLi) {
+            submenuToggle.addEventListener('click', function (e) {
+                e.preventDefault();
+                var open = submenuLi.classList.toggle('submenu-open');
+                submenuToggle.setAttribute('aria-expanded', String(open));
+            });
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.has-submenu')) closeSubmenu();
             });
         }
 
