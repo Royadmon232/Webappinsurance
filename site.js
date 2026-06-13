@@ -22,6 +22,58 @@
             el.textContent = new Date().getFullYear();
         });
 
+        /* Animated number counters (run when scrolled into view) */
+        var prefersReduced = window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function animateCount(el) {
+            var target = parseFloat(el.getAttribute('data-count-to')) || 0;
+            var format = el.getAttribute('data-count-format');
+            var prefix = el.getAttribute('data-count-prefix') || '';
+            var suffix = el.getAttribute('data-count-suffix') || '';
+            var duration = target >= 1000000 ? 2200 : 1500;
+
+            function render(value) {
+                var n = Math.round(value);
+                var text = format === 'comma' ? n.toLocaleString('en-US') : String(n);
+                el.textContent = prefix + text + suffix;
+            }
+            if (prefersReduced || !window.requestAnimationFrame) {
+                render(target);
+                return;
+            }
+            var startTime = null;
+            function easeOutExpo(t) { return t >= 1 ? 1 : 1 - Math.pow(2, -10 * t); }
+            function frame(now) {
+                if (startTime === null) startTime = now;
+                var progress = Math.min((now - startTime) / duration, 1);
+                render(target * easeOutExpo(progress));
+                if (progress < 1) {
+                    window.requestAnimationFrame(frame);
+                } else {
+                    render(target);
+                }
+            }
+            window.requestAnimationFrame(frame);
+        }
+
+        var counters = document.querySelectorAll('[data-count-to]');
+        if (counters.length) {
+            if ('IntersectionObserver' in window) {
+                var counterObserver = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            animateCount(entry.target);
+                            counterObserver.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.4 });
+                counters.forEach(function (c) { counterObserver.observe(c); });
+            } else {
+                counters.forEach(animateCount);
+            }
+        }
+
         /* Header shadow on scroll */
         var header = document.querySelector('.site-header');
         if (header) {
@@ -83,6 +135,17 @@
             if (phone) lines.push('טלפון: ' + phone);
             if (note) lines.push('הערה: ' + note);
             return 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(lines.join('\n'));
+        }
+
+        /* Open WhatsApp reliably on desktop and mobile.
+           Try a new tab; if the browser blocks it, fall back to same-tab navigation. */
+        function openWhatsApp(url) {
+            var win = window.open(url, '_blank');
+            if (win) {
+                win.opener = null;
+            } else {
+                window.location.href = url;
+            }
         }
 
         /* Static WhatsApp links with optional fixed topic */
@@ -150,9 +213,10 @@
             var phone = phoneField.value.trim();
             var note = noteField ? noteField.value.trim() : '';
             var url = buildWhatsAppUrl(interest, name, phone, note);
-            window.open(url, '_blank', 'noopener');
+            openWhatsApp(url);
             statusBox.className = 'form-status success';
-            statusBox.textContent = 'WhatsApp נפתח — נחזור אליכם בהקדם!';
+            statusBox.innerHTML = 'מעבירים אתכם ל‑WhatsApp… אם החלון לא נפתח, ' +
+                '<a href="' + url + '" target="_blank" rel="noopener">לחצו כאן</a>.';
             form.reset();
         });
     });

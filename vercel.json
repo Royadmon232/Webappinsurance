@@ -1,5 +1,12 @@
 {
   "outputDirectory": ".",
+  "redirects": [
+    {
+      "source": "/home-insurance.html",
+      "destination": "/#services",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)\\.html",

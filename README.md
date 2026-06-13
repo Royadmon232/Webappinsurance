@@ -1,34 +1,35 @@
 # אדמון סוכנות לביטוח — Website
 
 Hebrew (RTL) marketing and lead-generation website for Admon Insurance Agency,
-deployed on Vercel as a static site with a single serverless function.
+deployed on Vercel as a fully static site (no backend).
 
 ## Structure
 
 | Path | Purpose |
 |---|---|
-| `index.html` | Homepage — all agency services (insurance, pension, finance), employers section, FAQ, lead form |
-| `home-insurance.html` | Home insurance landing page (coverage, process, FAQ, lead form) |
+| `index.html` | Homepage — all services (private insurance, pension/finance, business, employers), partner logo wall, animated AUM counter, FAQ, lead form |
 | `accessibility-statement.html` | Accessibility statement (הצהרת נגישות) |
 | `privacy-policy.html` / `terms-of-service.html` | Legal pages |
 | `site.css` / `site.js` | Unified design system (navy/white/gold) and site behavior |
-| `api/lead.js` | Serverless lead endpoint — validates the inquiry and emails it via the Gmail API |
+| `images/logos/` | Insurance companies & investment houses logo wall (placeholder SVG wordmarks — replace with official brand files) |
 | `sw.js` | Kill-switch service worker that removes the legacy cache for returning visitors |
 
 ## Lead flow
 
-Every page carries a short inquiry form (interest + name + phone + optional note).
-Submissions POST to `/api/lead`, which emails the lead to `LEAD_TO_EMAIL`.
-If the endpoint is unavailable, the UI offers a prefilled WhatsApp fallback to
-`https://wa.me/972509313531`.
+The site is contact-only — there is no backend. The homepage lead form
+(interest + name + phone + optional note) and every WhatsApp button open
+WhatsApp directly with a prefilled Hebrew message to `https://wa.me/972509313531`.
+The chosen service is included automatically; name and phone are appended when entered.
 
-## Environment variables (Vercel)
+## Partner logos
 
-See `env.example`: `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REDIRECT_URI`,
-`GMAIL_REFRESH_TOKEN`, `LEAD_TO_EMAIL`.
+`images/logos/*.svg` currently hold clean placeholder wordmarks so the logo wall
+renders immediately. Replace each file with the official brand logo (same filename,
+transparent SVG/PNG) once usage permission is obtained. The grid is grayscale by
+default and turns full-color on hover.
 
 ## Local preview
 
 ```bash
-npm run dev   # serves the static site; /api/lead requires `vercel dev` + env vars
+npm run dev   # serves the static site
 ```
