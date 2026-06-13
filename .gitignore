@@ -54,7 +54,11 @@ dist
 
 # MongoDB data
 mongodb_data/
-data/
+/data/
+
+# Python caches
+__pycache__/
+*.pyc
 
 # macOS
 .DS_Store
