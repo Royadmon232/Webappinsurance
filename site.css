@@ -1456,7 +1456,7 @@ ul {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 96px;
+    height: 108px;
     background: var(--white);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
@@ -1473,7 +1473,7 @@ ul {
 
 /* Logos are uniform SVGs (identical viewBox), so a fixed height renders them all the same size */
 .logo-tile img {
-    height: 54px;
+    height: 66px;
     width: auto;
     max-width: 100%;
     opacity: 0.95;
@@ -1566,11 +1566,11 @@ ul {
 @media (max-width: 640px) {
     .logo-tile {
         flex-basis: calc((100% - 14px) / 2);
-        height: 84px;
+        height: 96px;
     }
 
     .logo-tile img {
-        height: 44px;
+        height: 54px;
     }
 
     .aum-band {
