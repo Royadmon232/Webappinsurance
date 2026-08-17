@@ -3,7 +3,7 @@
   "redirects": [
     {
       "source": "/home-insurance.html",
-      "destination": "/#services",
+      "destination": "/elementary-insurance.html",
       "permanent": true
     }
   ],
